@@ -1,0 +1,11 @@
+Model Information:
+* title:	Cable Car
+* source:	https://sketchfab.com/3d-models/cable-car-1621ec805f3b460faf50cd61f7bcb98f
+* author:	ugarychev (https://sketchfab.com/ugarychev)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Cable Car" (https://sketchfab.com/3d-models/cable-car-1621ec805f3b460faf50cd61f7bcb98f) by ugarychev (https://sketchfab.com/ugarychev) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
