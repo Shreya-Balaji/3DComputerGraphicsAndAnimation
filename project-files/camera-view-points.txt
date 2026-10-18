@@ -1,0 +1,10 @@
+We will have 4 different view points:
+
+- Orbit camera — rotate around the cable car and zoom in or out- cameraMode = 0 (default)
+- Top view — see the scene from above- cameraMode = 1
+- Follow camera — follow the cable car along its trajectory- cameraMode = 2
+- Cable Car camera — view the scene from inside the cabin- cameraMode = 3
+
+Files Modified for this:
+- main.cpp:
+    - Added imGui imports

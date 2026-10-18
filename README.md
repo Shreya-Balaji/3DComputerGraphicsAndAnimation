@@ -1,33 +1,73 @@
-The VS Code C/C+ and CMake Tools extensions are recommended
-#Git, CMake, Visual Studio needs to be downloaded.
+# Cable Car Simulation
 
-#clone repository
-gh repo clone Shreya-Balaji/3DComputerGraphicsAndAnimation
-cd YOUR-REPOSITORY
+## Installation and Setup
 
-## vcpkg download
-```powershell
-git clone https://github.com/microsoft/vcpkg.git C:\vcpkg
-cd C:\vcpkg 
-.\bootstrap-vcpkg.bat
-.\vcpkg.exe version
+The following instructions configure and build the project on macOS.
+
+### 1. Install Prerequisites
+
+Install Homebrew dependencies:
+
+```bash
+brew install glfw glm assimp ninja
 ```
-## Configure the build
-Run these commands from the repository root. The following assumes vcpkg is installed at `C:\vcpkg`:
 
-```powershell
-cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake
-cmake --build build --config Release
+Install vcpkg if it is not already installed:
+
+```bash
+git clone https://github.com/microsoft/vcpkg.git "$HOME/vcpkg"
+"$HOME/vcpkg/bootstrap-vcpkg.sh"
 ```
-CMake should configure the project, find the dependencies, and compile the executable. The build output is normally:
 
-```text
-build\Release\CableCarAlps.exe
+If vcpkg is already installed, skip the cloning and bootstrap commands.
+
+### 2. Install Project Dependencies
+
+From the project root, run:
+
+```bash
+"$HOME/vcpkg/vcpkg" install
 ```
-## Run
 
-From the repository root:
+This installs the dependencies specified in the project's vcpkg configuration.
 
-```powershell
-.\build\Release\CableCarAlps.exe
+### 3. Set Up Dear ImGui
+
+Clone Dear ImGui into the `external/imgui` directory:
+
+```bash
+mkdir -p external
+git clone https://github.com/ocornut/imgui.git external/imgui
 ```
+
+Skip this step if Dear ImGui has already been cloned into that directory.
+
+### 4. Configure the Project
+
+Configure the project using CMake and vcpkg. The build files will be generated in the `build` directory.
+
+```bash
+cmake -S . -B build \
+  -DCMAKE_TOOLCHAIN_FILE="$HOME/vcpkg/scripts/buildsystems/vcpkg.cmake" \
+  -DVCPKG_INSTALLED_DIR="$PWD/vcpkg_installed" \
+  -Dglad_DIR="$PWD/vcpkg_installed/arm64-osx/share/glad" \
+  -DCMAKE_BUILD_TYPE=Debug
+```
+
+### 5. Build the Project
+
+Compile the source code and generate the executable:
+
+```bash
+cmake --build build
+```
+
+## Running the Project
+
+After successfully building the project, run:
+
+```bash
+./build/CableCarAlps
+```
+
+This launches the Cable Car Simulation application.
