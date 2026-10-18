@@ -19,6 +19,10 @@
 #include <stdexcept>
 #include <cmath>
 
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+
 float cameraYaw = 25.0f;
 float cameraPitch = 15.0f;
 float cameraDistance = 7.0f;
@@ -28,6 +32,8 @@ float lastMouseY = 0.0f;
 
 bool firstMouse = true;
 bool dragging = false;
+
+int cameraMode = 0; // go through project-files/camera-view-points.txt for better understanding
 
 struct Vertex
 {
@@ -521,6 +527,11 @@ int main()
 
     glEnable(GL_DEPTH_TEST);
     glViewport(0, 0, 1280, 720);
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGui::StyleColorsDark();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 330");
 
     try
     {
@@ -590,18 +601,92 @@ int main()
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             glUseProgram(program);
-            float yaw = glm::radians(cameraYaw);
-            float pitch = glm::radians(cameraPitch);
 
-            glm::vec3 cameraPosition(
-                cameraDistance * cos(pitch) * sin(yaw),
-                cameraDistance * sin(pitch),
-                cameraDistance * cos(pitch) * cos(yaw)
+            ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
+            ImGui::Begin("Camera View Points Controls");
+
+            const char* cameraModes[] = {
+                "Orbit View",
+                "Top View",
+                "Follow View"
+            };
+
+            ImGui::Combo(
+                "Camera Mode",
+                &cameraMode,
+                cameraModes,
+                IM_ARRAYSIZE(cameraModes)
             );
+
+            ImGui::Separator();
+            ImGui::Text("Orbit Camera Settings");
+
+            ImGui::SliderFloat(
+                "Yaw",
+                &cameraYaw,
+                -180.0f,
+                180.0f
+            );
+
+            ImGui::SliderFloat(
+                "Pitch",
+                &cameraPitch,
+                -85.0f,
+                85.0f
+            );
+
+            ImGui::SliderFloat(
+                "Distance",
+                &cameraDistance,
+                2.0f,
+                30.0f
+            );
+
+            ImGui::End();
+
+            glm::vec3 cameraPosition;
+            glm::vec3 cameraTarget(0.0f);
+
+            switch (cameraMode)
+            {
+                case 0:
+                {
+                    float yaw = glm::radians(cameraYaw);
+                    float pitch = glm::radians(cameraPitch);
+
+                    cameraPosition = glm::vec3(
+                        cameraDistance * cos(pitch) * sin(yaw),
+                        cameraDistance * sin(pitch),
+                        cameraDistance * cos(pitch) * cos(yaw)
+                    );
+                    break;
+                }
+
+                case 1:
+                {
+                    cameraPosition = glm::vec3(0.0f, 12.0f, 0.01f);
+                    break;
+                }
+
+                case 2:
+                {
+                    cameraPosition = glm::vec3(0.0f, 2.5f, 8.0f);
+                    break;
+                }
+
+                default:
+                {
+                    cameraMode = 0;
+                    cameraPosition = glm::vec3(0.0f, 0.0f, cameraDistance);
+                    break;
+                }
+            }
 
             glm::mat4 view = glm::lookAt(
                 cameraPosition,
-                glm::vec3(0.0f),
+                cameraTarget,
                 glm::vec3(0.0f, 1.0f, 0.0f)
             );
 
@@ -619,7 +704,8 @@ int main()
             );
 
             cableCar.draw(program);
-
+            ImGui::Render();
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
             glfwSwapBuffers(window);
             glfwPollEvents();
         }
@@ -631,7 +717,10 @@ int main()
     {
         std::cerr << "Error: " << e.what() << '\n';
     }
-
+    
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
     glfwDestroyWindow(window);
     glfwTerminate();
 
