@@ -8,3 +8,6 @@ We will have 4 different view points:
 Files Modified for this:
 - main.cpp:
     - Added imGui imports
+    - Added a camera mode selection dropdown to switch between the three viewpoints as of now.
+    - Added orbit camera controls for yaw, pitch, and zoom distance.
+    - Other view points are basic as of now, will be updated as we proceed
