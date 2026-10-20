@@ -597,13 +597,19 @@ int main()
             glGetUniformLocation(program, "objectColor"),
             0.85f, 0.78f, 0.65f
         );
-
-        BezierCurve curve(
+        glm::vec3 controlPoints[] = {
             glm::vec3(-3.0f, 0.0f, 0.0f),
             glm::vec3(-1.0f, 3.0f, 0.0f),
             glm::vec3( 1.0f, 3.0f, 0.0f),
-            glm::vec3( 3.0f, 0.0f, 0.0f)
-        );
+            glm::vec3( 3.0f, 0.0f, 0.0f),
+            glm::vec3(4.0f, 5.0f, 0.0f),
+            glm::vec3(5.0f, -5.0f, 0.0f),
+            glm::vec3(6.0f, 0.0f, 0.0f)
+        };
+        BezierCurve curves[] = {
+            BezierCurve(controlPoints[0], controlPoints[1], controlPoints[2], controlPoints[3]),
+            BezierCurve(controlPoints[3], controlPoints[4], controlPoints[5], controlPoints[6])
+        };
         while (!glfwWindowShouldClose(window))
         {
             if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -729,8 +735,9 @@ int main()
                 glGetUniformLocation(curveProgram, "projection"),
                 1, GL_FALSE, glm::value_ptr(projection)
             );
-
-            curve.draw();
+            for (const BezierCurve& curve : curves) {
+                curve.draw();
+            }
             // end bezier curve
 
             ImGui::Render();
