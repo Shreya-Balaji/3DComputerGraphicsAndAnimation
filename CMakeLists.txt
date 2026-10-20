@@ -13,6 +13,7 @@ find_package(assimp CONFIG REQUIRED)
 
 add_executable(CableCarAlps
     src/main.cpp
+    src/bezier_curve.cpp
     ${IMGUI_DIR}/imgui.cpp
     ${IMGUI_DIR}/imgui_draw.cpp
     ${IMGUI_DIR}/imgui_tables.cpp

@@ -6,6 +6,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#include <glm/ext/vector_float3.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -22,6 +23,7 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include "bezier_curve.h"
 
 float cameraYaw = 25.0f;
 float cameraPitch = 15.0f;
@@ -550,6 +552,10 @@ int main()
         if (!cableCar.load(root + "/assets/cable_car/scene.gltf"))
             throw std::runtime_error("Could not load cable-car model");
 
+        GLuint curveProgram = createProgram(readTextFile(root + "/shaders/curve.vert"), readTextFile(root + "/shaders/curve.frag"));
+        if (!curveProgram) {
+            throw std::runtime_error("Could not create curve program");
+        }
         glm::vec3 cameraPosition(0.0f, 1.5f, 7.0f);
 
         glm::mat4 view = glm::lookAt(
@@ -592,6 +598,12 @@ int main()
             0.85f, 0.78f, 0.65f
         );
 
+        BezierCurve curve(
+            glm::vec3(-3.0f, 0.0f, 0.0f),
+            glm::vec3(-1.0f, 3.0f, 0.0f),
+            glm::vec3( 1.0f, 3.0f, 0.0f),
+            glm::vec3( 3.0f, 0.0f, 0.0f)
+        );
         while (!glfwWindowShouldClose(window))
         {
             if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -704,20 +716,37 @@ int main()
             );
 
             cableCar.draw(program);
+
+            // start bezier curve
+            glUseProgram(curveProgram);
+
+            glUniformMatrix4fv(
+                glGetUniformLocation(curveProgram, "view"),
+                1, GL_FALSE, glm::value_ptr(view)
+            );
+
+            glUniformMatrix4fv(
+                glGetUniformLocation(curveProgram, "projection"),
+                1, GL_FALSE, glm::value_ptr(projection)
+            );
+
+            curve.draw();
+            // end bezier curve
+
             ImGui::Render();
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
             glfwSwapBuffers(window);
             glfwPollEvents();
         }
-
         cableCar.destroy();
         glDeleteProgram(program);
+        glDeleteProgram(curveProgram);
     }
     catch (const std::exception& e)
     {
         std::cerr << "Error: " << e.what() << '\n';
     }
-    
+
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
