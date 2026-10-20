@@ -727,14 +727,10 @@ int main()
             glUseProgram(curveProgram);
 
             glUniformMatrix4fv(
-                glGetUniformLocation(curveProgram, "view"),
-                1, GL_FALSE, glm::value_ptr(view)
+                glGetUniformLocation(curveProgram, "mvp"),
+                1, GL_FALSE, glm::value_ptr(projection * view)
             );
 
-            glUniformMatrix4fv(
-                glGetUniformLocation(curveProgram, "projection"),
-                1, GL_FALSE, glm::value_ptr(projection)
-            );
             for (const BezierCurve& curve : curves) {
                 curve.draw();
             }
