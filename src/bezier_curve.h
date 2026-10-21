@@ -3,6 +3,7 @@
 #include <glad/glad.h>
 #include <glm/ext/vector_float3.hpp>
 #include <glm/glm.hpp>
+#include <vector>
 
 class BezierCurve {
     public:
@@ -21,6 +22,7 @@ class BezierCurve {
 
         glm::vec3 evaluate(float t) const;
         void draw() const;
+        std::vector<BezierCurve> fromControlPoints(const std::vector<glm::vec3>& controlPoints) const;
 
     private:
         glm::vec3 m_p0, m_p1, m_p2, m_p3;

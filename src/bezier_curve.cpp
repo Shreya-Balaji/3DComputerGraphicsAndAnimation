@@ -1,5 +1,6 @@
 #include "bezier_curve.h"
 
+#include <glm/ext/vector_float3.hpp>
 #include <stdexcept>
 #include <vector>
 
