@@ -91,7 +91,6 @@ int main()
             if (ImGui::Checkbox("Free Camera", &freeCameraEnabled))
                 cameraRig.setFreeCameraEnabled(freeCameraEnabled);
 
-            ImGui::BeginDisabled(freeCameraEnabled);
             int mode = attachedCamera.mode();
             if (ImGui::Combo("Camera Mode", &mode, AttachedCamera::MODES, AttachedCamera::MODE_COUNT))
                 attachedCamera.setMode(mode);
@@ -107,7 +106,6 @@ int main()
                 attachedCamera.setPitch(pitch);
             if (ImGui::SliderFloat("Distance", &distance, AttachedCamera::MIN_DISTANCE, AttachedCamera::MAX_DISTANCE))
                 attachedCamera.setDistance(distance);
-            ImGui::EndDisabled();
             if (freeCameraEnabled)
                 ImGui::Text("WASD: move | Space/Ctrl: up/down | Left-drag: look");
             ImGui::End();
