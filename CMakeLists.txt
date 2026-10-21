@@ -13,7 +13,6 @@ find_package(assimp CONFIG REQUIRED)
 add_executable(CableCarAlps
     src/main.cpp
     src/bezier_curve.cpp
-    src/camera.cpp
     src/mesh.cpp
     src/model.cpp
 )
