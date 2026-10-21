@@ -5,7 +5,6 @@
 
 class Window;
 
-// Keep this camera alive while the window processes its registered callbacks.
 class AttachedCamera {
 public:
     static constexpr const char* MODES[] = {"Orbit View", "Top View", "Follow View"};

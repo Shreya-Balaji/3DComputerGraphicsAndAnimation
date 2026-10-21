@@ -20,6 +20,7 @@
 #include <stdexcept>
 
 #include "camera_rig.h"
+#include "camera_icon.h"
 #include "model.h"
 #include "bezier_curve.h"
 
@@ -59,6 +60,8 @@ int main()
             BezierCurve(controlPoints[0], controlPoints[1], controlPoints[2], controlPoints[3]),
             BezierCurve(controlPoints[3], controlPoints[4], controlPoints[5], controlPoints[6])
         };
+
+        CameraIcon cameraIcon;
 
         Shader basicShader, curveShader;
         try {
@@ -147,6 +150,9 @@ int main()
             for (const BezierCurve& curve : curves) {
                 curve.draw(view_projection);
             }
+
+            if (cameraRig.freeCameraEnabled())
+                cameraIcon.draw(view_projection, attachedCamera.viewMatrix());
 
             window.swapBuffers();
         }
