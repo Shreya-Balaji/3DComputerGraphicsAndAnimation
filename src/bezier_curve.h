@@ -4,6 +4,7 @@
 #include <glm/ext/vector_float3.hpp>
 #include <glm/glm.hpp>
 #include <vector>
+#include "framework/shader.h"
 
 class BezierCurve {
     public:
@@ -21,7 +22,7 @@ class BezierCurve {
         BezierCurve& operator=(const BezierCurve&) = delete;
 
         glm::vec3 evaluate(float t) const;
-        void draw() const;
+        void draw(const glm::mat4 viewProjection) const;
         std::vector<BezierCurve> fromControlPoints(const std::vector<glm::vec3>& controlPoints) const;
 
     private:
@@ -30,4 +31,5 @@ class BezierCurve {
         GLuint m_vao = 0;
         GLuint m_vbo = 0;
         GLuint m_pointCount = 0;
+        Shader curveShader;
 };

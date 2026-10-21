@@ -19,9 +19,8 @@
 #include <string>
 #include <stdexcept>
 
-#include "free_camera.h"
+#include "camera_rig.h"
 #include "model.h"
-#include "attached_camera.h"
 #include "bezier_curve.h"
 
 glm::vec3 controlPoints[] = {
@@ -42,11 +41,8 @@ int main()
         OpenGLVersion::GL41
     );
 
-    AttachedCamera attachedCamera(window, glm::vec3(0.0f, 0.0f, 0.0f));
-    FreeCamera freeCamera(&window, glm::vec3(1.5f, 1.0f, 1.0f), -glm::vec3(1.5f, 1.0f, 1.0f));
-
-
-    bool freeCameraEnabled = false;
+    CameraRig cameraRig(window, glm::vec3(0.0f));
+    AttachedCamera& attachedCamera = cameraRig.attachedCamera();
 
     glEnable(GL_DEPTH_TEST);
 
@@ -71,10 +67,10 @@ int main()
             basicBuilder.addStage(GL_FRAGMENT_SHADER, root + "/shaders/basic.frag");
             basicShader = basicBuilder.build();
 
-            ShaderBuilder curveBuilder;
-            curveBuilder.addStage(GL_VERTEX_SHADER, root + "/shaders/curve.vert");
-            curveBuilder.addStage(GL_FRAGMENT_SHADER, root + "/shaders/curve.frag");
-            curveShader = curveBuilder.build();
+            // ShaderBuilder curveBuilder;
+            // curveBuilder.addStage(GL_VERTEX_SHADER, root + "/shaders/curve.vert");
+            // curveBuilder.addStage(GL_FRAGMENT_SHADER, root + "/shaders/curve.frag");
+            // curveShader = curveBuilder.build();
         } catch (ShaderLoadingException e) {
             std::cerr << e.what() << std::endl;
         }
@@ -85,16 +81,17 @@ int main()
             if (window.isKeyPressed(GLFW_KEY_ESCAPE))
                 window.close();
 
-            attachedCamera.updateInput();
-
             auto size = window.getFrameBufferSize();
             glViewport(0, 0, size.x, size.y);
 
             glClearColor(0.25f, 0.45f, 0.65f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             ImGui::Begin("Camera View Points Controls");
-            ImGui::Checkbox("Free Camera", &freeCameraEnabled);
-            attachedCamera.setUserInteraction(!freeCameraEnabled);
+
+            bool freeCameraEnabled = cameraRig.freeCameraEnabled();
+            if (ImGui::Checkbox("Free Camera", &freeCameraEnabled))
+                cameraRig.setFreeCameraEnabled(freeCameraEnabled);
+
             ImGui::BeginDisabled(freeCameraEnabled);
             int mode = attachedCamera.mode();
             if (ImGui::Combo("Camera Mode", &mode, AttachedCamera::MODES, AttachedCamera::MODE_COUNT))
@@ -117,15 +114,10 @@ int main()
             ImGui::End();
 
             const ImGuiIO& io = ImGui::GetIO();
-            freeCamera.setUserInteraction(
-                freeCameraEnabled && !io.WantCaptureMouse && !io.WantCaptureKeyboard
-            );
-            freeCamera.updateInput();
+            cameraRig.updateInput(io.WantCaptureMouse || io.WantCaptureKeyboard);
 
-            const glm::mat4 view = freeCameraEnabled
-                ? freeCamera.viewMatrix() : attachedCamera.viewMatrix();
-            const glm::vec3 cameraPosition = freeCameraEnabled
-                ? freeCamera.cameraPos() : attachedCamera.position();
+            const glm::mat4 view = cameraRig.viewMatrix();
+            const glm::vec3 cameraPosition = cameraRig.position();
 
             glm::mat4 projection = glm::perspective(
                 glm::radians(45.0f),
@@ -159,14 +151,14 @@ int main()
             // END draw cable car
 
             // START draw Bezier curve
-            curveShader.bind();
-            glUniformMatrix4fv(
-                curveShader.getUniformLocation("mvp"),
-                1, GL_FALSE, glm::value_ptr(view_projection)
-            );
+            // curveShader.bind();
+            // glUniformMatrix4fv(
+            //     curveShader.getUniformLocation("mvp"),
+            //     1, GL_FALSE, glm::value_ptr(view_projection)
+            // );
 
             for (const BezierCurve& curve : curves) {
-                curve.draw();
+                curve.draw(view_projection);
             }
             // END draw bezier curve
 
