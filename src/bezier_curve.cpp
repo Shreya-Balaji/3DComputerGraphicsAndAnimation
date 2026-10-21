@@ -1,0 +1,70 @@
+#include "bezier_curve.h"
+
+#include <glm/ext/vector_float3.hpp>
+#include <stdexcept>
+#include <vector>
+
+glm::vec3 BezierCurve::evaluate(float t) const
+{
+    float u = 1.0f - t;
+
+    return u * u * u * m_p0
+         + 3.0f * u * u * t * m_p1
+         + 3.0f * u * t * t * m_p2
+         + t * t * t * m_p3;
+}
+
+BezierCurve::BezierCurve(
+    const glm::vec3& p0,
+    const glm::vec3& p1,
+    const glm::vec3& p2,
+    const glm::vec3& p3,
+    int segments)
+    : m_p0(p0), m_p1(p1), m_p2(p2), m_p3(p3)
+{
+    if (segments < 1)
+        throw std::invalid_argument("segments must be positive");
+
+    std::vector<glm::vec3> points;
+
+    for (int i = 0; i <= segments; ++i)
+    {
+        float t = static_cast<float>(i) / segments;
+        points.push_back(evaluate(t));
+    }
+
+    m_pointCount = static_cast<GLsizei>(points.size());
+
+    glGenVertexArrays(1, &m_vao);
+    glGenBuffers(1, &m_vbo);
+
+    glBindVertexArray(m_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        points.size() * sizeof(glm::vec3),
+        points.data(),
+        GL_STATIC_DRAW
+    );
+
+    glVertexAttribPointer(
+        0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), nullptr
+    );
+    glEnableVertexAttribArray(0);
+
+    glBindVertexArray(0);
+}
+
+BezierCurve::~BezierCurve()
+{
+    glDeleteBuffers(1, &m_vbo);
+    glDeleteVertexArrays(1, &m_vao);
+}
+
+void BezierCurve::draw() const
+{
+    glBindVertexArray(m_vao);
+    glDrawArrays(GL_LINE_STRIP, 0, m_pointCount);
+    glBindVertexArray(0);
+}
