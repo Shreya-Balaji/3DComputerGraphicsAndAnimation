@@ -67,10 +67,6 @@ int main()
             basicBuilder.addStage(GL_FRAGMENT_SHADER, root + "/shaders/basic.frag");
             basicShader = basicBuilder.build();
 
-            // ShaderBuilder curveBuilder;
-            // curveBuilder.addStage(GL_VERTEX_SHADER, root + "/shaders/curve.vert");
-            // curveBuilder.addStage(GL_FRAGMENT_SHADER, root + "/shaders/curve.frag");
-            // curveShader = curveBuilder.build();
         } catch (ShaderLoadingException e) {
             std::cerr << e.what() << std::endl;
         }
@@ -127,7 +123,6 @@ int main()
             );
             const glm::mat4 view_projection = projection * view;
 
-            // START draw cable car
             basicShader.bind();
 
             glUniform3f(
@@ -148,19 +143,10 @@ int main()
             );
 
             cableCar.draw(basicShader, basicShader.getUniformLocation("model"));
-            // END draw cable car
-
-            // START draw Bezier curve
-            // curveShader.bind();
-            // glUniformMatrix4fv(
-            //     curveShader.getUniformLocation("mvp"),
-            //     1, GL_FALSE, glm::value_ptr(view_projection)
-            // );
 
             for (const BezierCurve& curve : curves) {
                 curve.draw(view_projection);
             }
-            // END draw bezier curve
 
             window.swapBuffers();
         }
