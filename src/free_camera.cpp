@@ -21,6 +21,8 @@ FreeCamera::FreeCamera(Window* pWindow, const glm::vec3& pos, const glm::vec3& f
 
 void FreeCamera::setUserInteraction(bool enabled)
 {
+    if (enabled && !m_userInteraction)
+        m_prevCursorPos = m_pWindow->getCursorPos();
     m_userInteraction = enabled;
 }
 
@@ -66,9 +68,9 @@ void FreeCamera::updateInput()
             m_position += moveSpeed * m_forward;
         if (m_pWindow->isKeyPressed(GLFW_KEY_S))
             m_position -= moveSpeed * m_forward;
-        if (m_pWindow->isKeyPressed(GLFW_KEY_R))
+        if (m_pWindow->isKeyPressed(GLFW_KEY_SPACE))
             m_position += moveSpeed * m_up;
-        if (m_pWindow->isKeyPressed(GLFW_KEY_F))
+        if (m_pWindow->isKeyPressed(GLFW_KEY_LEFT_CONTROL))
             m_position -= moveSpeed * m_up;
 
         const glm::dvec2 cursorPos = m_pWindow->getCursorPos();

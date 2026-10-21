@@ -26,6 +26,7 @@ public:
     glm::vec3 position() const;
     glm::mat4 viewMatrix() const;
     void updateInput();
+    void setUserInteraction(bool enabled);
     int mode() const { return m_mode; }
     float yaw() const { return m_yaw; }
     float pitch() const { return m_pitch; }
@@ -48,5 +49,6 @@ private:
     glm::vec2 m_lastMouse{0.0f};
     bool m_firstMouse = true;
     bool m_dragging = false;
+    bool m_userInteraction = true;
     int m_mode = 0;
 };

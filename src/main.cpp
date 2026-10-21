@@ -46,6 +46,8 @@ int main()
     FreeCamera freeCamera(&window, glm::vec3(1.5f, 1.0f, 1.0f), -glm::vec3(1.5f, 1.0f, 1.0f));
 
 
+    bool freeCameraEnabled = false;
+
     glEnable(GL_DEPTH_TEST);
 
     try
@@ -91,6 +93,9 @@ int main()
             glClearColor(0.25f, 0.45f, 0.65f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             ImGui::Begin("Camera View Points Controls");
+            ImGui::Checkbox("Free Camera", &freeCameraEnabled);
+            attachedCamera.setUserInteraction(!freeCameraEnabled);
+            ImGui::BeginDisabled(freeCameraEnabled);
             int mode = attachedCamera.mode();
             if (ImGui::Combo("Camera Mode", &mode, AttachedCamera::MODES, AttachedCamera::MODE_COUNT))
                 attachedCamera.setMode(mode);
@@ -106,7 +111,21 @@ int main()
                 attachedCamera.setPitch(pitch);
             if (ImGui::SliderFloat("Distance", &distance, AttachedCamera::MIN_DISTANCE, AttachedCamera::MAX_DISTANCE))
                 attachedCamera.setDistance(distance);
+            ImGui::EndDisabled();
+            if (freeCameraEnabled)
+                ImGui::Text("WASD: move | Space/Ctrl: up/down | Left-drag: look");
             ImGui::End();
+
+            const ImGuiIO& io = ImGui::GetIO();
+            freeCamera.setUserInteraction(
+                freeCameraEnabled && !io.WantCaptureMouse && !io.WantCaptureKeyboard
+            );
+            freeCamera.updateInput();
+
+            const glm::mat4 view = freeCameraEnabled
+                ? freeCamera.viewMatrix() : attachedCamera.viewMatrix();
+            const glm::vec3 cameraPosition = freeCameraEnabled
+                ? freeCamera.cameraPos() : attachedCamera.position();
 
             glm::mat4 projection = glm::perspective(
                 glm::radians(45.0f),
@@ -114,7 +133,7 @@ int main()
                 0.1f,
                 1000.0f
             );
-            const glm::mat4 view_projection = projection * attachedCamera.viewMatrix();
+            const glm::mat4 view_projection = projection * view;
 
             // START draw cable car
             basicShader.bind();
@@ -133,7 +152,7 @@ int main()
             glUniform3fv(
                 basicShader.getUniformLocation("viewPos"),
                 1,
-                glm::value_ptr(attachedCamera.position())
+                glm::value_ptr(cameraPosition)
             );
 
             cableCar.draw(basicShader, basicShader.getUniformLocation("model"));

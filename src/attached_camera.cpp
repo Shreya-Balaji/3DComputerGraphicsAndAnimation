@@ -47,9 +47,18 @@ glm::mat4 AttachedCamera::viewMatrix() const
     return glm::lookAt(position(), m_target, glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
+void AttachedCamera::setUserInteraction(bool enabled)
+{
+    m_userInteraction = enabled;
+    if (!enabled) {
+        m_dragging = false;
+        m_firstMouse = true;
+    }
+}
+
 void AttachedCamera::updateInput()
 {
-    if (!m_window.isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT) ||
+    if (!m_userInteraction || !m_window.isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT) ||
         ImGui::GetIO().WantCaptureMouse) {
         m_dragging = false;
         m_firstMouse = true;
@@ -81,6 +90,8 @@ void AttachedCamera::setDistance(float distance)
 
 void AttachedCamera::mouseButtonCallback(int button, int action)
 {
+    if (!m_userInteraction)
+        return;
     if (button == GLFW_MOUSE_BUTTON_LEFT) {
         m_dragging = (action == GLFW_PRESS);
         m_firstMouse = true;
@@ -89,7 +100,7 @@ void AttachedCamera::mouseButtonCallback(int button, int action)
 
 void AttachedCamera::mouseMoveCallback(const glm::vec2& position)
 {
-    if (!m_dragging)
+    if (!m_userInteraction || !m_dragging)
         return;
     if (m_firstMouse) {
         m_lastMouse = position;
@@ -104,5 +115,7 @@ void AttachedCamera::mouseMoveCallback(const glm::vec2& position)
 
 void AttachedCamera::scrollCallback(const glm::vec2& offset)
 {
+    if (!m_userInteraction)
+        return;
     m_distance = glm::clamp(m_distance - offset.y * 0.5f, MIN_DISTANCE, MAX_DISTANCE);
 }
