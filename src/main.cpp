@@ -16,8 +16,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <iostream>
-#include <fstream>
-#include <sstream>
+#include <ostream>
 #include <string>
 #include <vector>
 #include <cstddef>
@@ -159,82 +158,6 @@ struct Mesh
         glDeleteVertexArrays(1, &vao);
     }
 };
-
-std::string readTextFile(const std::string& path)
-{
-    std::ifstream file(path);
-
-    if (!file)
-        throw std::runtime_error("Cannot open file: " + path);
-
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    return buffer.str();
-}
-
-GLuint compileShader(GLenum type, const std::string& source)
-{
-    GLuint shader = glCreateShader(type);
-    const char* text = source.c_str();
-
-    glShaderSource(shader, 1, &text, nullptr);
-    glCompileShader(shader);
-
-    GLint success = GL_FALSE;
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-
-    if (!success)
-    {
-        char log[2048]{};
-        glGetShaderInfoLog(shader, sizeof(log), nullptr, log);
-        std::cerr << "Shader compilation error:\n" << log << '\n';
-        glDeleteShader(shader);
-        return 0;
-    }
-
-    return shader;
-}
-
-GLuint createProgram(
-    const std::string& vertexSource,
-    const std::string& fragmentSource)
-{
-    GLuint vertex = compileShader(GL_VERTEX_SHADER, vertexSource);
-    GLuint fragment = compileShader(GL_FRAGMENT_SHADER, fragmentSource);
-
-    if (!vertex || !fragment)
-    {
-        if (vertex) glDeleteShader(vertex);
-        if (fragment) glDeleteShader(fragment);
-        return 0;
-    }
-
-    GLuint program = glCreateProgram();
-    glAttachShader(program, vertex);
-    glAttachShader(program, fragment);
-    glLinkProgram(program);
-
-    GLint success = GL_FALSE;
-    glGetProgramiv(program, GL_LINK_STATUS, &success);
-
-    if (!success)
-    {
-        char log[2048]{};
-        glGetProgramInfoLog(program, sizeof(log), nullptr, log);
-        std::cerr << "Program linking error:\n" << log << '\n';
-    }
-
-    glDeleteShader(vertex);
-    glDeleteShader(fragment);
-
-    if (!success)
-    {
-        glDeleteProgram(program);
-        return 0;
-    }
-
-    return program;
-}
 
 glm::mat4 toGlm(const aiMatrix4x4& a)
 {
@@ -395,13 +318,10 @@ struct Model
     void drawNode(
         const aiNode* node,
         const glm::mat4& parentTransform,
-        GLuint program) const
+        GLuint modelLocation) const
     {
         glm::mat4 transform =
             parentTransform * toGlm(node->mTransformation);
-
-        GLint modelLocation =
-            glGetUniformLocation(program, "model");
 
         glUniformMatrix4fv(
             modelLocation,
@@ -420,12 +340,12 @@ struct Model
             drawNode(
                 node->mChildren[i],
                 transform,
-                program
+                modelLocation
             );
         }
     }
 
-    void draw(GLuint program) const
+    void draw(GLuint modelLocation) const
     {
         glm::mat4 fitTransform =
             glm::scale(
@@ -437,7 +357,7 @@ struct Model
                 -modelCenter
             );
 
-        drawNode(scene->mRootNode, fitTransform, program);
+        drawNode(scene->mRootNode, fitTransform, modelLocation);
     }
 
     void destroy()
@@ -521,23 +441,24 @@ int main()
     {
         const std::string root = PROJECT_ROOT;
 
-        GLuint program = createProgram(
-            readTextFile(root + "/shaders/basic.vert"),
-            readTextFile(root + "/shaders/basic.frag")
-        );
-
-        if (!program)
-            throw std::runtime_error("Could not create shader program");
-
         Model cableCar;
 
         if (!cableCar.load(root + "/assets/cable_car/scene.gltf"))
             throw std::runtime_error("Could not load cable-car model");
+        Shader basicShader, curveShader;
+        try {
+            ShaderBuilder basicBuilder;
+            basicBuilder.addStage(GL_VERTEX_SHADER, root + "/shaders/basic.vert");
+            basicBuilder.addStage(GL_FRAGMENT_SHADER, root + "/shaders/basic.frag");
+            basicShader = basicBuilder.build();
 
-        ShaderBuilder curveBuilder;
-        curveBuilder.addStage(GL_VERTEX_SHADER, root + "shaders/curve.vert");
-        curveBuilder.addStage(GL_FRAGMENT_SHADER, root + "shaders/curve.frag");
-        Shader curveShader = curveBuilder.build();
+            ShaderBuilder curveBuilder;
+            curveBuilder.addStage(GL_VERTEX_SHADER, root + "/shaders/curve.vert");
+            curveBuilder.addStage(GL_FRAGMENT_SHADER, root + "/shaders/curve.frag");
+            curveShader = curveBuilder.build();
+        } catch (ShaderLoadingException e) {
+            std::cerr << e.what() << std::endl;
+        }
 
         glm::vec3 cameraPosition(0.0f, 1.5f, 7.0f);
 
@@ -554,30 +475,20 @@ int main()
             1000.0f
         );
 
-        glUseProgram(program);
+        basicShader.bind();
 
         glUniformMatrix4fv(
-            glGetUniformLocation(program, "view"),
-            1, GL_FALSE, glm::value_ptr(view)
-        );
-
-        glUniformMatrix4fv(
-            glGetUniformLocation(program, "projection"),
+            basicShader.getUniformLocation("projection"),
             1, GL_FALSE, glm::value_ptr(projection)
         );
 
-        glUniform3fv(
-            glGetUniformLocation(program, "viewPos"),
-            1, glm::value_ptr(cameraPosition)
-        );
-
         glUniform3f(
-            glGetUniformLocation(program, "lightDir"),
+           basicShader.getUniformLocation("lightDir"),
             -0.5f, -1.0f, -0.3f
         );
 
         glUniform3f(
-            glGetUniformLocation(program, "objectColor"),
+            basicShader.getUniformLocation("objectColor"),
             0.85f, 0.78f, 0.65f
         );
 
@@ -602,8 +513,6 @@ int main()
 
             glClearColor(0.25f, 0.45f, 0.65f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            glUseProgram(program);
 
             ImGui::Begin("Camera View Points Controls");
 
@@ -689,21 +598,21 @@ int main()
                 cameraTarget,
                 glm::vec3(0.0f, 1.0f, 0.0f)
             );
-
+            basicShader.bind();
             glUniformMatrix4fv(
-                glGetUniformLocation(program, "view"),
+                basicShader.getUniformLocation("view"),
                 1,
                 GL_FALSE,
                 glm::value_ptr(view)
             );
 
             glUniform3fv(
-                glGetUniformLocation(program, "viewPos"),
+                basicShader.getUniformLocation("viewPos"),
                 1,
                 glm::value_ptr(cameraPosition)
             );
 
-            cableCar.draw(program);
+            cableCar.draw(basicShader.getUniformLocation("model"));
 
             // start bezier curve
             curveShader.bind();
@@ -719,7 +628,6 @@ int main()
             window.swapBuffers();
         }
         cableCar.destroy();
-        glDeleteProgram(program);
     }
     catch (const std::exception& e)
     {
