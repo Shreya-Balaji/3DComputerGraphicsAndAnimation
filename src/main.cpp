@@ -1,12 +1,16 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <framework/window.h>
+#include <imgui/imgui.h>
+#include <framework/shader.h>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
 #include <glm/ext/vector_float3.hpp>
+#include <glm/ext/vector_int2.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -20,9 +24,6 @@
 #include <stdexcept>
 #include <cmath>
 
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
 #include "bezier_curve.h"
 
 float cameraYaw = 25.0f;
@@ -449,7 +450,6 @@ struct Model
 };
 
 void mouseButtonCallback(
-    GLFWwindow* window,
     int button,
     int action,
     int mods)
@@ -461,89 +461,61 @@ void mouseButtonCallback(
     }
 }
 
-void cursorPositionCallback(
-    GLFWwindow* window,
-    double xpos,
-    double ypos)
+void mouseMoveCallback(
+    const glm::vec2& position)
 {
     if (!dragging)
         return;
 
     if (firstMouse)
     {
-        lastMouseX = static_cast<float>(xpos);
-        lastMouseY = static_cast<float>(ypos);
+        lastMouseX = position.x;
+        lastMouseY = position.y;
+        firstMouse = false;
+        return;
+    }
+    if (!dragging)
+        return;
+
+    if (firstMouse) {
+        lastMouseX = position.x;
+        lastMouseY = position.y;
         firstMouse = false;
         return;
     }
 
-    float dx = static_cast<float>(xpos) - lastMouseX;
-    float dy = static_cast<float>(ypos) - lastMouseY;
+    float dx = position.x - lastMouseX;
+    float dy = position.y - lastMouseY;
 
     cameraYaw += dx * 0.3f;
-    cameraPitch -= dy * 0.3f;
+    cameraPitch += dy * 0.3f;
 
     cameraPitch = glm::clamp(cameraPitch, -85.0f, 85.0f);
 
-    lastMouseX = static_cast<float>(xpos);
-    lastMouseY = static_cast<float>(ypos);
+    lastMouseX = position.x;
+    lastMouseY = position.y;
 }
 
 void scrollCallback(
-    GLFWwindow* window,
-    double xoffset,
-    double yoffset)
+    const glm::vec2& offset)
 {
-    cameraDistance -= static_cast<float>(yoffset) * 0.5f;
+    cameraDistance -= offset.y * 0.5f;
     cameraDistance = glm::clamp(cameraDistance, 2.0f, 30.0f);
 }
 
 int main()
 {
-    if (!glfwInit())
-    {
-        std::cerr << "Failed to initialize GLFW\n";
-        return -1;
-    }
-
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    GLFWwindow* window = glfwCreateWindow(
-        1280, 720, "Cable Car Through the Alps", nullptr, nullptr
+    Window window(
+        "Cable Car Through the Alps",
+        glm::ivec2(1280, 720),
+        OpenGLVersion::GL41
     );
 
-    if (!window)
-    {
-        std::cerr << "Failed to create window\n";
-        glfwTerminate();
-        return -1;
-    }
-
-    glfwMakeContextCurrent(window);
-    glfwSetMouseButtonCallback(window, mouseButtonCallback);
-    glfwSetCursorPosCallback(window, cursorPositionCallback);
-    glfwSetScrollCallback(window, scrollCallback);
-
-    glfwSwapInterval(1);
-
-    if (!gladLoadGLLoader(
-        reinterpret_cast<GLADloadproc>(glfwGetProcAddress)))
-    {
-        std::cerr << "Failed to initialize GLAD\n";
-        glfwDestroyWindow(window);
-        glfwTerminate();
-        return -1;
-    }
+    window.registerMouseButtonCallback(mouseButtonCallback);
+    window.registerMouseMoveCallback(mouseMoveCallback);
+    window.registerScrollCallback(scrollCallback);
 
     glEnable(GL_DEPTH_TEST);
-    glViewport(0, 0, 1280, 720);
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGui::StyleColorsDark();
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init("#version 330");
 
     try
     {
@@ -562,10 +534,11 @@ int main()
         if (!cableCar.load(root + "/assets/cable_car/scene.gltf"))
             throw std::runtime_error("Could not load cable-car model");
 
-        GLuint curveProgram = createProgram(readTextFile(root + "/shaders/curve.vert"), readTextFile(root + "/shaders/curve.frag"));
-        if (!curveProgram) {
-            throw std::runtime_error("Could not create curve program");
-        }
+        ShaderBuilder curveBuilder;
+        curveBuilder.addStage(GL_VERTEX_SHADER, root + "shaders/curve.vert");
+        curveBuilder.addStage(GL_FRAGMENT_SHADER, root + "shaders/curve.frag");
+        Shader curveShader = curveBuilder.build();
+
         glm::vec3 cameraPosition(0.0f, 1.5f, 7.0f);
 
         glm::mat4 view = glm::lookAt(
@@ -612,19 +585,26 @@ int main()
             BezierCurve(controlPoints[0], controlPoints[1], controlPoints[2], controlPoints[3]),
             BezierCurve(controlPoints[3], controlPoints[4], controlPoints[5], controlPoints[6])
         };
-        while (!glfwWindowShouldClose(window))
+
+        while (!window.shouldClose())
         {
-            if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-                glfwSetWindowShouldClose(window, true);
+            window.updateInput();
+            if (window.isKeyPressed(GLFW_KEY_ESCAPE))
+                window.close();
+
+            if (!window.isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT) || ImGui::GetIO().WantCaptureMouse) {
+                dragging = false;
+                firstMouse = true;
+            }
+
+            auto size = window.getFrameBufferSize();
+            glViewport(0, 0, size.x, size.y);
 
             glClearColor(0.25f, 0.45f, 0.65f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             glUseProgram(program);
 
-            ImGui_ImplOpenGL3_NewFrame();
-            ImGui_ImplGlfw_NewFrame();
-            ImGui::NewFrame();
             ImGui::Begin("Camera View Points Controls");
 
             const char* cameraModes[] = {
@@ -726,10 +706,9 @@ int main()
             cableCar.draw(program);
 
             // start bezier curve
-            glUseProgram(curveProgram);
-
+            curveShader.bind();
             glUniformMatrix4fv(
-                glGetUniformLocation(curveProgram, "mvp"),
+                curveShader.getUniformLocation("mvp"),
                 1, GL_FALSE, glm::value_ptr(projection * view)
             );
 
@@ -737,26 +716,14 @@ int main()
                 curve.draw();
             }
             // end bezier curve
-
-            ImGui::Render();
-            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-            glfwSwapBuffers(window);
-            glfwPollEvents();
+            window.swapBuffers();
         }
         cableCar.destroy();
         glDeleteProgram(program);
-        glDeleteProgram(curveProgram);
     }
     catch (const std::exception& e)
     {
         std::cerr << "Error: " << e.what() << '\n';
     }
-
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
-    glfwDestroyWindow(window);
-    glfwTerminate();
-
     return 0;
 }
