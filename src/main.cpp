@@ -19,11 +19,13 @@
 #include <ostream>
 #include <string>
 #include <vector>
-#include <cstddef>
 #include <stdexcept>
 #include <cmath>
 
+#include "mesh.h"
 #include "bezier_curve.h"
+
+glm::vec3 CABLE_CAR_COLOR = glm::vec3(0.85f, 0.78f, 0.65f);
 
 float cameraYaw = 25.0f;
 float cameraPitch = 15.0f;
@@ -47,118 +49,6 @@ glm::vec3 controlPoints[] = {
     glm::vec3(6.0f, 0.0f, 0.0f)
 };
 
-struct Vertex
-{
-    glm::vec3 position;
-    glm::vec3 normal;
-};
-
-struct Mesh
-{
-    GLuint vao = 0;
-    GLuint vbo = 0;
-    GLuint ebo = 0;
-    GLsizei indexCount = 0;
-
-    void create(const aiMesh* source)
-    {
-        std::vector<Vertex> vertices;
-        std::vector<unsigned int> indices;
-
-        vertices.reserve(source->mNumVertices);
-
-        for (unsigned int i = 0; i < source->mNumVertices; ++i)
-        {
-            Vertex vertex{};
-
-            vertex.position = glm::vec3(
-                source->mVertices[i].x,
-                source->mVertices[i].y,
-                source->mVertices[i].z
-            );
-
-            if (source->HasNormals())
-            {
-                vertex.normal = glm::vec3(
-                    source->mNormals[i].x,
-                    source->mNormals[i].y,
-                    source->mNormals[i].z
-                );
-            }
-            else
-            {
-                vertex.normal = glm::vec3(0, 1, 0);
-            }
-
-            vertices.push_back(vertex);
-        }
-
-        for (unsigned int i = 0; i < source->mNumFaces; ++i)
-        {
-            const aiFace& face = source->mFaces[i];
-
-            for (unsigned int j = 0; j < face.mNumIndices; ++j)
-                indices.push_back(face.mIndices[j]);
-        }
-
-        indexCount = static_cast<GLsizei>(indices.size());
-
-        glGenVertexArrays(1, &vao);
-        glGenBuffers(1, &vbo);
-        glGenBuffers(1, &ebo);
-
-        glBindVertexArray(vao);
-
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(
-            GL_ARRAY_BUFFER,
-            vertices.size() * sizeof(Vertex),
-            vertices.data(),
-            GL_STATIC_DRAW
-        );
-
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-        glBufferData(
-            GL_ELEMENT_ARRAY_BUFFER,
-            indices.size() * sizeof(unsigned int),
-            indices.data(),
-            GL_STATIC_DRAW
-        );
-
-        glVertexAttribPointer(
-            0, 3, GL_FLOAT, GL_FALSE,
-            sizeof(Vertex),
-            reinterpret_cast<void*>(offsetof(Vertex, position))
-        );
-        glEnableVertexAttribArray(0);
-
-        glVertexAttribPointer(
-            1, 3, GL_FLOAT, GL_FALSE,
-            sizeof(Vertex),
-            reinterpret_cast<void*>(offsetof(Vertex, normal))
-        );
-        glEnableVertexAttribArray(1);
-
-        glBindVertexArray(0);
-    }
-
-    void draw() const
-    {
-        glBindVertexArray(vao);
-        glDrawElements(
-            GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr
-        );
-        glBindVertexArray(0);
-    }
-
-    void destroy()
-    {
-        glDeleteBuffers(1, &ebo);
-        glDeleteBuffers(1, &vbo);
-        glDeleteVertexArrays(1, &vao);
-    }
-};
-
 glm::mat4 toGlm(const aiMatrix4x4& a)
 {
     glm::mat4 m(1.0f);
@@ -178,12 +68,58 @@ glm::mat4 toGlm(const aiMatrix4x4& a)
     return m;
 }
 
+Mesh convertMesh(const aiMesh& source)
+{
+    Mesh result;
+
+    result.vertices.reserve(source.mNumVertices);
+
+    for (unsigned int i = 0; i < source.mNumVertices; ++i) {
+        Vertex vertex{};
+
+        vertex.position = {
+            source.mVertices[i].x,
+            source.mVertices[i].y,
+            source.mVertices[i].z
+        };
+
+        vertex.normal = source.HasNormals()
+            ? glm::vec3(source.mNormals[i].x,
+                        source.mNormals[i].y,
+                        source.mNormals[i].z)
+            : glm::vec3(0.0f, 1.0f, 0.0f);
+
+        vertex.texCoord = source.HasTextureCoords(0)
+            ? glm::vec2(source.mTextureCoords[0][i].x,
+                        source.mTextureCoords[0][i].y)
+            : glm::vec2(0.0f);
+
+        result.vertices.push_back(vertex);
+    }
+
+    for (unsigned int i = 0; i < source.mNumFaces; ++i) {
+        const aiFace& face = source.mFaces[i];
+
+        if (face.mNumIndices != 3)
+            throw std::runtime_error("Expected triangle geometry");
+
+        result.triangles.push_back(glm::uvec3(
+            face.mIndices[0],
+            face.mIndices[1],
+            face.mIndices[2]
+        ));
+    }
+
+    result.material.kd = CABLE_CAR_COLOR;
+
+    return result;
+}
 
 struct Model
 {
     Assimp::Importer importer;
     const aiScene* scene = nullptr;
-    std::vector<Mesh> meshes;
+    std::vector<GPUMesh> meshes;
 
     glm::vec3 boundsMin{ 0.0f };
     glm::vec3 boundsMax{ 0.0f };
@@ -252,11 +188,12 @@ struct Model
             return false;
         }
 
-        meshes.resize(scene->mNumMeshes);
+        meshes.clear();
+        meshes.reserve(scene->mNumMeshes);
 
-        for (unsigned int i = 0; i < scene->mNumMeshes; ++i)
-        {
-            meshes[i].create(scene->mMeshes[i]);
+        for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
+            Mesh cpuMesh = convertMesh(*scene->mMeshes[i]);
+            meshes.emplace_back(cpuMesh);
         }
 
         // Calculate the complete model bounds, including node transforms.
@@ -318,7 +255,8 @@ struct Model
     void drawNode(
         const aiNode* node,
         const glm::mat4& parentTransform,
-        GLuint modelLocation) const
+        const Shader& shader,
+        GLint modelLocation)
     {
         glm::mat4 transform =
             parentTransform * toGlm(node->mTransformation);
@@ -330,49 +268,33 @@ struct Model
             glm::value_ptr(transform)
         );
 
-        for (unsigned int i = 0; i < node->mNumMeshes; ++i)
-        {
-            meshes[node->mMeshes[i]].draw();
+        for (unsigned int i = 0; i < node->mNumMeshes; ++i) {
+            meshes[node->mMeshes[i]].draw(shader);
         }
 
-        for (unsigned int i = 0; i < node->mNumChildren; ++i)
-        {
+        for (unsigned int i = 0; i < node->mNumChildren; ++i) {
             drawNode(
                 node->mChildren[i],
                 transform,
+                shader,
                 modelLocation
             );
         }
     }
 
-    void draw(GLuint modelLocation) const
+    void draw(const Shader& shader, GLint modelLocation)
     {
+        shader.bind();
+
         glm::mat4 fitTransform =
-            glm::scale(
-                glm::mat4(1.0f),
-                glm::vec3(modelScale)
-            ) *
-            glm::translate(
-                glm::mat4(1.0f),
-                -modelCenter
-            );
+            glm::scale(glm::mat4(1.0f), glm::vec3(modelScale)) *
+            glm::translate(glm::mat4(1.0f), -modelCenter);
 
-        drawNode(scene->mRootNode, fitTransform, modelLocation);
-    }
-
-    void destroy()
-    {
-        for (Mesh& mesh : meshes)
-        {
-            mesh.destroy();
-        }
+        drawNode(scene->mRootNode, fitTransform, shader, modelLocation);
     }
 };
 
-void mouseButtonCallback(
-    int button,
-    int action,
-    int mods)
+void mouseButtonCallback(int button, int action, int mods)
 {
     if (button == GLFW_MOUSE_BUTTON_LEFT)
     {
@@ -381,8 +303,7 @@ void mouseButtonCallback(
     }
 }
 
-void mouseMoveCallback(
-    const glm::vec2& position)
+void mouseMoveCallback(const glm::vec2& position)
 {
     if (!dragging)
         return;
@@ -416,8 +337,7 @@ void mouseMoveCallback(
     lastMouseY = position.y;
 }
 
-void scrollCallback(
-    const glm::vec2& offset)
+void scrollCallback(const glm::vec2& offset)
 {
     cameraDistance -= offset.y * 0.5f;
     cameraDistance = glm::clamp(cameraDistance, 2.0f, 30.0f);
@@ -445,6 +365,7 @@ int main()
 
         if (!cableCar.load(root + "/assets/cable_car/scene.gltf"))
             throw std::runtime_error("Could not load cable-car model");
+
         Shader basicShader, curveShader;
         try {
             ShaderBuilder basicBuilder;
@@ -485,11 +406,6 @@ int main()
         glUniform3f(
            basicShader.getUniformLocation("lightDir"),
             -0.5f, -1.0f, -0.3f
-        );
-
-        glUniform3f(
-            basicShader.getUniformLocation("objectColor"),
-            0.85f, 0.78f, 0.65f
         );
 
         BezierCurve curves[] = {
@@ -598,6 +514,8 @@ int main()
                 cameraTarget,
                 glm::vec3(0.0f, 1.0f, 0.0f)
             );
+
+            // START draw cable car
             basicShader.bind();
             glUniformMatrix4fv(
                 basicShader.getUniformLocation("view"),
@@ -612,9 +530,10 @@ int main()
                 glm::value_ptr(cameraPosition)
             );
 
-            cableCar.draw(basicShader.getUniformLocation("model"));
+            cableCar.draw(basicShader, basicShader.getUniformLocation("model"));
+            // END draw cable car
 
-            // start bezier curve
+            // START draw Bezier curve
             curveShader.bind();
             glUniformMatrix4fv(
                 curveShader.getUniformLocation("mvp"),
@@ -624,10 +543,10 @@ int main()
             for (const BezierCurve& curve : curves) {
                 curve.draw();
             }
-            // end bezier curve
+            // END draw bezier curve
+
             window.swapBuffers();
         }
-        cableCar.destroy();
     }
     catch (const std::exception& e)
     {

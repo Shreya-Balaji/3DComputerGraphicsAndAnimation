@@ -14,6 +14,7 @@ add_executable(CableCarAlps
     src/main.cpp
     src/bezier_curve.cpp
     src/camera.cpp
+    src/mesh.cpp
 )
 
 target_link_libraries(CableCarAlps PRIVATE
