@@ -14,6 +14,8 @@ add_executable(CableCarAlps
     src/main.cpp
     src/bezier_curve.cpp
     src/mesh.cpp
+    src/attached_camera.cpp
+    src/free_camera.cpp
     src/model.cpp
 )
 
