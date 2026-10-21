@@ -1,8 +1,12 @@
 #include "bezier_curve.h"
+#include "framework/shader.h"
 
 #include <glm/ext/vector_float3.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <stdexcept>
+#include <string>
 #include <vector>
+#include <iostream>
 
 glm::vec3 BezierCurve::evaluate(float t) const
 {
@@ -54,6 +58,16 @@ BezierCurve::BezierCurve(
     glEnableVertexAttribArray(0);
 
     glBindVertexArray(0);
+
+    try {
+        std::string root = PROJECT_ROOT;
+        ShaderBuilder curveBuilder;
+        curveBuilder.addStage(GL_VERTEX_SHADER, static_cast<std::string>(PROJECT_ROOT) + "/shaders/curve.vert");
+        curveBuilder.addStage(GL_FRAGMENT_SHADER, static_cast<std::string>(PROJECT_ROOT) + "/shaders/curve.frag");
+        curveShader = curveBuilder.build();
+    } catch (ShaderLoadingException e) {
+        std::cerr << e.what() << std::endl;
+    }
 }
 
 BezierCurve::~BezierCurve()
@@ -62,8 +76,13 @@ BezierCurve::~BezierCurve()
     glDeleteVertexArrays(1, &m_vao);
 }
 
-void BezierCurve::draw() const
+void BezierCurve::draw(const glm::mat4 viewProjection) const
 {
+    curveShader.bind();
+    glUniformMatrix4fv(
+        curveShader.getUniformLocation("mvp"),
+        1, GL_FALSE, glm::value_ptr(viewProjection)
+    );
     glBindVertexArray(m_vao);
     glDrawArrays(GL_LINE_STRIP, 0, m_pointCount);
     glBindVertexArray(0);
