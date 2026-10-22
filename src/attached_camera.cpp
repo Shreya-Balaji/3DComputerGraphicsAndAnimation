@@ -1,4 +1,5 @@
 #include "attached_camera.h"
+#include "glm/common.hpp"
 
 #include <framework/window.h>
 #include <imgui/imgui.h>
@@ -8,7 +9,25 @@
 
 
 AttachedCamera::AttachedCamera(Window& window, const glm::vec3& target)
-    : m_window(window), m_target(target)
+    : m_window(window)
+    , m_target(target)
+    , m_curve([] {
+        std::vector<BezierCurve> curves;
+        curves.emplace_back(
+            glm::vec3(-3.0f, 0.0f, 0.0f),
+            glm::vec3(-1.0f, 0.0f, 3.0f),
+            glm::vec3( 1.0f, 0.0f, 3.0f),
+            glm::vec3( 3.0f, 0.0f, 0.0f)
+        );
+        curves.emplace_back(
+            glm::vec3( 3.0f, 0.0f,  0.0f),
+            glm::vec3( 2.0f, 3.0f, -3.0f),
+            glm::vec3(-3.0f, 4.0f, -5.0f),
+            glm::vec3(-3.0f, 7.0f, -8.0f)
+        );
+        return curves;
+    }())
+
 {
     window.registerMouseButtonCallback([this](int button, int action, int) {
         mouseButtonCallback(button, action);
@@ -32,6 +51,8 @@ glm::vec3 AttachedCamera::position() const
         return m_target + glm::vec3(0.0f, 12.0f, 0.01f);
     if (m_mode == 2)
         return m_target + glm::vec3(0.0f, 2.5f, 8.0f);
+    if (m_mode == 3)
+        return m_curve.evaluate(m_tValue);
 
     float yaw = glm::radians(m_yaw);
     float pitch = glm::radians(m_pitch);
@@ -88,6 +109,9 @@ void AttachedCamera::setDistance(float distance)
     m_distance = glm::clamp(distance, MIN_DISTANCE, MAX_DISTANCE);
 }
 
+void AttachedCamera::setTValue(float tValue) {
+    m_tValue = glm::clamp(tValue, 0.0f, maxTValue());
+}
 void AttachedCamera::mouseButtonCallback(int button, int action)
 {
     if (!m_userInteraction)

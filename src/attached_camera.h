@@ -1,5 +1,7 @@
 #pragma once
 
+#include "composite_bezier_curve.h"
+#include "glm/ext/vector_float3.hpp"
 #include <glm/glm.hpp>
 #include <iterator>
 
@@ -7,7 +9,7 @@ class Window;
 
 class AttachedCamera {
 public:
-    static constexpr const char* MODES[] = {"Orbit View", "Top View", "Follow View"};
+    static constexpr const char* MODES[] = {"Orbit View", "Top View", "Follow View", "Bezier View"};
     static constexpr int MODE_COUNT = static_cast<int>(std::size(MODES));
 
     static constexpr float MIN_YAW = -180.0f;
@@ -30,10 +32,14 @@ public:
     float yaw() const { return m_yaw; }
     float pitch() const { return m_pitch; }
     float distance() const { return m_distance; }
+    float tValue() const { return m_tValue; }
+    float maxTValue() const { return static_cast<float>(m_curve.curveCount()); }
+    const CompositeBezierCurve& curve() const { return m_curve; }
     void setMode(int mode);
     void setYaw(float yaw);
     void setPitch(float pitch);
     void setDistance(float distance);
+    void setTValue(float tValue);
 
 private:
     void mouseButtonCallback(int button, int action);
@@ -42,6 +48,7 @@ private:
 
     Window& m_window;
     glm::vec3 m_target;
+    // Orbit camera configurations
     float m_yaw = 25.0f;
     float m_pitch = 15.0f;
     float m_distance = 7.0f;
@@ -50,4 +57,7 @@ private:
     bool m_dragging = false;
     bool m_userInteraction = true;
     int m_mode = 0;
+    // Bezier camera configurations
+    float m_tValue = 0.0f;
+    CompositeBezierCurve m_curve;
 };

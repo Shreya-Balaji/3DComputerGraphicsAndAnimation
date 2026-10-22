@@ -17,11 +17,12 @@ class BezierCurve {
         );
 
         ~BezierCurve();
+        BezierCurve(BezierCurve&& other) noexcept;
 
         BezierCurve(const BezierCurve&) = delete;
         BezierCurve& operator=(const BezierCurve&) = delete;
 
-        glm::vec3 evaluate(float t) const;
+        glm::vec3 evaluate(float tValue) const;
         void draw(const glm::mat4 viewProjection) const;
         std::vector<BezierCurve> fromControlPoints(const std::vector<glm::vec3>& controlPoints) const;
 
