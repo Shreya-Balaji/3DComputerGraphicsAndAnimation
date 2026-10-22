@@ -94,7 +94,7 @@ int main()
             if (ImGui::SliderFloat("Distance", &distance, AttachedCamera::MIN_DISTANCE, AttachedCamera::MAX_DISTANCE))
                 attachedCamera.setDistance(distance);
             ImGui::Text("Bezier Camera Settings");
-            if (ImGui::SliderFloat("tValue", &tValue, 0.0f, attachedCamera.maxTValue()))
+            if (ImGui::SliderFloat("t value", &tValue, 0.0f, attachedCamera.maxTValue()))
                 attachedCamera.setTValue(tValue);
             ImGui::Checkbox("Draw Bezier curve", &drawBezierCurve);
             if (freeCameraEnabled)
