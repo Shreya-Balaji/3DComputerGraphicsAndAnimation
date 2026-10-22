@@ -4,6 +4,11 @@
 #include <glm/glm.hpp>
 #include <vector>
 
+struct ArcLengthSample {
+    float tValue;
+    float distance;
+};
+
 class CompositeBezierCurve {
     public:
         explicit CompositeBezierCurve(std::vector<BezierCurve> curves);
@@ -16,7 +21,10 @@ class CompositeBezierCurve {
         glm::vec3 evaluate (float tValue) const;
         void draw(const glm::mat4 viewProjection) const;
         int curveCount() const;
+        void buildArcLengthTable();
+        glm::vec3 evaluateAtDistance(float distance) const;
 
     private:
         std::vector<BezierCurve> m_curves;
+        std::vector<ArcLengthSample> m_arcLengths;
 };
