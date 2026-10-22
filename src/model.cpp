@@ -2,6 +2,8 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <assimp/material.h>
+#include <cmath>
 
 #include <glm/ext/vector_float3.hpp>
 #include <glm/ext/vector_int2.hpp>
@@ -36,7 +38,7 @@ glm::mat4 Model::toGlm(const aiMatrix4x4& a)
     return m;
 }
 
-Mesh Model::convertMesh(const aiMesh& source)
+Mesh Model::convertMesh(const aiMesh& source, const aiScene& scene)
 {
     Mesh result;
 
@@ -78,7 +80,35 @@ Mesh Model::convertMesh(const aiMesh& source)
         ));
     }
 
-    result.material.kd = DEFAULT_COLOR;
+    if (source.mMaterialIndex < scene.mNumMaterials) {
+        const aiMaterial* material = scene.mMaterials[source.mMaterialIndex];
+        aiColor3D color;
+
+        if (material->Get(AI_MATKEY_COLOR_DIFFUSE, color) == AI_SUCCESS) {
+            result.material.kd = glm::vec3(color.r, color.g, color.b);
+        }
+        else {
+            result.material.kd = DEFAULT_COLOR;
+        }
+
+        if (material->Get(AI_MATKEY_COLOR_SPECULAR, color) == AI_SUCCESS) {
+            result.material.ks = glm::vec3(color.r, color.g, color.b);
+        }
+        if (glm::length(result.material.ks) < 0.001f) {
+            result.material.ks = glm::vec3(0.25f);
+        }
+
+        float shininess = 0.0f;
+        if (material->Get(AI_MATKEY_SHININESS, shininess) == AI_SUCCESS && std::isfinite(shininess) && shininess > 0.0f) {
+            result.material.shininess = shininess;
+        }
+        else {
+            result.material.shininess = 32.0f;
+        }
+    }
+    else {
+        result.material.kd = DEFAULT_COLOR;
+    }
 
     return result;
 }
@@ -149,7 +179,23 @@ bool Model::load(const std::string& path)
     meshes.reserve(scene->mNumMeshes);
 
     for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
-        Mesh cpuMesh = convertMesh(*scene->mMeshes[i]);
+        Mesh cpuMesh = convertMesh(*scene->mMeshes[i], *scene);
+
+        std::cout << "Mesh " << i << '\n';
+
+        std::cout << "kd: "
+            << cpuMesh.material.kd.r << ", "
+            << cpuMesh.material.kd.g << ", "
+            << cpuMesh.material.kd.b << '\n';
+
+        std::cout << "ks: "
+            << cpuMesh.material.ks.r << ", "
+            << cpuMesh.material.ks.g << ", "
+            << cpuMesh.material.ks.b << '\n';
+
+        std::cout << "shininess: "
+            << cpuMesh.material.shininess << '\n';
+
         meshes.emplace_back(cpuMesh);
     }
 
