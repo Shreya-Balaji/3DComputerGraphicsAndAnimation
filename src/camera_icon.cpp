@@ -15,14 +15,17 @@ CameraIcon::CameraIcon()
     m_mvpLocation = m_shader.getUniformLocation("mvp");
 
     const glm::vec3 lines[] = {
+        // rectangle
         {-1, -0.7f, -2}, { 1, -0.7f, -2},
         { 1, -0.7f, -2}, { 1,  0.7f, -2},
         { 1,  0.7f, -2}, {-1,  0.7f, -2},
         {-1,  0.7f, -2}, {-1, -0.7f, -2},
+        // rectangle to source lines
         {0, 0, 0}, {-1, -0.7f, -2},
         {0, 0, 0}, { 1, -0.7f, -2},
         {0, 0, 0}, { 1,  0.7f, -2},
         {0, 0, 0}, {-1,  0.7f, -2},
+        // triangle to show up direciton
         {-0.4f, 0.7f, -2}, {0, 1.2f, -2},
         {0, 1.2f, -2}, {0.4f, 0.7f, -2}
     };

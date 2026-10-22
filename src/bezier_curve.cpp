@@ -1,3 +1,4 @@
+#include <utility>
 #include "bezier_curve.h"
 #include "framework/shader.h"
 
@@ -8,14 +9,14 @@
 #include <vector>
 #include <iostream>
 
-glm::vec3 BezierCurve::evaluate(float t) const
+glm::vec3 BezierCurve::evaluate(float tValue) const
 {
-    float u = 1.0f - t;
+    float u = 1.0f - tValue;
 
     return u * u * u * m_p0
-         + 3.0f * u * u * t * m_p1
-         + 3.0f * u * t * t * m_p2
-         + t * t * t * m_p3;
+         + 3.0f * u * u * tValue * m_p1
+         + 3.0f * u * tValue * tValue * m_p2
+         + tValue * tValue * tValue * m_p3;
 }
 
 BezierCurve::BezierCurve(
@@ -33,8 +34,8 @@ BezierCurve::BezierCurve(
 
     for (int i = 0; i <= segments; ++i)
     {
-        float t = static_cast<float>(i) / segments;
-        points.push_back(evaluate(t));
+        float tValue = static_cast<float>(i) / segments;
+        points.push_back(evaluate(tValue));
     }
 
     m_pointCount = static_cast<GLsizei>(points.size());
@@ -68,6 +69,15 @@ BezierCurve::BezierCurve(
     } catch (ShaderLoadingException e) {
         std::cerr << e.what() << std::endl;
     }
+}
+
+BezierCurve::BezierCurve(BezierCurve&& other) noexcept
+    : m_p0(other.m_p0), m_p1(other.m_p1), m_p2(other.m_p2), m_p3(other.m_p3)
+    , m_vao(std::exchange(other.m_vao, 0))
+    , m_vbo(std::exchange(other.m_vbo, 0))
+    , m_pointCount(std::exchange(other.m_pointCount, 0))
+    , curveShader(std::move(other.curveShader))
+{
 }
 
 BezierCurve::~BezierCurve()

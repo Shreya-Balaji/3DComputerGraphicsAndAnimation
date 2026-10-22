@@ -22,17 +22,6 @@
 #include "camera_rig.h"
 #include "camera_icon.h"
 #include "model.h"
-#include "bezier_curve.h"
-
-glm::vec3 controlPoints[] = {
-    glm::vec3(-3.0f, 0.0f, 0.0f),
-    glm::vec3(-1.0f, 3.0f, 0.0f),
-    glm::vec3( 1.0f, 3.0f, 0.0f),
-    glm::vec3( 3.0f, 0.0f, 0.0f),
-    glm::vec3(4.0f, 5.0f, 0.0f),
-    glm::vec3(5.0f, -5.0f, 0.0f),
-    glm::vec3(6.0f, 0.0f, 0.0f)
-};
 
 int main()
 {
@@ -45,6 +34,8 @@ int main()
     CameraRig cameraRig(window, glm::vec3(0.0f));
     AttachedCamera& attachedCamera = cameraRig.attachedCamera();
 
+    bool drawBezierCurve = false;
+
     glEnable(GL_DEPTH_TEST);
 
     try
@@ -56,14 +47,9 @@ int main()
         if (!cableCar.load(root + "/assets/cable_car/scene.gltf"))
             throw std::runtime_error("Could not load cable-car model");
 
-        BezierCurve curves[] = {
-            BezierCurve(controlPoints[0], controlPoints[1], controlPoints[2], controlPoints[3]),
-            BezierCurve(controlPoints[3], controlPoints[4], controlPoints[5], controlPoints[6])
-        };
-
         CameraIcon cameraIcon;
 
-        Shader basicShader, curveShader;
+        Shader basicShader;
         try {
             ShaderBuilder basicBuilder;
             basicBuilder.addStage(GL_VERTEX_SHADER, root + "/shaders/basic.vert");
@@ -100,12 +86,17 @@ int main()
             float yaw = attachedCamera.yaw();
             float pitch = attachedCamera.pitch();
             float distance = attachedCamera.distance();
+            float tValue = attachedCamera.tValue();
             if (ImGui::SliderFloat("Yaw", &yaw, AttachedCamera::MIN_YAW, AttachedCamera::MAX_YAW))
                 attachedCamera.setYaw(yaw);
             if (ImGui::SliderFloat("Pitch", &pitch, AttachedCamera::MIN_PITCH, AttachedCamera::MAX_PITCH))
                 attachedCamera.setPitch(pitch);
             if (ImGui::SliderFloat("Distance", &distance, AttachedCamera::MIN_DISTANCE, AttachedCamera::MAX_DISTANCE))
                 attachedCamera.setDistance(distance);
+            ImGui::Text("Bezier Camera Settings");
+            if (ImGui::SliderFloat("t value", &tValue, 0.0f, attachedCamera.maxTValue()))
+                attachedCamera.setTValue(tValue);
+            ImGui::Checkbox("Draw Bezier curve", &drawBezierCurve);
             if (freeCameraEnabled)
                 ImGui::Text("WASD: move | Space/Ctrl: up/down | Left-drag: look");
             ImGui::End();
@@ -144,10 +135,8 @@ int main()
             );
 
             cableCar.draw(basicShader, basicShader.getUniformLocation("model"));
-
-            for (const BezierCurve& curve : curves) {
-                curve.draw(view_projection);
-            }
+            if (drawBezierCurve)
+                attachedCamera.curve().draw(view_projection);
 
             if (cameraRig.freeCameraEnabled())
                 cameraIcon.draw(view_projection, attachedCamera.viewMatrix());
