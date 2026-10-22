@@ -22,15 +22,18 @@ void main()
     vec3 V = normalize(viewPos - FragPos);
     vec3 H = normalize(L + V);
 
-    vec3 ambient = 0.22 * kd;
+    vec3 ambient = 0.30 * kd;
 
     float diff = max(dot(N, L), 0.0);
     vec3 diffuse = diff * kd;
 
-    float spec = pow(max(dot(N, H), 0.0), 32.0);
-    vec3 specular = vec3(0.35) * spec;
+    float spec = 0.0;
+    if (diff > 0.0) {
+        spec = pow(max(dot(N, H), 0.0), max(shininess, 1.0));
+     }
 
-    vec3 color = ambient + diffuse + specular;
+     vec3 specular = ks * spec;
+     vec3 color = ambient + diffuse + specular;
 
-    FragColor = vec4(color, 1.0);
+     FragColor = vec4(color, transparency);
 }
