@@ -36,19 +36,21 @@ int CompositeBezierCurve::curveCount() const {
 
 void CompositeBezierCurve::buildArcLengthTable()
 {
-    constexpr int samplesPerSegment = 200;
+    constexpr int samplesPerCurve = 200;
 
     m_arcLengths.clear();
     m_arcLengths.push_back({0.0f, 0.0f});
 
     glm::vec3 previous = evaluate(0.0f);
     float distance = 0.0f;
+    // approximate arc lengths for each curve that makes up the composite
+    for (int curveIndex = 0; curveIndex < curveCount(); ++curveIndex) {
+        // divide the line into segments
+        for (int i = 1; i <= samplesPerCurve; ++i) {
+            float tValue = static_cast<float>(curveIndex)
+                + static_cast<float>(i) / samplesPerCurve;
 
-    for (int segment = 0; segment < curveCount(); ++segment) {
-        for (int i = 1; i <= samplesPerSegment; ++i) {
-            float tValue = static_cast<float>(segment)
-                + static_cast<float>(i) / samplesPerSegment;
-
+            // approximate the arc segment using a line
             glm::vec3 current = evaluate(tValue);
             distance += glm::length(current - previous);
 
@@ -63,6 +65,7 @@ glm::vec3 CompositeBezierCurve::evaluateAtDistance(float distance) const
     float totalLength = m_arcLengths.back().distance;
     distance = glm::clamp(distance, 0.0f, totalLength);
 
+    // find the tightest upper bound for the distance in the table 
     auto upper = std::lower_bound(
         m_arcLengths.begin(),
         m_arcLengths.end(),
@@ -84,7 +87,7 @@ glm::vec3 CompositeBezierCurve::evaluateAtDistance(float distance) const
     float fraction = span > 0.0f
         ? (distance - lower.distance) / span
         : 0.0f;
-
+    // linearly interpolate the corresponding t value 
     float tValue = glm::mix(lower.tValue, upper->tValue, fraction);
     return evaluate(tValue);
 }
