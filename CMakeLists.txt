@@ -19,6 +19,7 @@ add_executable(CableCarAlps
     src/camera_icon.cpp
     src/camera_rig.cpp
     src/free_camera.cpp
+    src/assimp_utils.cpp
     src/model.cpp
 )
 

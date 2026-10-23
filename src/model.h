@@ -13,8 +13,6 @@ class Model {
         void draw(const Shader& shader, GLint modelLocation);
 
     private:
-        static glm::mat4 toGlm(const aiMatrix4x4& a);
-        static Mesh convertMesh(const aiMesh& source, const aiScene& scene);
         void calculateBounds(
             const aiNode* node,
             const aiMatrix4x4& parentTransform,
