@@ -3,7 +3,7 @@
 #include <assimp/scene.h>
 #include <assimp/material.h>
 #include <stdexcept>
-
+#include <iostream>
 namespace {
 const glm::vec3 DEFAULT_COLOR{0.85f, 0.78f, 0.65f};
 }
@@ -102,3 +102,20 @@ Mesh toCPUMesh(const aiMesh& source, const aiScene& scene)
     return result;
 }
 
+void printNodeHierarchy(const aiNode* node, int depth)
+{
+    std::string indent(depth * 2, ' ');
+
+    std::cout << indent << "Node: "
+              << node->mName.C_Str()
+              << " (meshes: " << node->mNumMeshes << ")\n";
+
+    for (unsigned int i = 0; i < node->mNumMeshes; i++) {
+        std::cout << indent << "  Mesh index: "
+                  << node->mMeshes[i] << "\n";
+    }
+
+    for (unsigned int i = 0; i < node->mNumChildren; i++) {
+        printNodeHierarchy(node->mChildren[i], depth + 1);
+    }
+}

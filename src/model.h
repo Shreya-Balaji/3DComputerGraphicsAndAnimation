@@ -9,7 +9,8 @@
 
 class Model {
     public:
-        bool load(const std::string& path);
+        Model(const std::string& path);
+        void load(const std::string& path);
         void draw(const Shader& shader, GLint modelLocation);
 
     private:

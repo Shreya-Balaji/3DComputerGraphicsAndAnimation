@@ -19,6 +19,7 @@
 #include <string>
 #include <stdexcept>
 
+#include "cable_car.h"
 #include "camera_rig.h"
 #include "camera_icon.h"
 #include "model.h"
@@ -42,23 +43,9 @@ int main()
     {
         const std::string root = PROJECT_ROOT;
 
-        Model cableCar;
-
-        if (!cableCar.load(root + "/assets/cable_car/scene.gltf"))
-            throw std::runtime_error("Could not load cable-car model");
+        CableCar cableCar;
 
         CameraIcon cameraIcon;
-
-        Shader basicShader;
-        try {
-            ShaderBuilder basicBuilder;
-            basicBuilder.addStage(GL_VERTEX_SHADER, root + "/shaders/basic.vert");
-            basicBuilder.addStage(GL_FRAGMENT_SHADER, root + "/shaders/basic.frag");
-            basicShader = basicBuilder.build();
-
-        } catch (ShaderLoadingException e) {
-            std::cerr << e.what() << std::endl;
-        }
 
         while (!window.shouldClose())
         {
@@ -113,33 +100,15 @@ int main()
                 0.1f,
                 1000.0f
             );
-            const glm::mat4 view_projection = projection * view;
+            const glm::mat4 viewProjection = projection * view;
 
-            basicShader.bind();
+            cableCar.draw(viewProjection, cameraPosition);
 
-            glUniform3f(
-               basicShader.getUniformLocation("lightDir"),
-                -0.5f, -1.0f, -0.3f
-            );
-            glUniformMatrix4fv(
-                basicShader.getUniformLocation("viewProjection"),
-                1,
-                GL_FALSE,
-                glm::value_ptr(view_projection)
-            );
-
-            glUniform3fv(
-                basicShader.getUniformLocation("viewPos"),
-                1,
-                glm::value_ptr(cameraPosition)
-            );
-
-            cableCar.draw(basicShader, basicShader.getUniformLocation("model"));
-            if (drawBezierCurve)
-                attachedCamera.curve().draw(view_projection);
+           if (drawBezierCurve)
+                attachedCamera.curve().draw(viewProjection);
 
             if (cameraRig.freeCameraEnabled())
-                cameraIcon.draw(view_projection, attachedCamera.viewMatrix());
+                cameraIcon.draw(viewProjection, attachedCamera.viewMatrix());
 
             window.swapBuffers();
         }

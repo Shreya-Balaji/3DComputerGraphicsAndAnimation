@@ -3,7 +3,6 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <assimp/material.h>
-#include <cmath>
 
 #include <glm/ext/vector_float3.hpp>
 #include <glm/ext/vector_int2.hpp>
@@ -13,6 +12,7 @@
 
 #include <iostream>
 #include <ostream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 #include "model.h"
@@ -63,7 +63,11 @@ void Model::calculateBounds(
     }
 }
 
-bool Model::load(const std::string& path)
+Model::Model(const std::string& path) {
+    load(path);
+}
+
+void Model::load(const std::string& path)
 {
     scene = importer.ReadFile(
         path,
@@ -75,16 +79,15 @@ bool Model::load(const std::string& path)
 
     if (!scene || !scene->mRootNode)
     {
-        std::cerr << "Assimp error: "
-            << importer.GetErrorString() << '\n';
-        return false;
+        throw std::runtime_error("Could not load model: " + path);
     }
 
     meshes.clear();
     meshes.reserve(scene->mNumMeshes);
 
     for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
-        Mesh cpuMesh = toCPUMesh(*scene->mMeshes[i], *scene);
+        const aiMesh& source = *scene->mMeshes[i];
+        Mesh cpuMesh = toCPUMesh(source, *scene);
 
         std::cout << "Mesh " << i << '\n';
 
@@ -102,6 +105,7 @@ bool Model::load(const std::string& path)
             << cpuMesh.material.shininess << '\n';
 
         meshes.emplace_back(cpuMesh);
+        meshes.back().m_name = source.mName.C_Str();
     }
 
     // Calculate the complete model bounds, including node transforms.
@@ -118,8 +122,7 @@ bool Model::load(const std::string& path)
 
     if (firstVertex)
     {
-        std::cerr << "Model contains no vertices.\n";
-        return false;
+        throw std::runtime_error("Model contains no vertices.\n");
     }
 
     modelCenter = (boundsMin + boundsMax) * 0.5f;
@@ -133,8 +136,7 @@ bool Model::load(const std::string& path)
 
     if (maxDimension <= 0.000001f)
     {
-        std::cerr << "Invalid model dimensions.\n";
-        return false;
+        throw std::runtime_error("Invalid model dimensions.\n");
     }
 
     // Fit the largest dimension to approximately 4 world units.
@@ -156,8 +158,6 @@ bool Model::load(const std::string& path)
 
     std::cout << "Automatic scale: "
         << modelScale << '\n';
-
-    return true;
 }
 void Model::drawNode(
     const aiNode* node,

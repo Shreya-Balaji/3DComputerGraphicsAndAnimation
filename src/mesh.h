@@ -7,7 +7,6 @@ DISABLE_WARNINGS_PUSH()
 #include <glm/vec3.hpp>
 DISABLE_WARNINGS_POP()
 
-#include <exception>
 #include <filesystem>
 #include <framework/opengl_includes.h>
 
@@ -27,6 +26,7 @@ struct GPUMaterial {
 
 class GPUMesh {
 public:
+    std::string m_name;
     GPUMesh(const Mesh& cpuMesh);
     // Cannot copy a GPU mesh because it would require reference counting of GPU resources.
     GPUMesh(const GPUMesh&) = delete;
