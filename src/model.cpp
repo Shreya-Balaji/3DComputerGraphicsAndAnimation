@@ -31,7 +31,7 @@ void Model::calculateBounds(
     for (unsigned int i = 0; i < node->mNumMeshes; ++i)
     {
         const aiMesh* mesh =
-            scene->mMeshes[node->mMeshes[i]];
+            m_scene->mMeshes[node->mMeshes[i]];
 
         for (unsigned int j = 0; j < mesh->mNumVertices; ++j)
         {
@@ -177,7 +177,7 @@ void Model::drawNode(
     );
 
     for (unsigned int i = 0; i < node->mNumMeshes; ++i) {
-        meshes[node->mMeshes[i]].draw(shader);
+        m_meshes[node->mMeshes[i]].draw(shader);
     }
 
     for (unsigned int i = 0; i < node->mNumChildren; ++i) {

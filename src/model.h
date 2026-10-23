@@ -4,7 +4,6 @@
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
-#include <cstddef>
 #include <string>
 #include <vector>
 

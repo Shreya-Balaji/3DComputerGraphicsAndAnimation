@@ -15,14 +15,11 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <iostream>
-#include <ostream>
 #include <string>
-#include <stdexcept>
 
 #include "cable_car.h"
 #include "camera_rig.h"
 #include "camera_icon.h"
-#include "model.h"
 
 int main()
 {
