@@ -23,7 +23,7 @@ void Model::calculateBounds(
     const aiMatrix4x4& parentTransform,
     glm::vec3& minimum,
     glm::vec3& maximum,
-    bool& firstVertex)
+    bool& firstVertex) const
 {
     aiMatrix4x4 transform =
         parentTransform * node->mTransformation;
@@ -69,7 +69,7 @@ Model::Model(const std::string& path) {
 
 void Model::load(const std::string& path)
 {
-    scene = importer.ReadFile(
+    m_scene = m_importer.ReadFile(
         path,
         aiProcess_Triangulate |
         aiProcess_GenSmoothNormals |
@@ -77,17 +77,17 @@ void Model::load(const std::string& path)
         aiProcess_ImproveCacheLocality
     );
 
-    if (!scene || !scene->mRootNode)
+    if (!m_scene || !m_scene->mRootNode)
     {
         throw std::runtime_error("Could not load model: " + path);
     }
 
-    meshes.clear();
-    meshes.reserve(scene->mNumMeshes);
+    m_meshes.clear();
+    m_meshes.reserve(m_scene->mNumMeshes);
 
-    for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
-        const aiMesh& source = *scene->mMeshes[i];
-        Mesh cpuMesh = toCPUMesh(source, *scene);
+    for (unsigned int i = 0; i < m_scene->mNumMeshes; ++i) {
+        const aiMesh& source = *m_scene->mMeshes[i];
+        Mesh cpuMesh = toCPUMesh(source, *m_scene);
 
         std::cout << "Mesh " << i << '\n';
 
@@ -104,8 +104,8 @@ void Model::load(const std::string& path)
         std::cout << "shininess: "
             << cpuMesh.material.shininess << '\n';
 
-        meshes.emplace_back(cpuMesh);
-        meshes.back().m_name = source.mName.C_Str();
+        m_meshes.emplace_back(cpuMesh);
+        m_meshes.back().m_name = source.mName.C_Str();
     }
 
     // Calculate the complete model bounds, including node transforms.
@@ -113,10 +113,10 @@ void Model::load(const std::string& path)
     aiMatrix4x4 identity;
 
     calculateBounds(
-        scene->mRootNode,
+        m_scene->mRootNode,
         identity,
-        boundsMin,
-        boundsMax,
+        m_boundsMin,
+        m_boundsMax,
         firstVertex
     );
 
@@ -125,9 +125,9 @@ void Model::load(const std::string& path)
         throw std::runtime_error("Model contains no vertices.\n");
     }
 
-    modelCenter = (boundsMin + boundsMax) * 0.5f;
+    m_modelCenter = (m_boundsMin + m_boundsMax) * 0.5f;
 
-    glm::vec3 dimensions = boundsMax - boundsMin;
+    glm::vec3 dimensions = m_boundsMax - m_boundsMin;
 
     float maxDimension = glm::max(
         dimensions.x,
@@ -140,11 +140,11 @@ void Model::load(const std::string& path)
     }
 
     // Fit the largest dimension to approximately 4 world units.
-    modelScale = 4.0f / maxDimension;
+    m_modelScale = 4.0f / maxDimension;
 
     std::cout << "Model loaded successfully!\n";
-    std::cout << "Meshes: " << scene->mNumMeshes << '\n';
-    std::cout << "Materials: " << scene->mNumMaterials << '\n';
+    std::cout << "Meshes: " << m_scene->mNumMeshes << '\n';
+    std::cout << "Materials: " << m_scene->mNumMaterials << '\n';
 
     std::cout << "Model dimensions: "
         << dimensions.x << ", "
@@ -152,18 +152,19 @@ void Model::load(const std::string& path)
         << dimensions.z << '\n';
 
     std::cout << "Model center: "
-        << modelCenter.x << ", "
-        << modelCenter.y << ", "
-        << modelCenter.z << '\n';
+        << m_modelCenter.x << ", "
+        << m_modelCenter.y << ", "
+        << m_modelCenter.z << '\n';
 
     std::cout << "Automatic scale: "
-        << modelScale << '\n';
+        << m_modelScale << '\n';
 }
+
 void Model::drawNode(
     const aiNode* node,
     const glm::mat4& parentTransform,
     const Shader& shader,
-    GLint modelLocation)
+    GLint modelLocation) const
 {
     glm::mat4 transform =
         parentTransform * toGLM(node->mTransformation);
@@ -188,13 +189,21 @@ void Model::drawNode(
         );
     }
 }
-void Model::draw(const Shader& shader, GLint modelLocation)
+
+void Model::draw(const Shader& shader, GLint modelLocation) const
 {
     shader.bind();
 
     glm::mat4 fitTransform =
-        glm::scale(glm::mat4(1.0f), glm::vec3(modelScale)) *
-        glm::translate(glm::mat4(1.0f), -modelCenter);
+        glm::scale(glm::mat4(1.0f), glm::vec3(m_modelScale)) *
+        glm::translate(glm::mat4(1.0f), -m_modelCenter);
 
-    drawNode(scene->mRootNode, fitTransform, shader, modelLocation);
+    drawNode(m_scene->mRootNode, fitTransform, shader, modelLocation);
+}
+
+const aiNode* Model::getNode(const std::string name) const {
+    if (!m_scene || !m_scene->mRootNode)
+        return nullptr;
+
+    return m_scene->mRootNode->FindNode(name.c_str());
 }

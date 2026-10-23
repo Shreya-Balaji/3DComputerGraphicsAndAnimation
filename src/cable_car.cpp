@@ -8,6 +8,7 @@
 
 CableCar::CableCar()
 : m_model(Model(static_cast<std::string>(PROJECT_ROOT) + "/assets/cable_car/scene.gltf"))
+, m_doors(m_model.getNode("Doors_15"))
 {
     try {
         std::string root = PROJECT_ROOT;
@@ -22,7 +23,7 @@ CableCar::CableCar()
     }
 }
 
-void CableCar::draw(const glm::mat4 viewProjection, const glm::vec3 cameraPosition) {
+void CableCar::draw(const glm::mat4 viewProjection, const glm::vec3 cameraPosition) const {
     m_cableCarShader.bind();
 
     glUniform3f(
