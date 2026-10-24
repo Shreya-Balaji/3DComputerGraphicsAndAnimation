@@ -1,5 +1,7 @@
 #include "composite_bezier_curve.h"
-#include "bezier_curve.h"
+
+#include <glm/common.hpp>
+#include <glm/geometric.hpp>
 #include <algorithm>
 #include <cmath>
 #include <utility>

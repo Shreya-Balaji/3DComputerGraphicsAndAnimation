@@ -1,27 +1,12 @@
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include <framework/window.h>
-#include <imgui/imgui.h>
-#include <framework/shader.h>
-
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-
-#include <glm/ext/vector_float3.hpp>
-#include <glm/ext/vector_int2.hpp>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
-#include <iostream>
-#include <ostream>
-#include <string>
-#include <stdexcept>
-
+#include "cable_car.h"
 #include "camera_rig.h"
 #include "camera_icon.h"
-#include "model.h"
+
+#include <framework/window.h>
+#include <imgui/imgui.h>
+#include <glm/gtc/matrix_transform.hpp>
+#include <exception>
+#include <iostream>
 
 int main()
 {
@@ -35,30 +20,15 @@ int main()
     AttachedCamera& attachedCamera = cameraRig.attachedCamera();
 
     bool drawBezierCurve = false;
+    float doorSlideFactor = 0.0f;
 
     glEnable(GL_DEPTH_TEST);
 
     try
     {
-        const std::string root = PROJECT_ROOT;
-
-        Model cableCar;
-
-        if (!cableCar.load(root + "/assets/cable_car/scene.gltf"))
-            throw std::runtime_error("Could not load cable-car model");
+        CableCar cableCar;
 
         CameraIcon cameraIcon;
-
-        Shader basicShader;
-        try {
-            ShaderBuilder basicBuilder;
-            basicBuilder.addStage(GL_VERTEX_SHADER, root + "/shaders/basic.vert");
-            basicBuilder.addStage(GL_FRAGMENT_SHADER, root + "/shaders/basic.frag");
-            basicShader = basicBuilder.build();
-
-        } catch (ShaderLoadingException e) {
-            std::cerr << e.what() << std::endl;
-        }
 
         while (!window.shouldClose())
         {
@@ -97,6 +67,8 @@ int main()
             if (ImGui::SliderFloat("t value", &tValue, 0.0f, attachedCamera.maxTValue()))
                 attachedCamera.setTValue(tValue);
             ImGui::Checkbox("Draw Bezier curve", &drawBezierCurve);
+            if (ImGui::SliderFloat("Open doors", &doorSlideFactor, 0.0f, 1.0f))
+                cableCar.setDoorSlideFactor(doorSlideFactor);
             if (freeCameraEnabled)
                 ImGui::Text("WASD: move | Space/Ctrl: up/down | Left-drag: look");
             ImGui::End();
@@ -113,33 +85,15 @@ int main()
                 0.1f,
                 1000.0f
             );
-            const glm::mat4 view_projection = projection * view;
+            const glm::mat4 viewProjection = projection * view;
 
-            basicShader.bind();
+            cableCar.draw(viewProjection, cameraPosition);
 
-            glUniform3f(
-               basicShader.getUniformLocation("lightDir"),
-                -0.5f, -1.0f, -0.3f
-            );
-            glUniformMatrix4fv(
-                basicShader.getUniformLocation("viewProjection"),
-                1,
-                GL_FALSE,
-                glm::value_ptr(view_projection)
-            );
-
-            glUniform3fv(
-                basicShader.getUniformLocation("viewPos"),
-                1,
-                glm::value_ptr(cameraPosition)
-            );
-
-            cableCar.draw(basicShader, basicShader.getUniformLocation("model"));
-            if (drawBezierCurve)
-                attachedCamera.curve().draw(view_projection);
+           if (drawBezierCurve)
+                attachedCamera.curve().draw(viewProjection);
 
             if (cameraRig.freeCameraEnabled())
-                cameraIcon.draw(view_projection, attachedCamera.viewMatrix());
+                cameraIcon.draw(viewProjection, attachedCamera.viewMatrix());
 
             window.swapBuffers();
         }

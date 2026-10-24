@@ -6,34 +6,39 @@
 #include <assimp/scene.h>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 class Model {
     public:
-        bool load(const std::string& path);
-        void draw(const Shader& shader, GLint modelLocation);
-
+        Model(const std::string& path);
+        void load(const std::string& path);
+        void draw(const Shader& shader) const;
+        const aiNode* getNode(const std::string name) const;
+        bool setNodeWorldOffset(
+            const std::string& name,
+            const glm::vec3 offset
+        );
     private:
-        static glm::mat4 toGlm(const aiMatrix4x4& a);
-        static Mesh convertMesh(const aiMesh& source, const aiScene& scene);
         void calculateBounds(
             const aiNode* node,
             const aiMatrix4x4& parentTransform,
             glm::vec3& minimum,
             glm::vec3& maximum,
-            bool& firstVertex);
+            bool& firstVertex) const;
 
         void drawNode(
             const aiNode* node,
             const glm::mat4& parentTransform,
-            const Shader& shader,
-            GLint modelLocation);
+            const Shader& shader
+        ) const;
 
-        Assimp::Importer importer;
-        const aiScene* scene = nullptr;
-        std::vector<GPUMesh> meshes;
+        Assimp::Importer m_importer;
+        const aiScene* m_scene = nullptr;
+        std::vector<GPUMesh> m_meshes;
+        std::unordered_map<const aiNode*, glm::vec3> m_nodeWorldOffsets;
 
-        glm::vec3 boundsMin{ 0.0f };
-        glm::vec3 boundsMax{ 0.0f };
-        glm::vec3 modelCenter{ 0.0f };
-        float modelScale = 1.0f;
+        glm::vec3 m_boundsMin{ 0.0f };
+        glm::vec3 m_boundsMax{ 0.0f };
+        glm::vec3 m_modelCenter{ 0.0f };
+        float m_modelScale = 1.0f;
 };

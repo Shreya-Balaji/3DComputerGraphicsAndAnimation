@@ -7,8 +7,10 @@ DISABLE_WARNINGS_PUSH()
 #include <glm/vec3.hpp>
 DISABLE_WARNINGS_POP()
 
-#include <exception>
 #include <filesystem>
+#include <stdexcept>
+#include <string>
+#include <vector>
 #include <framework/opengl_includes.h>
 
 struct MeshLoadingException : public std::runtime_error {
@@ -44,7 +46,7 @@ public:
     bool hasTextureCoords() const;
 
     // Bind VAO and call glDrawElements.
-    void draw(const Shader& drawingShader);
+    void draw(const Shader& drawingShader) const;
 
 private:
     void moveInto(GPUMesh&&);

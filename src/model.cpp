@@ -1,124 +1,18 @@
+#include "model.h"
+#include "assimp_utils.h"
 
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
 #include <assimp/postprocess.h>
-#include <assimp/material.h>
-#include <cmath>
-
-#include <glm/ext/vector_float3.hpp>
-#include <glm/ext/vector_int2.hpp>
-#include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
 #include <iostream>
-#include <ostream>
-#include <string>
-#include <vector>
-#include "model.h"
-
-const glm::vec3 DEFAULT_COLOR = glm::vec3(0.85f, 0.78f, 0.65f);
-
-glm::mat4 Model::toGlm(const aiMatrix4x4& a)
-{
-    glm::mat4 m(1.0f);
-
-    m[0][0] = a.a1; m[1][0] = a.a2;
-    m[2][0] = a.a3; m[3][0] = a.a4;
-
-    m[0][1] = a.b1; m[1][1] = a.b2;
-    m[2][1] = a.b3; m[3][1] = a.b4;
-
-    m[0][2] = a.c1; m[1][2] = a.c2;
-    m[2][2] = a.c3; m[3][2] = a.c4;
-
-    m[0][3] = a.d1; m[1][3] = a.d2;
-    m[2][3] = a.d3; m[3][3] = a.d4;
-
-    return m;
-}
-
-Mesh Model::convertMesh(const aiMesh& source, const aiScene& scene)
-{
-    Mesh result;
-
-    result.vertices.reserve(source.mNumVertices);
-
-    for (unsigned int i = 0; i < source.mNumVertices; ++i) {
-        Vertex vertex{};
-
-        vertex.position = {
-            source.mVertices[i].x,
-            source.mVertices[i].y,
-            source.mVertices[i].z
-        };
-
-        vertex.normal = source.HasNormals()
-            ? glm::vec3(source.mNormals[i].x,
-                        source.mNormals[i].y,
-                        source.mNormals[i].z)
-            : glm::vec3(0.0f, 1.0f, 0.0f);
-
-        vertex.texCoord = source.HasTextureCoords(0)
-            ? glm::vec2(source.mTextureCoords[0][i].x,
-                        source.mTextureCoords[0][i].y)
-            : glm::vec2(0.0f);
-
-        result.vertices.push_back(vertex);
-    }
-
-    for (unsigned int i = 0; i < source.mNumFaces; ++i) {
-        const aiFace& face = source.mFaces[i];
-
-        if (face.mNumIndices != 3)
-            throw std::runtime_error("Expected triangle geometry");
-
-        result.triangles.push_back(glm::uvec3(
-            face.mIndices[0],
-            face.mIndices[1],
-            face.mIndices[2]
-        ));
-    }
-
-    if (source.mMaterialIndex < scene.mNumMaterials) {
-        const aiMaterial* material = scene.mMaterials[source.mMaterialIndex];
-        aiColor3D color;
-
-        if (material->Get(AI_MATKEY_COLOR_DIFFUSE, color) == AI_SUCCESS) {
-            result.material.kd = glm::vec3(color.r, color.g, color.b);
-        }
-        else {
-            result.material.kd = DEFAULT_COLOR;
-        }
-
-        if (material->Get(AI_MATKEY_COLOR_SPECULAR, color) == AI_SUCCESS) {
-            result.material.ks = glm::vec3(color.r, color.g, color.b);
-        }
-        if (glm::length(result.material.ks) < 0.001f) {
-            result.material.ks = glm::vec3(0.25f);
-        }
-
-        float shininess = 0.0f;
-        if (material->Get(AI_MATKEY_SHININESS, shininess) == AI_SUCCESS && std::isfinite(shininess) && shininess > 0.0f) {
-            result.material.shininess = shininess;
-        }
-        else {
-            result.material.shininess = 32.0f;
-        }
-    }
-    else {
-        result.material.kd = DEFAULT_COLOR;
-    }
-
-    return result;
-}
+#include <stdexcept>
 
 void Model::calculateBounds(
     const aiNode* node,
     const aiMatrix4x4& parentTransform,
     glm::vec3& minimum,
     glm::vec3& maximum,
-    bool& firstVertex)
+    bool& firstVertex) const
 {
     aiMatrix4x4 transform =
         parentTransform * node->mTransformation;
@@ -126,7 +20,7 @@ void Model::calculateBounds(
     for (unsigned int i = 0; i < node->mNumMeshes; ++i)
     {
         const aiMesh* mesh =
-            scene->mMeshes[node->mMeshes[i]];
+            m_scene->mMeshes[node->mMeshes[i]];
 
         for (unsigned int j = 0; j < mesh->mNumVertices; ++j)
         {
@@ -158,9 +52,13 @@ void Model::calculateBounds(
     }
 }
 
-bool Model::load(const std::string& path)
+Model::Model(const std::string& path) {
+    load(path);
+}
+
+void Model::load(const std::string& path)
 {
-    scene = importer.ReadFile(
+    m_scene = m_importer.ReadFile(
         path,
         aiProcess_Triangulate |
         aiProcess_GenSmoothNormals |
@@ -168,18 +66,17 @@ bool Model::load(const std::string& path)
         aiProcess_ImproveCacheLocality
     );
 
-    if (!scene || !scene->mRootNode)
+    if (!m_scene || !m_scene->mRootNode)
     {
-        std::cerr << "Assimp error: "
-            << importer.GetErrorString() << '\n';
-        return false;
+        throw std::runtime_error("Could not load model: " + path);
     }
 
-    meshes.clear();
-    meshes.reserve(scene->mNumMeshes);
+    m_meshes.clear();
+    m_meshes.reserve(m_scene->mNumMeshes);
 
-    for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
-        Mesh cpuMesh = convertMesh(*scene->mMeshes[i], *scene);
+    for (unsigned int i = 0; i < m_scene->mNumMeshes; ++i) {
+        const aiMesh& source = *m_scene->mMeshes[i];
+        Mesh cpuMesh = toCPUMesh(source, *m_scene);
 
         std::cout << "Mesh " << i << '\n';
 
@@ -196,7 +93,7 @@ bool Model::load(const std::string& path)
         std::cout << "shininess: "
             << cpuMesh.material.shininess << '\n';
 
-        meshes.emplace_back(cpuMesh);
+        m_meshes.emplace_back(cpuMesh);
     }
 
     // Calculate the complete model bounds, including node transforms.
@@ -204,22 +101,21 @@ bool Model::load(const std::string& path)
     aiMatrix4x4 identity;
 
     calculateBounds(
-        scene->mRootNode,
+        m_scene->mRootNode,
         identity,
-        boundsMin,
-        boundsMax,
+        m_boundsMin,
+        m_boundsMax,
         firstVertex
     );
 
     if (firstVertex)
     {
-        std::cerr << "Model contains no vertices.\n";
-        return false;
+        throw std::runtime_error("Model contains no vertices.\n");
     }
 
-    modelCenter = (boundsMin + boundsMax) * 0.5f;
+    m_modelCenter = (m_boundsMin + m_boundsMax) * 0.5f;
 
-    glm::vec3 dimensions = boundsMax - boundsMin;
+    glm::vec3 dimensions = m_boundsMax - m_boundsMin;
 
     float maxDimension = glm::max(
         dimensions.x,
@@ -228,16 +124,15 @@ bool Model::load(const std::string& path)
 
     if (maxDimension <= 0.000001f)
     {
-        std::cerr << "Invalid model dimensions.\n";
-        return false;
+        throw std::runtime_error("Invalid model dimensions.\n");
     }
 
     // Fit the largest dimension to approximately 4 world units.
-    modelScale = 4.0f / maxDimension;
+    m_modelScale = 4.0f / maxDimension;
 
     std::cout << "Model loaded successfully!\n";
-    std::cout << "Meshes: " << scene->mNumMeshes << '\n';
-    std::cout << "Materials: " << scene->mNumMaterials << '\n';
+    std::cout << "Meshes: " << m_scene->mNumMeshes << '\n';
+    std::cout << "Materials: " << m_scene->mNumMaterials << '\n';
 
     std::cout << "Model dimensions: "
         << dimensions.x << ", "
@@ -245,51 +140,72 @@ bool Model::load(const std::string& path)
         << dimensions.z << '\n';
 
     std::cout << "Model center: "
-        << modelCenter.x << ", "
-        << modelCenter.y << ", "
-        << modelCenter.z << '\n';
+        << m_modelCenter.x << ", "
+        << m_modelCenter.y << ", "
+        << m_modelCenter.z << '\n';
 
     std::cout << "Automatic scale: "
-        << modelScale << '\n';
-
-    return true;
+        << m_modelScale << '\n';
 }
+
+// function to set an offset for child nodes of the model, the transform will be applied in the drawNode function
+bool Model::setNodeWorldOffset(const std::string &name, const glm::vec3 offset) {
+  const aiNode* node = getNode(name);
+
+  if (!node)
+    return false;
+
+  m_nodeWorldOffsets[node] = offset;
+  return true;
+};
+
 void Model::drawNode(
     const aiNode* node,
     const glm::mat4& parentTransform,
-    const Shader& shader,
-    GLint modelLocation)
+    const Shader& shader) const
 {
     glm::mat4 transform =
-        parentTransform * toGlm(node->mTransformation);
+        parentTransform * toGLM(node->mTransformation);
+
+    auto offset = m_nodeWorldOffsets.find(node);
+
+    if (offset != m_nodeWorldOffsets.end())
+        transform = glm::translate(glm::mat4(1.0f), offset->second) * transform;
 
     glUniformMatrix4fv(
-        modelLocation,
+        shader.getUniformLocation("model"),
         1,
         GL_FALSE,
         glm::value_ptr(transform)
     );
 
     for (unsigned int i = 0; i < node->mNumMeshes; ++i) {
-        meshes[node->mMeshes[i]].draw(shader);
+        m_meshes[node->mMeshes[i]].draw(shader);
     }
 
     for (unsigned int i = 0; i < node->mNumChildren; ++i) {
         drawNode(
             node->mChildren[i],
             transform,
-            shader,
-            modelLocation
+            shader
         );
     }
 }
-void Model::draw(const Shader& shader, GLint modelLocation)
+
+void Model::draw(const Shader& shader) const
 {
     shader.bind();
 
     glm::mat4 fitTransform =
-        glm::scale(glm::mat4(1.0f), glm::vec3(modelScale)) *
-        glm::translate(glm::mat4(1.0f), -modelCenter);
+        glm::scale(glm::mat4(1.0f), glm::vec3(m_modelScale)) *
+        glm::translate(glm::mat4(1.0f), -m_modelCenter);
 
-    drawNode(scene->mRootNode, fitTransform, shader, modelLocation);
+    drawNode(m_scene->mRootNode, fitTransform, shader);
+}
+
+const aiNode* Model::getNode(const std::string name) const {
+    if (!m_scene || !m_scene->mRootNode)
+        return nullptr;
+
+    return m_scene->mRootNode->FindNode(name.c_str());
 }

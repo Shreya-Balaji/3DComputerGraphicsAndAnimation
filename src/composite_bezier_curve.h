@@ -1,6 +1,5 @@
 #pragma once
 #include "bezier_curve.h"
-#include "glm/ext/vector_float3.hpp"
 #include <glm/glm.hpp>
 #include <vector>
 

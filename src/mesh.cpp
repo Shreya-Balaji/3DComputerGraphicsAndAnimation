@@ -3,6 +3,8 @@
 DISABLE_WARNINGS_PUSH()
 #include <fmt/format.h>
 DISABLE_WARNINGS_POP()
+#include <cstddef>
+#include <utility>
 #include <vector>
 
 GPUMaterial::GPUMaterial(const Material& material) :
@@ -87,7 +89,7 @@ bool GPUMesh::hasTextureCoords() const
     return m_hasTextureCoords;
 }
 
-void GPUMesh::draw(const Shader& drawingShader)
+void GPUMesh::draw(const Shader& drawingShader) const
 {
     // Bind material data uniform (we assume that the uniform buffer objects is always called 'Material')
     // Yes, we could define the binding inside the shader itself, but that would break on OpenGL versions below 4.2
@@ -107,7 +109,6 @@ void GPUMesh::moveInto(GPUMesh&& other)
     m_vbo = other.m_vbo;
     m_vao = other.m_vao;
     m_uboMaterial = other.m_uboMaterial;
-
     other.m_numIndices = 0;
     other.m_hasTextureCoords = other.m_hasTextureCoords;
     other.m_ibo = INVALID;
