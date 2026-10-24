@@ -6,6 +6,7 @@ DISABLE_WARNINGS_POP()
 #include <cstddef>
 #include <utility>
 #include <vector>
+#include <stdexcept>
 
 GPUMaterial::GPUMaterial(const Material& material) :
     kd(material.kd),
@@ -23,7 +24,69 @@ GPUMesh::GPUMesh(const Mesh& cpuMesh)
     glBufferData(GL_UNIFORM_BUFFER, sizeof(GPUMaterial), &gpuMaterial, GL_STATIC_READ);
 
     // Figure out if this mesh has texture coordinates
-    m_hasTextureCoords = static_cast<bool>(cpuMesh.material.kdTexture);
+
+    m_hasTextureCoords = false;
+
+    if (cpuMesh.material.kdTexture) {
+        Image& image = *cpuMesh.material.kdTexture;
+
+        GLenum format = GL_RGB;
+        GLenum internalFormat = GL_RGB8;
+
+        switch (image.channels) {
+        case 1:
+            format = GL_RED;
+            internalFormat = GL_R8;
+            break;
+        case 3:
+            format = GL_RGB;
+            internalFormat = GL_RGB8;
+            break;
+        case 4:
+            format = GL_RGBA;
+            internalFormat = GL_RGBA8;
+            break;
+        default:
+            throw std::runtime_error(
+                "Unsupported texture channel count");
+        }
+
+        glGenTextures(1, &m_texture);
+        glBindTexture(GL_TEXTURE_2D, m_texture);
+
+        glTexParameteri(
+            GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(
+            GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(
+            GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+            GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(
+            GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        GLint previousAlignment = 4;
+        glGetIntegerv(GL_UNPACK_ALIGNMENT, &previousAlignment);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            static_cast<GLint>(internalFormat),
+            image.width,
+            image.height,
+            0,
+            format,
+            GL_UNSIGNED_BYTE,
+            image.get_data());
+
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glPixelStorei(GL_UNPACK_ALIGNMENT, previousAlignment);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        m_hasTextureCoords = true;
+    }
+
 
     // Create VAO and bind it so subsequent creations of VBO and IBO are bound to this VAO
     glGenVertexArrays(1, &m_vao);
@@ -54,6 +117,7 @@ GPUMesh::GPUMesh(const Mesh& cpuMesh)
 
     // Each triangle has 3 vertices.
     m_numIndices = static_cast<GLsizei>(3 * cpuMesh.triangles.size());
+ 
 }
 
 GPUMesh::GPUMesh(GPUMesh&& other)
@@ -89,16 +153,35 @@ bool GPUMesh::hasTextureCoords() const
     return m_hasTextureCoords;
 }
 
+
 void GPUMesh::draw(const Shader& drawingShader) const
 {
-    // Bind material data uniform (we assume that the uniform buffer objects is always called 'Material')
-    // Yes, we could define the binding inside the shader itself, but that would break on OpenGL versions below 4.2
     drawingShader.bindUniformBlock("Material", 0, m_uboMaterial);
 
-    // Draw the mesh's triangles
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_texture);
+
+    const GLint textureLocation =
+        drawingShader.getUniformLocation("kdTexture");
+    if (textureLocation >= 0) {
+        glUniform1i(textureLocation, 0);
+    }
+
+    const GLint hasTextureLocation =
+        drawingShader.getUniformLocation("hasKdTexture");
+    if (hasTextureLocation >= 0) {
+        glUniform1i(
+            hasTextureLocation,
+            m_texture != INVALID ? 1 : 0);
+    }
+
     glBindVertexArray(m_vao);
-    glDrawElements(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, nullptr);
+    glDrawElements(GL_TRIANGLES, m_numIndices,
+        GL_UNSIGNED_INT, nullptr);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
+
 
 void GPUMesh::moveInto(GPUMesh&& other)
 {
@@ -109,12 +192,14 @@ void GPUMesh::moveInto(GPUMesh&& other)
     m_vbo = other.m_vbo;
     m_vao = other.m_vao;
     m_uboMaterial = other.m_uboMaterial;
+    m_texture = other.m_texture;
     other.m_numIndices = 0;
-    other.m_hasTextureCoords = other.m_hasTextureCoords;
+    other.m_hasTextureCoords =false;
     other.m_ibo = INVALID;
     other.m_vbo = INVALID;
     other.m_vao = INVALID;
     other.m_uboMaterial = INVALID;
+    other.m_texture = INVALID;
 }
 
 void GPUMesh::freeGpuMemory()
@@ -127,4 +212,6 @@ void GPUMesh::freeGpuMemory()
         glDeleteBuffers(1, &m_ibo);
     if (m_uboMaterial != INVALID)
         glDeleteBuffers(1, &m_uboMaterial);
+    if (m_texture != INVALID)
+        glDeleteTextures(1, &m_texture);
 }

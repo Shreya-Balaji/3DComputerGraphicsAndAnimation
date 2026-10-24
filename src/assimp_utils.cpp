@@ -6,6 +6,8 @@
 #include <iostream>
 #include <cmath>
 #include <string>
+#include <filesystem>
+#include <memory>
 namespace {
 const glm::vec3 DEFAULT_COLOR{0.85f, 0.78f, 0.65f};
 }
@@ -31,7 +33,10 @@ glm::mat4 toGLM(const aiMatrix4x4& a)
 }
 
 // convert an Assimp mesh to a CPU mesh
-Mesh toCPUMesh(const aiMesh& source, const aiScene& scene)
+Mesh toCPUMesh(
+    const aiMesh& source, 
+    const aiScene& scene, 
+    const std::filesystem::path& modelDirectory)
 {
     Mesh result;
 
@@ -101,6 +106,39 @@ Mesh toCPUMesh(const aiMesh& source, const aiScene& scene)
     }
     else {
         result.material.kd = DEFAULT_COLOR;
+    }
+
+    if (source.mMaterialIndex < scene.mNumMaterials) {
+        const aiMaterial* material =
+            scene.mMaterials[source.mMaterialIndex];
+
+        aiString texturePath;
+
+        aiReturn textureResult = material->GetTexture(
+            aiTextureType_BASE_COLOR, 0, &texturePath);
+
+        if (textureResult != AI_SUCCESS) {
+            textureResult = material->GetTexture(
+                aiTextureType_DIFFUSE, 0, &texturePath);
+        }
+
+        if (textureResult == AI_SUCCESS) {
+            const std::filesystem::path relativePath(
+                texturePath.C_Str());
+
+            // Embedded textures such as "*0" need separate handling.
+            if (!relativePath.empty() &&
+                relativePath.string().front() != '*') {
+
+                const std::filesystem::path fullPath =
+                    modelDirectory / relativePath;
+
+                if (std::filesystem::exists(fullPath)) {
+                    result.material.kdTexture =
+                        std::make_shared<Image>(fullPath);
+                }
+            }
+        }
     }
 
     return result;
