@@ -1,10 +1,8 @@
-#include <string>
 #include "cable_car.h"
-#include "glm/ext/matrix_float4x4.hpp"
-#include "glm/ext/vector_float3.hpp"
-#include "model.h"
-#include <iostream>
+
 #include <glm/gtc/type_ptr.hpp>
+#include <iostream>
+#include <string>
 
 CableCar::CableCar()
 : m_model(Model(static_cast<std::string>(PROJECT_ROOT) + "/assets/cable_car/scene.gltf"))

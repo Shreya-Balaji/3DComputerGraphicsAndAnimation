@@ -3,6 +3,8 @@
 DISABLE_WARNINGS_PUSH()
 #include <fmt/format.h>
 DISABLE_WARNINGS_POP()
+#include <cstddef>
+#include <utility>
 #include <vector>
 
 GPUMaterial::GPUMaterial(const Material& material) :
@@ -107,7 +109,6 @@ void GPUMesh::moveInto(GPUMesh&& other)
     m_vbo = other.m_vbo;
     m_vao = other.m_vao;
     m_uboMaterial = other.m_uboMaterial;
-    m_name = other.m_name;
     other.m_numIndices = 0;
     other.m_hasTextureCoords = other.m_hasTextureCoords;
     other.m_ibo = INVALID;

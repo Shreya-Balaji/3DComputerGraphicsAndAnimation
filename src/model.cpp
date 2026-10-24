@@ -1,23 +1,11 @@
-
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-#include <assimp/material.h>
-
-#include <glm/ext/vector_float3.hpp>
-#include <glm/ext/vector_int2.hpp>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
-#include <iostream>
-#include <ostream>
-#include <stdexcept>
-#include <string>
-#include <vector>
 #include "model.h"
 #include "assimp_utils.h"
-#include "glm/ext/matrix_transform.hpp"
+
+#include <assimp/postprocess.h>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <iostream>
+#include <stdexcept>
 
 void Model::calculateBounds(
     const aiNode* node,
@@ -106,7 +94,6 @@ void Model::load(const std::string& path)
             << cpuMesh.material.shininess << '\n';
 
         m_meshes.emplace_back(cpuMesh);
-        m_meshes.back().m_name = source.mName.C_Str();
     }
 
     // Calculate the complete model bounds, including node transforms.

@@ -6,7 +6,7 @@ DISABLE_WARNINGS_PUSH()
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 DISABLE_WARNINGS_POP()
-#include <framework/window.h>
+class Window;
 
 class FreeCamera {
 public:

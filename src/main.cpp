@@ -1,25 +1,12 @@
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include <framework/window.h>
-#include <imgui/imgui.h>
-#include <framework/shader.h>
-
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-
-#include <glm/ext/vector_float3.hpp>
-#include <glm/ext/vector_int2.hpp>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
-#include <iostream>
-#include <string>
-
 #include "cable_car.h"
 #include "camera_rig.h"
 #include "camera_icon.h"
+
+#include <framework/window.h>
+#include <imgui/imgui.h>
+#include <glm/gtc/matrix_transform.hpp>
+#include <exception>
+#include <iostream>
 
 int main()
 {
@@ -39,8 +26,6 @@ int main()
 
     try
     {
-        const std::string root = PROJECT_ROOT;
-
         CableCar cableCar;
 
         CameraIcon cameraIcon;

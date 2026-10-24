@@ -8,6 +8,9 @@ DISABLE_WARNINGS_PUSH()
 DISABLE_WARNINGS_POP()
 
 #include <filesystem>
+#include <stdexcept>
+#include <string>
+#include <vector>
 #include <framework/opengl_includes.h>
 
 struct MeshLoadingException : public std::runtime_error {
@@ -26,7 +29,6 @@ struct GPUMaterial {
 
 class GPUMesh {
 public:
-    std::string m_name;
     GPUMesh(const Mesh& cpuMesh);
     // Cannot copy a GPU mesh because it would require reference counting of GPU resources.
     GPUMesh(const GPUMesh&) = delete;

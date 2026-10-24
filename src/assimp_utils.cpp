@@ -4,6 +4,8 @@
 #include <assimp/material.h>
 #include <stdexcept>
 #include <iostream>
+#include <cmath>
+#include <string>
 namespace {
 const glm::vec3 DEFAULT_COLOR{0.85f, 0.78f, 0.65f};
 }
@@ -102,6 +104,7 @@ Mesh toCPUMesh(const aiMesh& source, const aiScene& scene)
     return result;
 }
 
+// utility function that can be used to find the names and indexes of subnodes
 void printNodeHierarchy(const aiNode* node, int depth)
 {
     std::string indent(depth * 2, ' ');

@@ -1,4 +1,5 @@
 #include "free_camera.h"
+#include <framework/window.h>
 // Suppress warnings in third-party code.
 #include <framework/disable_all_warnings.h>
 DISABLE_WARNINGS_PUSH()

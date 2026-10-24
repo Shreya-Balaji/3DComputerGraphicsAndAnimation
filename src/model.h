@@ -1,12 +1,12 @@
 #pragma once
 
-#include "glm/ext/vector_float3.hpp"
 #include "mesh.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 class Model {
     public:
