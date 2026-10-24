@@ -6,13 +6,8 @@
 #include <iostream>
 #include <glm/gtc/type_ptr.hpp>
 
-CableCar::CableCar(float doorOpenness)
+CableCar::CableCar()
 : m_model(Model(static_cast<std::string>(PROJECT_ROOT) + "/assets/cable_car/scene.gltf"))
-, m_doorOpenness(doorOpenness)
-, m_door_back_left(m_model.getNode("Door_Back_Left"))
-, m_door_back_right(m_model.getNode("Door_Back_Right"))
-, m_door_front_left(m_model.getNode("Door_Front_Left"))
-, m_door_frong_right(m_model.getNode("Door_Front_Right"))
 {
     try {
         std::string root = PROJECT_ROOT;
@@ -25,14 +20,13 @@ CableCar::CableCar(float doorOpenness)
         std::cerr << e.what() << std::endl;
         throw;
     }
-    m_model.setNodeWorldOffset("Door_Back_Left", glm::vec3(0.0f, 0.0f, -0.3f));
-    m_model.setNodeWorldOffset("Door_Back_Right", glm::vec3(0.0f, 0.0f, -0.3f));
-    m_model.setNodeWorldOffset("Door_Front_Left", glm::vec3(0.0f, 0.0f, 0.3f));
-    m_model.setNodeWorldOffset("Door_Front_Right", glm::vec3(0.0f, 0.0f, 0.3f));
 };
 
-void CableCar::setDoorOpenness(float openness) {
-    m_doorOpenness = openness;
+void CableCar::setDoorSlideFactor(float slideFactor) {
+    m_model.setNodeWorldOffset("Door_Back_Left", -OPEN_DOOR * slideFactor);
+    m_model.setNodeWorldOffset("Door_Back_Right", -OPEN_DOOR * slideFactor);
+    m_model.setNodeWorldOffset("Door_Front_Left", OPEN_DOOR * slideFactor);
+    m_model.setNodeWorldOffset("Door_Front_Right", OPEN_DOOR * slideFactor);
 }
 
 void CableCar::draw(const glm::mat4 viewProjection, const glm::vec3 cameraPosition) const {
@@ -55,5 +49,5 @@ void CableCar::draw(const glm::mat4 viewProjection, const glm::vec3 cameraPositi
         glm::value_ptr(cameraPosition)
     );
 
-    m_model.draw(m_cableCarShader, m_cableCarShader.getUniformLocation("model"), m_doorOpenness);
+    m_model.draw(m_cableCarShader, m_cableCarShader.getUniformLocation("model"));
 }

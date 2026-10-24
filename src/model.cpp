@@ -175,8 +175,7 @@ void Model::drawNode(
     const aiNode* node,
     const glm::mat4& parentTransform,
     const Shader& shader,
-    GLint modelLocation,
-    float doorOpenness) const
+    GLint modelLocation) const
 {
     glm::mat4 transform =
         parentTransform * toGLM(node->mTransformation);
@@ -184,7 +183,7 @@ void Model::drawNode(
     auto offset = m_nodeWorldOffsets.find(node);
 
     if (offset != m_nodeWorldOffsets.end())
-        transform = glm::translate(glm::mat4(1.0f), offset->second * doorOpenness) * transform;
+        transform = glm::translate(glm::mat4(1.0f), offset->second) * transform;
 
     glUniformMatrix4fv(
         modelLocation,
@@ -202,13 +201,12 @@ void Model::drawNode(
             node->mChildren[i],
             transform,
             shader,
-            modelLocation,
-            doorOpenness
+            modelLocation
         );
     }
 }
 
-void Model::draw(const Shader& shader, GLint modelLocation, float doorOpenness) const
+void Model::draw(const Shader& shader, GLint modelLocation) const
 {
     shader.bind();
 
@@ -216,7 +214,7 @@ void Model::draw(const Shader& shader, GLint modelLocation, float doorOpenness) 
         glm::scale(glm::mat4(1.0f), glm::vec3(m_modelScale)) *
         glm::translate(glm::mat4(1.0f), -m_modelCenter);
 
-    drawNode(m_scene->mRootNode, fitTransform, shader, modelLocation, doorOpenness);
+    drawNode(m_scene->mRootNode, fitTransform, shader, modelLocation);
 }
 
 const aiNode* Model::getNode(const std::string name) const {

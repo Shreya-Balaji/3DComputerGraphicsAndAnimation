@@ -33,7 +33,7 @@ int main()
     AttachedCamera& attachedCamera = cameraRig.attachedCamera();
 
     bool drawBezierCurve = false;
-    float doorOpenness = 0.0f;
+    float doorSlideFactor = 0.0f;
 
     glEnable(GL_DEPTH_TEST);
 
@@ -41,7 +41,7 @@ int main()
     {
         const std::string root = PROJECT_ROOT;
 
-        CableCar cableCar(doorOpenness);
+        CableCar cableCar;
 
         CameraIcon cameraIcon;
 
@@ -82,8 +82,8 @@ int main()
             if (ImGui::SliderFloat("t value", &tValue, 0.0f, attachedCamera.maxTValue()))
                 attachedCamera.setTValue(tValue);
             ImGui::Checkbox("Draw Bezier curve", &drawBezierCurve);
-            if (ImGui::SliderFloat("Open doors", &doorOpenness, 0.0f, 1.0f))
-                cableCar.setDoorOpenness(doorOpenness);
+            if (ImGui::SliderFloat("Open doors", &doorSlideFactor, 0.0f, 1.0f))
+                cableCar.setDoorSlideFactor(doorSlideFactor);
             if (freeCameraEnabled)
                 ImGui::Text("WASD: move | Space/Ctrl: up/down | Left-drag: look");
             ImGui::End();

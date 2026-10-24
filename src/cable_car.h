@@ -5,17 +5,12 @@
 
 class CableCar {
     public:
-        CableCar(float doorOpenness);
+        CableCar();
         void draw(const glm::mat4 viewProjection, const glm::vec3 cameraPosition) const;
-        void setDoorOpenness(float openness);
+        void setDoorSlideFactor(float slideFactor);
     private:
+        static constexpr glm::vec3 OPEN_DOOR = glm::vec3(0.0f, 0.0f, 0.3f);
+
         Model m_model;
         Shader m_cableCarShader;
-
-        const aiNode* m_door_back_left = nullptr;
-        const aiNode* m_door_back_right = nullptr;
-        const aiNode* m_door_front_left = nullptr;
-        const aiNode* m_door_frong_right = nullptr;
-        bool m_doorsOpen;
-        float m_doorOpenness = 0.0f;
 };
