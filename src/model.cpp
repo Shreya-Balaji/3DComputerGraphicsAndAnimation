@@ -17,6 +17,7 @@
 #include <vector>
 #include "model.h"
 #include "assimp_utils.h"
+#include "glm/ext/matrix_transform.hpp"
 
 void Model::calculateBounds(
     const aiNode* node,
@@ -160,14 +161,30 @@ void Model::load(const std::string& path)
         << m_modelScale << '\n';
 }
 
+bool Model::setNodeWorldOffset(const std::string &name, const glm::vec3 offset) {
+  const aiNode* node = getNode(name);
+
+  if (!node)
+    return false;
+
+  m_nodeWorldOffsets[node] = offset;
+  return true;
+};
+
 void Model::drawNode(
     const aiNode* node,
     const glm::mat4& parentTransform,
     const Shader& shader,
-    GLint modelLocation) const
+    GLint modelLocation,
+    float doorOpenness) const
 {
     glm::mat4 transform =
         parentTransform * toGLM(node->mTransformation);
+
+    auto offset = m_nodeWorldOffsets.find(node);
+
+    if (offset != m_nodeWorldOffsets.end())
+        transform = glm::translate(glm::mat4(1.0f), offset->second * doorOpenness) * transform;
 
     glUniformMatrix4fv(
         modelLocation,
@@ -185,12 +202,13 @@ void Model::drawNode(
             node->mChildren[i],
             transform,
             shader,
-            modelLocation
+            modelLocation,
+            doorOpenness
         );
     }
 }
 
-void Model::draw(const Shader& shader, GLint modelLocation) const
+void Model::draw(const Shader& shader, GLint modelLocation, float doorOpenness) const
 {
     shader.bind();
 
@@ -198,7 +216,7 @@ void Model::draw(const Shader& shader, GLint modelLocation) const
         glm::scale(glm::mat4(1.0f), glm::vec3(m_modelScale)) *
         glm::translate(glm::mat4(1.0f), -m_modelCenter);
 
-    drawNode(m_scene->mRootNode, fitTransform, shader, modelLocation);
+    drawNode(m_scene->mRootNode, fitTransform, shader, modelLocation, doorOpenness);
 }
 
 const aiNode* Model::getNode(const std::string name) const {
