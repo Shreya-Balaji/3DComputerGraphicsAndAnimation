@@ -1,4 +1,5 @@
 #include "cable_car.h"
+#include "environment.h"
 #include "camera_rig.h"
 #include "camera_icon.h"
 
@@ -7,7 +8,24 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <exception>
 #include <iostream>
+#include <stdexcept>
 
+glm::vec3 evaluateCableCarRoute(float t)
+{
+    // Initial cliffside route, keeping the cabin closer to the mountain.
+    const glm::vec3 p0(-1.0f, 0.2f, -1.5f);
+    const glm::vec3 p1(-1.5f, 1.2f, -2.5f);
+    const glm::vec3 p2(-2.5f, 1.8f, -4.5f);
+    const glm::vec3 p3(-3.5f, 1.5f, -6.0f);
+
+    t = glm::clamp(t, 0.0f, 1.0f);
+    const float u = 1.0f - t;
+
+    return u * u * u * p0
+        + 3.0f * u * u * t * p1
+        + 3.0f * u * t * t * p2
+        + t * t * t * p3;
+}
 int main()
 {
     Window window(
@@ -21,12 +39,21 @@ int main()
 
     bool drawBezierCurve = false;
     float doorSlideFactor = 0.0f;
+    float cableCarT = 0.35f;
 
     glEnable(GL_DEPTH_TEST);
 
     try
     {
         CableCar cableCar;
+      
+        Environment environment;
+        if (!environment.initialize())
+        {
+            throw std::runtime_error(
+                "Could not initialize mountain environment."
+            );
+        }
 
         CameraIcon cameraIcon;
 
@@ -71,8 +98,16 @@ int main()
                 cableCar.setDoorSlideFactor(doorSlideFactor);
             if (freeCameraEnabled)
                 ImGui::Text("WASD: move | Space/Ctrl: up/down | Left-drag: look");
-            ImGui::End();
+            ImGui::Text("Cable Car Route");
 
+            ImGui::SliderFloat(
+                "Cable car position",
+                &cableCarT,
+                0.0f,
+                1.0f
+            );
+            ImGui::End();
+            
             const ImGuiIO& io = ImGui::GetIO();
             cameraRig.updateInput(io.WantCaptureMouse || io.WantCaptureKeyboard);
 
@@ -87,7 +122,17 @@ int main()
             );
             const glm::mat4 viewProjection = projection * view;
 
+            const glm::vec3 carPosition =
+                evaluateCableCarRoute(cableCarT);
+
+            cableCar.setWorldTransform(
+                carPosition,
+                1.0f,
+                glm::vec3(0.0f)
+            );
             cableCar.draw(viewProjection, cameraPosition);
+
+            environment.draw(view, projection);
 
            if (drawBezierCurve)
                 attachedCamera.curve().draw(viewProjection);

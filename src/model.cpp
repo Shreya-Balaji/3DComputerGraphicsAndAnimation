@@ -6,6 +6,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <stdexcept>
+#include <filesystem>
 
 void Model::calculateBounds(
     const aiNode* node,
@@ -52,7 +53,8 @@ void Model::calculateBounds(
     }
 }
 
-Model::Model(const std::string& path) {
+Model::Model(const std::string& path, bool autoScale) : m_autoScale(autoScale)
+{
     load(path);
 }
 
@@ -76,7 +78,7 @@ void Model::load(const std::string& path)
 
     for (unsigned int i = 0; i < m_scene->mNumMeshes; ++i) {
         const aiMesh& source = *m_scene->mMeshes[i];
-        Mesh cpuMesh = toCPUMesh(source, *m_scene);
+        Mesh cpuMesh = toCPUMesh(source, *m_scene, std::filesystem::path(path).parent_path());
 
         std::cout << "Mesh " << i << '\n';
 
@@ -128,7 +130,14 @@ void Model::load(const std::string& path)
     }
 
     // Fit the largest dimension to approximately 4 world units.
-    m_modelScale = 4.0f / maxDimension;
+    if (m_autoScale)
+    {
+        m_modelScale = 4.0f / maxDimension;
+    }
+    else
+    {
+        m_modelScale = 1.0f;
+    }
 
     std::cout << "Model loaded successfully!\n";
     std::cout << "Meshes: " << m_scene->mNumMeshes << '\n';
@@ -192,12 +201,42 @@ void Model::drawNode(
     }
 }
 
+void Model::setWorldTransform(
+    const glm::vec3& position,
+    float scale,
+    const glm::vec3& rotationDegrees)
+{
+    m_worldPosition = position;
+    m_worldScale = scale;
+    m_worldRotation = rotationDegrees;
+}
+
 void Model::draw(const Shader& shader) const
 {
     shader.bind();
 
+    glm::mat4 rotation =
+        glm::rotate(
+            glm::mat4(1.0f),
+            glm::radians(m_worldRotation.x),
+            glm::vec3(1.0f, 0.0f, 0.0f));
+
+    rotation = glm::rotate(
+        rotation,
+        glm::radians(m_worldRotation.y),
+        glm::vec3(0.0f, 1.0f, 0.0f));
+
+    rotation = glm::rotate(
+        rotation,
+        glm::radians(m_worldRotation.z),
+        glm::vec3(0.0f, 0.0f, 1.0f));
+
     glm::mat4 fitTransform =
-        glm::scale(glm::mat4(1.0f), glm::vec3(m_modelScale)) *
+        glm::translate(glm::mat4(1.0f), m_worldPosition) *
+        rotation *
+        glm::scale(
+            glm::mat4(1.0f),
+            glm::vec3(m_modelScale * m_worldScale)) *
         glm::translate(glm::mat4(1.0f), -m_modelCenter);
 
     drawNode(m_scene->mRootNode, fitTransform, shader);

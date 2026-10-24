@@ -27,6 +27,14 @@ void CableCar::setDoorSlideFactor(float slideFactor) {
     m_model.setNodeWorldOffset("Door_Front_Right", OPEN_DOOR * slideFactor);
 }
 
+void CableCar::setWorldTransform(
+    const glm::vec3& position,
+    float scale,
+    const glm::vec3& rotationDegrees)
+{
+    m_model.setWorldTransform(position, scale, rotationDegrees);
+}
+
 void CableCar::draw(const glm::mat4 viewProjection, const glm::vec3 cameraPosition) const {
     m_cableCarShader.bind();
 
