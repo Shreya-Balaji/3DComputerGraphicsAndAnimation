@@ -148,6 +148,7 @@ void Model::load(const std::string& path)
         << m_modelScale << '\n';
 }
 
+// function to set an offset for child nodes of the model, the transform will be applied in the drawNode function
 bool Model::setNodeWorldOffset(const std::string &name, const glm::vec3 offset) {
   const aiNode* node = getNode(name);
 
@@ -161,8 +162,7 @@ bool Model::setNodeWorldOffset(const std::string &name, const glm::vec3 offset) 
 void Model::drawNode(
     const aiNode* node,
     const glm::mat4& parentTransform,
-    const Shader& shader,
-    GLint modelLocation) const
+    const Shader& shader) const
 {
     glm::mat4 transform =
         parentTransform * toGLM(node->mTransformation);
@@ -173,7 +173,7 @@ void Model::drawNode(
         transform = glm::translate(glm::mat4(1.0f), offset->second) * transform;
 
     glUniformMatrix4fv(
-        modelLocation,
+        shader.getUniformLocation("model"),
         1,
         GL_FALSE,
         glm::value_ptr(transform)
@@ -187,13 +187,12 @@ void Model::drawNode(
         drawNode(
             node->mChildren[i],
             transform,
-            shader,
-            modelLocation
+            shader
         );
     }
 }
 
-void Model::draw(const Shader& shader, GLint modelLocation) const
+void Model::draw(const Shader& shader) const
 {
     shader.bind();
 
@@ -201,7 +200,7 @@ void Model::draw(const Shader& shader, GLint modelLocation) const
         glm::scale(glm::mat4(1.0f), glm::vec3(m_modelScale)) *
         glm::translate(glm::mat4(1.0f), -m_modelCenter);
 
-    drawNode(m_scene->mRootNode, fitTransform, shader, modelLocation);
+    drawNode(m_scene->mRootNode, fitTransform, shader);
 }
 
 const aiNode* Model::getNode(const std::string name) const {

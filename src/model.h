@@ -12,7 +12,7 @@ class Model {
     public:
         Model(const std::string& path);
         void load(const std::string& path);
-        void draw(const Shader& shader, GLint modelLocation) const;
+        void draw(const Shader& shader) const;
         const aiNode* getNode(const std::string name) const;
         bool setNodeWorldOffset(
             const std::string& name,
@@ -29,8 +29,7 @@ class Model {
         void drawNode(
             const aiNode* node,
             const glm::mat4& parentTransform,
-            const Shader& shader,
-            GLint modelLocation
+            const Shader& shader
         ) const;
 
         Assimp::Importer m_importer;

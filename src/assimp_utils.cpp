@@ -10,6 +10,7 @@ namespace {
 const glm::vec3 DEFAULT_COLOR{0.85f, 0.78f, 0.65f};
 }
 
+// convert an Assimp transformation matrix into a GLM matrix
 glm::mat4 toGLM(const aiMatrix4x4& a)
 {
     glm::mat4 m(1.0f);
@@ -29,6 +30,7 @@ glm::mat4 toGLM(const aiMatrix4x4& a)
     return m;
 }
 
+// convert an Assimp mesh to a CPU mesh
 Mesh toCPUMesh(const aiMesh& source, const aiScene& scene)
 {
     Mesh result;
