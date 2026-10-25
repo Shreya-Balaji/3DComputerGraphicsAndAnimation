@@ -2,6 +2,7 @@
 #include "environment.h"
 #include "camera_rig.h"
 #include "camera_icon.h"
+#include "minimap.h"
 
 #include <framework/window.h>
 #include <imgui/imgui.h>
@@ -40,6 +41,8 @@ int main()
     bool drawBezierCurve = false;
     float doorSlideFactor = 0.0f;
     float cableCarT = 0.35f;
+    bool showMinimap = true;
+  
 
     glEnable(GL_DEPTH_TEST);
 
@@ -56,6 +59,14 @@ int main()
         }
 
         CameraIcon cameraIcon;
+
+        Minimap minimap;
+        if (!minimap.initialize(512, 512))
+        {
+            throw std::runtime_error(
+                "Could not initialize minimap framebuffer."
+            );
+        }
 
         while (!window.shouldClose())
         {
@@ -94,6 +105,7 @@ int main()
             if (ImGui::SliderFloat("t value", &tValue, 0.0f, attachedCamera.maxTValue()))
                 attachedCamera.setTValue(tValue);
             ImGui::Checkbox("Draw Bezier curve", &drawBezierCurve);
+            ImGui::Checkbox("Show minimap", &showMinimap);
             if (ImGui::SliderFloat("Open doors", &doorSlideFactor, 0.0f, 1.0f))
                 cableCar.setDoorSlideFactor(doorSlideFactor);
             if (freeCameraEnabled)
@@ -134,11 +146,35 @@ int main()
 
             environment.draw(view, projection);
 
-           if (drawBezierCurve)
+            if (showMinimap)
+            {
+                minimap.bind();
+
+                glClearColor(0.25f, 0.45f, 0.65f, 1.0f);
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+                const glm::mat4 minimapView = minimap.viewMatrix();
+                const glm::mat4 minimapProjection = minimap.projectionMatrix();
+                const glm::mat4 minimapViewProjection =
+                    minimapProjection * minimapView;
+
+                const glm::vec3 minimapCameraPosition(-3.0f, 70.0f, -5.0f);
+
+                environment.draw(minimapView, minimapProjection);
+                cableCar.draw(minimapViewProjection, minimapCameraPosition);
+
+                minimap.unbind();
+                glViewport(0, 0, size.x, size.y);
+            }
+
+            if (drawBezierCurve)
                 attachedCamera.curve().draw(viewProjection);
 
             if (cameraRig.freeCameraEnabled())
                 cameraIcon.draw(viewProjection, attachedCamera.viewMatrix());
+
+            if (showMinimap)
+                minimap.drawOverlay(size.x, size.y);
 
             window.swapBuffers();
         }
