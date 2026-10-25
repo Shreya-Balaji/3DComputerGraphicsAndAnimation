@@ -12,11 +12,11 @@
 
 glm::vec3 evaluateCableCarRoute(float t)
 {
-    // Initial cliffside route, keeping the cabin closer to the mountain.
-    const glm::vec3 p0(-1.0f, 0.2f, -1.5f);
-    const glm::vec3 p1(-1.5f, 1.2f, -2.5f);
-    const glm::vec3 p2(-2.5f, 1.8f, -4.5f);
-    const glm::vec3 p3(-3.5f, 1.5f, -6.0f);
+    // Route along the outside edge of the mountain.
+    const glm::vec3 p0(-5.4f, 0.0f, -2.0f);
+    const glm::vec3 p1(-5.7f, 0.7f, -3.8f);
+    const glm::vec3 p2(-5.7f, 1.0f, -6.0f);
+    const glm::vec3 p3(-5.4f, 0.4f, -8.0f);
 
     t = glm::clamp(t, 0.0f, 1.0f);
     const float u = 1.0f - t;
@@ -123,11 +123,11 @@ int main()
             const glm::mat4 viewProjection = projection * view;
 
             const glm::vec3 carPosition =
-                evaluateCableCarRoute(cableCarT);
+                evaluateCableCarRoute(1.0f - cableCarT);
 
             cableCar.setWorldTransform(
                 carPosition,
-                1.0f,
+                0.55f,
                 glm::vec3(0.0f)
             );
             cableCar.draw(viewProjection, cameraPosition);

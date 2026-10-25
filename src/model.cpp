@@ -65,7 +65,8 @@ void Model::load(const std::string& path)
         aiProcess_Triangulate |
         aiProcess_GenSmoothNormals |
         aiProcess_JoinIdenticalVertices |
-        aiProcess_ImproveCacheLocality
+        aiProcess_ImproveCacheLocality |
+        aiProcess_CalcTangentSpace
     );
 
     if (!m_scene || !m_scene->mRootNode)
