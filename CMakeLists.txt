@@ -23,6 +23,7 @@ add_executable(CableCarAlps
     src/free_camera.cpp
     src/assimp_utils.cpp
     src/model.cpp
+    src/minimap.cpp
 )
 
 target_link_libraries(CableCarAlps PRIVATE

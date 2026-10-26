@@ -62,4 +62,5 @@ private:
     GLuint m_vao { INVALID };
     GLuint m_uboMaterial { INVALID };
     GLuint m_texture{ INVALID };
+    GLuint m_normalTexture{ INVALID };
 };

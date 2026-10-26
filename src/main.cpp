@@ -2,6 +2,7 @@
 #include "environment.h"
 #include "camera_rig.h"
 #include "camera_icon.h"
+#include "minimap.h"
 
 #include <framework/window.h>
 #include <imgui/imgui.h>
@@ -12,11 +13,11 @@
 
 glm::vec3 evaluateCableCarRoute(float t)
 {
-    // Initial cliffside route, keeping the cabin closer to the mountain.
-    const glm::vec3 p0(-1.0f, 0.2f, -1.5f);
-    const glm::vec3 p1(-1.5f, 1.2f, -2.5f);
-    const glm::vec3 p2(-2.5f, 1.8f, -4.5f);
-    const glm::vec3 p3(-3.5f, 1.5f, -6.0f);
+    // Route along the outside edge of the mountain.
+    const glm::vec3 p0(-5.4f, 0.0f, -2.0f);
+    const glm::vec3 p1(-5.7f, 0.7f, -3.8f);
+    const glm::vec3 p2(-5.7f, 1.0f, -6.0f);
+    const glm::vec3 p3(-5.4f, 0.4f, -8.0f);
 
     t = glm::clamp(t, 0.0f, 1.0f);
     const float u = 1.0f - t;
@@ -40,6 +41,8 @@ int main()
     bool drawBezierCurve = false;
     float doorSlideFactor = 0.0f;
     float cableCarT = 0.35f;
+    bool showMinimap = true;
+  
 
     glEnable(GL_DEPTH_TEST);
 
@@ -56,6 +59,14 @@ int main()
         }
 
         CameraIcon cameraIcon;
+
+        Minimap minimap;
+        if (!minimap.initialize(512, 512))
+        {
+            throw std::runtime_error(
+                "Could not initialize minimap framebuffer."
+            );
+        }
 
         while (!window.shouldClose())
         {
@@ -94,6 +105,7 @@ int main()
             if (ImGui::SliderFloat("t value", &tValue, 0.0f, attachedCamera.maxTValue()))
                 attachedCamera.setTValue(tValue);
             ImGui::Checkbox("Draw Bezier curve", &drawBezierCurve);
+            ImGui::Checkbox("Show minimap", &showMinimap);
             if (ImGui::SliderFloat("Open doors", &doorSlideFactor, 0.0f, 1.0f))
                 cableCar.setDoorSlideFactor(doorSlideFactor);
             if (freeCameraEnabled)
@@ -123,22 +135,46 @@ int main()
             const glm::mat4 viewProjection = projection * view;
 
             const glm::vec3 carPosition =
-                evaluateCableCarRoute(cableCarT);
+                evaluateCableCarRoute(1.0f - cableCarT);
 
             cableCar.setWorldTransform(
                 carPosition,
-                1.0f,
+                0.55f,
                 glm::vec3(0.0f)
             );
             cableCar.draw(viewProjection, cameraPosition);
 
             environment.draw(view, projection);
 
-           if (drawBezierCurve)
+            if (showMinimap)
+            {
+                minimap.bind();
+
+                glClearColor(0.25f, 0.45f, 0.65f, 1.0f);
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+                const glm::mat4 minimapView = minimap.viewMatrix();
+                const glm::mat4 minimapProjection = minimap.projectionMatrix();
+                const glm::mat4 minimapViewProjection =
+                    minimapProjection * minimapView;
+
+                const glm::vec3 minimapCameraPosition(-3.0f, 70.0f, -5.0f);
+
+                environment.draw(minimapView, minimapProjection);
+                cableCar.draw(minimapViewProjection, minimapCameraPosition);
+
+                minimap.unbind();
+                glViewport(0, 0, size.x, size.y);
+            }
+
+            if (drawBezierCurve)
                 attachedCamera.curve().draw(viewProjection);
 
             if (cameraRig.freeCameraEnabled())
                 cameraIcon.draw(viewProjection, attachedCamera.viewMatrix());
+
+            if (showMinimap)
+                minimap.drawOverlay(size.x, size.y);
 
             window.swapBuffers();
         }

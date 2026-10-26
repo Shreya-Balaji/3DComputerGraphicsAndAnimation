@@ -62,6 +62,24 @@ Mesh toCPUMesh(
                         source.mTextureCoords[0][i].y)
             : glm::vec2(0.0f);
 
+        vertex.tangent = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+
+        if (source.HasTangentsAndBitangents() && source.HasNormals()) {
+            const auto& t = source.mTangents[i];
+            const auto& b = source.mBitangents[i];
+            const auto& n = source.mNormals[i];
+
+            const glm::vec3 tangent(t.x, t.y, t.z);
+            const glm::vec3 bitangent(b.x, b.y, b.z);
+            const glm::vec3 normal(n.x, n.y, n.z);
+
+            const float handedness =
+                glm::dot(glm::cross(normal, tangent), bitangent) < 0.0f
+                ? -1.0f
+                : 1.0f;
+
+            vertex.tangent = glm::vec4(tangent, handedness);
+        }
         result.vertices.push_back(vertex);
     }
 
@@ -135,6 +153,27 @@ Mesh toCPUMesh(
 
                 if (std::filesystem::exists(fullPath)) {
                     result.material.kdTexture =
+                        std::make_shared<Image>(fullPath);
+                }
+            }
+        }
+        aiString normalTexturePath;
+
+        if (material->GetTexture(
+            aiTextureType_NORMALS, 0, &normalTexturePath) == AI_SUCCESS) {
+
+            const std::filesystem::path relativePath(
+                normalTexturePath.C_Str());
+
+            // Skip embedded textures such as "*0".
+            if (!relativePath.empty() &&
+                relativePath.string().front() != '*') {
+
+                const std::filesystem::path fullPath =
+                    modelDirectory / relativePath;
+
+                if (std::filesystem::exists(fullPath)) {
+                    result.material.normalTexture =
                         std::make_shared<Image>(fullPath);
                 }
             }

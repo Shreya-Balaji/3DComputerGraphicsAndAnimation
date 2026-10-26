@@ -86,6 +86,60 @@ GPUMesh::GPUMesh(const Mesh& cpuMesh)
 
         m_hasTextureCoords = true;
     }
+    if (cpuMesh.material.normalTexture) {
+        Image& image = *cpuMesh.material.normalTexture;
+
+        GLenum format = GL_RGB;
+        GLenum internalFormat = GL_RGB8;
+
+        switch (image.channels) {
+        case 1:
+            format = GL_RED;
+            internalFormat = GL_R8;
+            break;
+        case 3:
+            format = GL_RGB;
+            internalFormat = GL_RGB8;
+            break;
+        case 4:
+            format = GL_RGBA;
+            internalFormat = GL_RGBA8;
+            break;
+        default:
+            throw std::runtime_error(
+                "Unsupported normal texture channel count");
+        }
+
+        glGenTextures(1, &m_normalTexture);
+        glBindTexture(GL_TEXTURE_2D, m_normalTexture);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(
+            GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(
+            GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        GLint previousAlignment = 4;
+        glGetIntegerv(GL_UNPACK_ALIGNMENT, &previousAlignment);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            static_cast<GLint>(internalFormat),
+            image.width,
+            image.height,
+            0,
+            format,
+            GL_UNSIGNED_BYTE,
+            image.get_data());
+
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glPixelStorei(GL_UNPACK_ALIGNMENT, previousAlignment);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
 
 
     // Create VAO and bind it so subsequent creations of VBO and IBO are bound to this VAO
@@ -106,6 +160,14 @@ GPUMesh::GPUMesh(const Mesh& cpuMesh)
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
+    glEnableVertexAttribArray(3);
+
+    glVertexAttribPointer(
+        3, 4, GL_FLOAT, GL_FALSE,
+        sizeof(Vertex),
+        (void*)offsetof(Vertex, tangent));
+
+    glVertexAttribDivisor(3, 0);
     // We tell OpenGL what each vertex looks like and how they are mapped to the shader (location = ...).
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
@@ -174,11 +236,32 @@ void GPUMesh::draw(const Shader& drawingShader) const
             hasTextureLocation,
             m_texture != INVALID ? 1 : 0);
     }
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, m_normalTexture);
 
+    const GLint normalTextureLocation =
+        drawingShader.getUniformLocation("normalTexture");
+
+    if (normalTextureLocation >= 0) {
+        glUniform1i(normalTextureLocation, 1);
+    }
+
+    const GLint hasNormalTextureLocation =
+        drawingShader.getUniformLocation("hasNormalTexture");
+
+    if (hasNormalTextureLocation >= 0) {
+        glUniform1i(
+            hasNormalTextureLocation,
+            m_normalTexture != INVALID ? 1 : 0);
+    }
     glBindVertexArray(m_vao);
     glDrawElements(GL_TRIANGLES, m_numIndices,
         GL_UNSIGNED_INT, nullptr);
 
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
@@ -193,6 +276,7 @@ void GPUMesh::moveInto(GPUMesh&& other)
     m_vao = other.m_vao;
     m_uboMaterial = other.m_uboMaterial;
     m_texture = other.m_texture;
+    m_normalTexture = other.m_normalTexture;
     other.m_numIndices = 0;
     other.m_hasTextureCoords =false;
     other.m_ibo = INVALID;
@@ -200,6 +284,7 @@ void GPUMesh::moveInto(GPUMesh&& other)
     other.m_vao = INVALID;
     other.m_uboMaterial = INVALID;
     other.m_texture = INVALID;
+    other.m_normalTexture = INVALID;
 }
 
 void GPUMesh::freeGpuMemory()
@@ -214,4 +299,6 @@ void GPUMesh::freeGpuMemory()
         glDeleteBuffers(1, &m_uboMaterial);
     if (m_texture != INVALID)
         glDeleteTextures(1, &m_texture);
+    if (m_normalTexture != INVALID)
+        glDeleteTextures(1, &m_normalTexture);
 }

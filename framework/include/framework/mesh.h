@@ -10,11 +10,13 @@ DISABLE_WARNINGS_POP()
 #include <optional>
 #include <span>
 #include <vector>
+#include <glm/vec4.hpp>
 
 struct Vertex {
 	glm::vec3 position;
 	glm::vec3 normal;
-	glm::vec2 texCoord; // Texture coordinate
+	glm::vec2 texCoord;
+	glm::vec4 tangent{ 0.0f, 0.0f, 0.0f, 1.0f };
 
 	[[nodiscard]] constexpr bool operator==(const Vertex&) const noexcept = default;
 };
@@ -24,13 +26,13 @@ struct Material {
 	glm::vec3 ks{ 0.0f };
 	float shininess{ 1.0f };
 	float transparency{ 1.0f };
-
 	// Optional texture that replaces kd; use as follows:
 	// 
 	// if (material.kdTexture) {
 	//   material.kdTexture->getTexel(...);
 	// }
 	std::shared_ptr<Image> kdTexture;
+	std::shared_ptr<Image> normalTexture;
 };
 
 struct Mesh {
