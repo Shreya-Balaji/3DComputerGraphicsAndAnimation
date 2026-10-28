@@ -1,0 +1,1 @@
+https://stackoverflow.com/questions/4770735/shader-sun-position-glsl - idea taken for moving sum

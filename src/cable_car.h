@@ -5,7 +5,7 @@
 class CableCar {
     public:
         CableCar();
-        void draw(const glm::mat4 viewProjection, const glm::vec3 cameraPosition) const;
+        void draw(const glm::mat4 viewProjection, const glm::vec3 cameraPosition, const glm::vec3 sunLightDir) const;
         void setDoorSlideFactor(float slideFactor);
         void setWorldTransform(
             const glm::vec3& position,

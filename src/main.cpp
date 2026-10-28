@@ -27,6 +27,11 @@ glm::vec3 evaluateCableCarRoute(float t)
         + 3.0f * u * t * t * p2
         + t * t * t * p3;
 }
+glm::vec3 movingSun(float timeOfDay){
+    const float angle = glm::radians(2*180.0f * timeOfDay);
+    glm::vec3 sunPos = glm::vec3(glm::cos(angle), glm::sin(angle), 0.5f); // I dont want the path of sun's motion to be straight, so I'm adding some movement along z axis as well to tilt a bit.
+    return -normalize(sunPos); // i want sunlight on the cable car and view, so im adding a minus sign to make lightdir point at the scene
+}
 int main()
 {
     Window window(
@@ -42,6 +47,7 @@ int main()
     float doorSlideFactor = 0.0f;
     float cableCarT = 0.35f;
     bool showMinimap = true;
+    float timeOfDay = 0.25f; // 0.0 = sunrise, 0.25 = midday, 0.5 = sunset
   
 
     glEnable(GL_DEPTH_TEST);
@@ -118,6 +124,11 @@ int main()
                 0.0f,
                 1.0f
             );
+            ImGui::SliderFloat("Moving Sun",
+                &timeOfDay,
+                0.0f,
+                0.5f
+            );
             ImGui::End();
             
             const ImGuiIO& io = ImGui::GetIO();
@@ -125,6 +136,7 @@ int main()
 
             const glm::mat4 view = cameraRig.viewMatrix();
             const glm::vec3 cameraPosition = cameraRig.position();
+            const glm::vec3 sunLightDir = movingSun(timeOfDay);
 
             glm::mat4 projection = glm::perspective(
                 glm::radians(45.0f),
@@ -142,9 +154,9 @@ int main()
                 0.55f,
                 glm::vec3(0.0f)
             );
-            cableCar.draw(viewProjection, cameraPosition);
+            cableCar.draw(viewProjection, cameraPosition, sunLightDir);
 
-            environment.draw(view, projection);
+            environment.draw(view, projection, cameraPosition, sunLightDir);
 
             if (showMinimap)
             {
@@ -160,8 +172,8 @@ int main()
 
                 const glm::vec3 minimapCameraPosition(-3.0f, 70.0f, -5.0f);
 
-                environment.draw(minimapView, minimapProjection);
-                cableCar.draw(minimapViewProjection, minimapCameraPosition);
+                environment.draw(minimapView, minimapProjection, minimapCameraPosition, sunLightDir);
+                cableCar.draw(minimapViewProjection, minimapCameraPosition, sunLightDir);
 
                 minimap.unbind();
                 glViewport(0, 0, size.x, size.y);
