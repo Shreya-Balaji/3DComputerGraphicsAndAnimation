@@ -60,6 +60,8 @@ Model::Model(const std::string& path, bool autoScale) : m_autoScale(autoScale)
 
 void Model::load(const std::string& path)
 {
+    m_nodeWorldOffsets.clear();
+    m_nodeRotations.clear();
     m_scene = m_importer.ReadFile(
         path,
         aiProcess_Triangulate |
@@ -169,6 +171,34 @@ bool Model::setNodeWorldOffset(const std::string &name, const glm::vec3 offset) 
   return true;
 };
 
+bool Model::setNodeRotation(const std::string& name, float angle, const glm::vec3& axis)
+{
+    const aiNode* node = getNode(name);
+    if (!node)
+        return false;
+
+    auto [rotation, inserted] = m_nodeRotations.try_emplace(node);
+    if (inserted) {
+        glm::vec3 minimum, maximum;
+        bool firstVertex = true;
+        // Cancel this node's imported transform to measure its geometry in local space.
+        aiMatrix4x4 inverseTransform = node->mTransformation;
+        calculateBounds(node, inverseTransform.Inverse(), minimum, maximum, firstVertex);
+        if (firstVertex) {
+            m_nodeRotations.erase(rotation);
+            return false;
+        }
+        rotation->second.center = (minimum + maximum) * 0.5f;
+    }
+
+    const glm::vec3& center = rotation->second.center;
+    rotation->second.transform =
+        glm::translate(glm::mat4(1.0f), center) *
+        glm::rotate(glm::mat4(1.0f), angle, axis) *
+        glm::translate(glm::mat4(1.0f), -center);
+    return true;
+}
+
 void Model::drawNode(
     const aiNode* node,
     const glm::mat4& parentTransform,
@@ -176,6 +206,10 @@ void Model::drawNode(
 {
     glm::mat4 transform =
         parentTransform * toGLM(node->mTransformation);
+
+    auto rotation = m_nodeRotations.find(node);
+    if (rotation != m_nodeRotations.end())
+        transform *= rotation->second.transform;
 
     auto offset = m_nodeWorldOffsets.find(node);
 

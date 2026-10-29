@@ -2,6 +2,8 @@
 
 #include <assimp/Importer.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/constants.hpp>
+#include <cmath>
 #include <iostream>
 #include <string>
 
@@ -25,6 +27,16 @@ void CableCar::setDoorSlideFactor(float slideFactor) {
     m_model.setNodeWorldOffset("Door_Back_Right", -OPEN_DOOR * slideFactor);
     m_model.setNodeWorldOffset("Door_Front_Left", OPEN_DOOR * slideFactor);
     m_model.setNodeWorldOffset("Door_Front_Right", OPEN_DOOR * slideFactor);
+}
+
+void CableCar::updateWheels(float deltaTime, float speedDegreesPerSecond)
+{
+    m_wheelAngle = std::fmod(
+        m_wheelAngle + glm::radians(speedDegreesPerSecond) * deltaTime,
+        glm::two_pi<float>());
+
+    for (int i = 1; i <= 8; ++i)
+        m_model.setNodeRotation("Wheel_" + std::to_string(i), m_wheelAngle, glm::vec3(1.0f, 0.0f, 0.0f));
 }
 
 void CableCar::setWorldTransform(

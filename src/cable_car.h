@@ -7,6 +7,7 @@ class CableCar {
         CableCar();
         void draw(const glm::mat4 viewProjection, const glm::vec3 cameraPosition) const;
         void setDoorSlideFactor(float slideFactor);
+        void updateWheels(float deltaTime, float speedDegreesPerSecond);
         void setWorldTransform(
             const glm::vec3& position,
             float scale,
@@ -17,4 +18,5 @@ class CableCar {
 
         Model m_model;
         Shader m_cableCarShader;
+        float m_wheelAngle = 0.0f;
 };

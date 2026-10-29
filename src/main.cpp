@@ -40,16 +40,17 @@ int main()
 
     bool drawBezierCurve = false;
     float doorSlideFactor = 0.0f;
+    float wheelSpeed = 10.0f;
     float cableCarT = 0.35f;
     bool showMinimap = true;
-  
+
 
     glEnable(GL_DEPTH_TEST);
 
     try
     {
         CableCar cableCar;
-      
+
         Environment environment;
         if (!environment.initialize())
         {
@@ -108,6 +109,7 @@ int main()
             ImGui::Checkbox("Show minimap", &showMinimap);
             if (ImGui::SliderFloat("Open doors", &doorSlideFactor, 0.0f, 1.0f))
                 cableCar.setDoorSlideFactor(doorSlideFactor);
+            ImGui::SliderFloat("Wheel speed", &wheelSpeed, -20.0f, 20.0f, "%.0f deg/s");
             if (freeCameraEnabled)
                 ImGui::Text("WASD: move | Space/Ctrl: up/down | Left-drag: look");
             ImGui::Text("Cable Car Route");
@@ -119,8 +121,9 @@ int main()
                 1.0f
             );
             ImGui::End();
-            
+
             const ImGuiIO& io = ImGui::GetIO();
+            cableCar.updateWheels(io.DeltaTime, wheelSpeed);
             cameraRig.updateInput(io.WantCaptureMouse || io.WantCaptureKeyboard);
 
             const glm::mat4 view = cameraRig.viewMatrix();
