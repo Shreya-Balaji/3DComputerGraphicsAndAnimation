@@ -8,23 +8,12 @@ DISABLE_WARNINGS_PUSH()
 #include <glm/gtc/quaternion.hpp>
 DISABLE_WARNINGS_POP()
 
-FreeCamera::FreeCamera(Window* pWindow)
-    : FreeCamera(pWindow, glm::vec3(0), glm::vec3(0, 0, -1))
-{
-}
-
-FreeCamera::FreeCamera(Window* pWindow, const glm::vec3& pos, const glm::vec3& forward)
+FreeCamera::FreeCamera(Window* pWindow, const Config& config, const glm::vec3& pos, const glm::vec3& forward)
     : m_position(pos)
     , m_forward(glm::normalize(forward))
     , m_pWindow(pWindow)
+    , m_config(config)
 {
-}
-
-void FreeCamera::setUserInteraction(bool enabled)
-{
-    if (enabled && !m_userInteraction)
-        m_prevCursorPos = m_pWindow->getCursorPos();
-    m_userInteraction = enabled;
 }
 
 glm::vec3 FreeCamera::cameraPos() const
@@ -53,10 +42,15 @@ void FreeCamera::rotateY(float angle)
     m_up = glm::normalize(glm::cross(m_forward, horAxis));
 }
 
-void FreeCamera::updateInput()
+void FreeCamera::updateInput(bool guiCapturesInput)
 {
     constexpr float moveSpeed = 0.05f;
     constexpr float lookSpeed = 0.0035f;
+
+    const bool enabled = m_config.freeCameraEnabled && !guiCapturesInput;
+    if (enabled && !m_userInteraction)
+        m_prevCursorPos = m_pWindow->getCursorPos();
+    m_userInteraction = enabled;
 
     if (m_userInteraction) {
         glm::vec3 localMoveDelta{ 0 };
