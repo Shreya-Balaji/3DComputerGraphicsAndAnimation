@@ -1,4 +1,5 @@
 #pragma once
+#include "config.h"
 // Suppress warnings in third-party code.
 #include <framework/disable_all_warnings.h>
 DISABLE_WARNINGS_PUSH()
@@ -10,11 +11,9 @@ class Window;
 
 class FreeCamera {
 public:
-    FreeCamera(Window* pWindow);
-    FreeCamera(Window* pWindow, const glm::vec3& position, const glm::vec3& forward);
+    FreeCamera(Window* pWindow, const Config& config, const glm::vec3& position, const glm::vec3& forward);
 
-    void updateInput();
-    void setUserInteraction(bool enabled);
+    void updateInput(bool guiCapturesInput);
 
     glm::vec3 cameraPos() const;
     glm::mat4 viewMatrix() const;
@@ -30,6 +29,7 @@ private:
     glm::vec3 m_up{ 0, 1, 0 };
 
     const Window* m_pWindow;
+    const Config& m_config;
     bool m_userInteraction{ false };
     glm::dvec2 m_prevCursorPos{ 0 };
 };

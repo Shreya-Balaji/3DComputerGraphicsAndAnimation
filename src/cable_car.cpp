@@ -2,11 +2,33 @@
 
 #include <assimp/Importer.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/constants.hpp>
+#include <glm/common.hpp>
+#include <cmath>
 #include <iostream>
 #include <string>
 
-CableCar::CableCar()
-: m_model(Model(std::string(PROJECT_ROOT) + "/assets/cable_car/scene.gltf"))
+namespace {
+glm::vec3 evaluateCableCarRoute(float t)
+{
+    // Route along the outside edge of the mountain.
+    const glm::vec3 p0(-5.4f, 0.0f, -2.0f);
+    const glm::vec3 p1(-5.7f, 0.7f, -3.8f);
+    const glm::vec3 p2(-5.7f, 1.0f, -6.0f);
+    const glm::vec3 p3(-5.4f, 0.4f, -8.0f);
+
+    t = glm::clamp(t, 0.0f, 1.0f);
+    const float u = 1.0f - t;
+    return u * u * u * p0
+        + 3.0f * u * u * t * p1
+        + 3.0f * u * t * t * p2
+        + t * t * t * p3;
+}
+}
+
+CableCar::CableCar(const Config& config)
+: m_config(config)
+, m_model(Model(std::string(PROJECT_ROOT) + "/assets/cable_car/scene.gltf"))
 {
     try {
         ShaderBuilder cableCarBuilder;
@@ -20,19 +42,25 @@ CableCar::CableCar()
     }
 };
 
-void CableCar::setDoorSlideFactor(float slideFactor) {
-    m_model.setNodeWorldOffset("Door_Back_Left", -OPEN_DOOR * slideFactor);
-    m_model.setNodeWorldOffset("Door_Back_Right", -OPEN_DOOR * slideFactor);
-    m_model.setNodeWorldOffset("Door_Front_Left", OPEN_DOOR * slideFactor);
-    m_model.setNodeWorldOffset("Door_Front_Right", OPEN_DOOR * slideFactor);
+glm::vec3 CableCar::position() const
+{
+    return evaluateCableCarRoute(1.0f - m_config.cableCarT);
 }
 
-void CableCar::setWorldTransform(
-    const glm::vec3& position,
-    float scale,
-    const glm::vec3& rotationDegrees)
+void CableCar::update(float deltaTime)
 {
-    m_model.setWorldTransform(position, scale, rotationDegrees);
+    m_model.setWorldTransform(position(), 0.55f);
+    m_model.setNodeWorldOffset("Door_Back_Left", -OPEN_DOOR * m_config.doorSlideFactor);
+    m_model.setNodeWorldOffset("Door_Back_Right", -OPEN_DOOR * m_config.doorSlideFactor);
+    m_model.setNodeWorldOffset("Door_Front_Left", OPEN_DOOR * m_config.doorSlideFactor);
+    m_model.setNodeWorldOffset("Door_Front_Right", OPEN_DOOR * m_config.doorSlideFactor);
+
+    m_wheelAngle = std::fmod(
+        m_wheelAngle + glm::radians(m_config.wheelSpeed) * deltaTime,
+        glm::two_pi<float>());
+
+    for (int i = 1; i <= 8; ++i)
+        m_model.setNodeRotation("Wheel_" + std::to_string(i), m_wheelAngle, glm::vec3(1.0f, 0.0f, 0.0f));
 }
 
 void CableCar::draw(const glm::mat4 viewProjection, const glm::vec3 cameraPosition) const {
