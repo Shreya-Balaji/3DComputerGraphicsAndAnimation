@@ -1,8 +1,8 @@
 #include "camera_rig.h"
 
-CameraRig::CameraRig(Window& window, const glm::vec3& target, Config& config)
+CameraRig::CameraRig(Window& window, const CableCar& cableCar, Config& config)
     : m_config(config)
-    , m_attachedCamera(window, target, config)
+    , m_attachedCamera(window, cableCar, config)
     , m_freeCamera(&window, config, glm::vec3(1.5f, 1.0f, 1.0f),
                    -glm::vec3(1.5f, 1.0f, 1.0f))
 {

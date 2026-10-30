@@ -1,4 +1,5 @@
 #include "attached_camera.h"
+#include "cable_car.h"
 #include "glm/common.hpp"
 
 #include <framework/window.h>
@@ -7,10 +8,10 @@
 #include <cmath>
 
 
-AttachedCamera::AttachedCamera(Window& window, const glm::vec3& target, Config& config)
+AttachedCamera::AttachedCamera(Window& window, const CableCar& cableCar, Config& config)
     : m_window(window)
     , m_config(config)
-    , m_target(target)
+    , m_cableCar(cableCar)
     , m_curve([] {
         std::vector<BezierCurve> curves;
         curves.emplace_back(
@@ -42,16 +43,17 @@ AttachedCamera::AttachedCamera(Window& window, const glm::vec3& target, Config& 
 
 glm::vec3 AttachedCamera::position() const
 {
+    const glm::vec3 target = m_cableCar.position();
     if (m_config.cameraMode == 1)
-        return m_target + glm::vec3(0.0f, 12.0f, 0.01f);
+        return target + glm::vec3(0.0f, 12.0f, 0.01f);
     if (m_config.cameraMode == 2)
-        return m_target + glm::vec3(0.0f, 2.5f, 8.0f);
+        return target + glm::vec3(0.0f, 2.5f, 8.0f);
     if (m_config.cameraMode == 3)
         return m_curve.evaluate(m_config.tValue);
 
     float yaw = glm::radians(m_config.yaw);
     float pitch = glm::radians(m_config.pitch);
-    return m_target + glm::vec3(
+    return target + glm::vec3(
         m_config.distance * std::cos(pitch) * std::sin(yaw),
         m_config.distance * std::sin(pitch),
         m_config.distance * std::cos(pitch) * std::cos(yaw)
@@ -60,7 +62,7 @@ glm::vec3 AttachedCamera::position() const
 
 glm::mat4 AttachedCamera::viewMatrix() const
 {
-    return glm::lookAt(position(), m_target, glm::vec3(0.0f, 1.0f, 0.0f));
+    return glm::lookAt(position(), m_cableCar.position(), glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
 void AttachedCamera::updateInput()

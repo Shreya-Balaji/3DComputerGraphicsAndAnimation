@@ -5,10 +5,11 @@
 #include <glm/glm.hpp>
 
 class Window;
+class CableCar;
 
 class AttachedCamera {
 public:
-    AttachedCamera(Window& window, const glm::vec3& target, Config& config);
+    AttachedCamera(Window& window, const CableCar& cableCar, Config& config);
     AttachedCamera(const AttachedCamera&) = delete;
     AttachedCamera& operator=(const AttachedCamera&) = delete;
 
@@ -25,7 +26,7 @@ private:
 
     Window& m_window;
     Config& m_config;
-    glm::vec3 m_target;
+    const CableCar& m_cableCar;
     glm::vec2 m_lastMouse{0.0f};
     bool m_firstMouse = true;
     bool m_dragging = false;

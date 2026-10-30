@@ -5,7 +5,7 @@
 
 class CameraRig {
 public:
-    CameraRig(Window& window, const glm::vec3& target, Config& config);
+    CameraRig(Window& window, const CableCar& cableCar, Config& config);
 
     void updateInput(bool guiCapturesInput);
 

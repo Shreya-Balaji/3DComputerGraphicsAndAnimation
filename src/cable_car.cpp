@@ -42,9 +42,14 @@ CableCar::CableCar(const Config& config)
     }
 };
 
+glm::vec3 CableCar::position() const
+{
+    return evaluateCableCarRoute(1.0f - m_config.cableCarT);
+}
+
 void CableCar::update(float deltaTime)
 {
-    m_model.setWorldTransform(evaluateCableCarRoute(1.0f - m_config.cableCarT), 0.55f);
+    m_model.setWorldTransform(position(), 0.55f);
     m_model.setNodeWorldOffset("Door_Back_Left", -OPEN_DOOR * m_config.doorSlideFactor);
     m_model.setNodeWorldOffset("Door_Back_Right", -OPEN_DOOR * m_config.doorSlideFactor);
     m_model.setNodeWorldOffset("Door_Front_Left", OPEN_DOOR * m_config.doorSlideFactor);

@@ -22,15 +22,15 @@ int main()
     );
 
     Config config;
-    CameraRig cameraRig(window, glm::vec3(0.0f), config);
-    const AttachedCamera& attachedCamera = cameraRig.attachedCamera();
-    Menu menu(config, attachedCamera.maxTValue());
 
     glEnable(GL_DEPTH_TEST);
 
     try
     {
         CableCar cableCar(config);
+        CameraRig cameraRig(window, cableCar, config);
+        const AttachedCamera& attachedCamera = cameraRig.attachedCamera();
+        Menu menu(config, attachedCamera.maxTValue());
 
         Environment environment;
         if (!environment.initialize())
