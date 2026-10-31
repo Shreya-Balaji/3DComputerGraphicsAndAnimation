@@ -1,0 +1,95 @@
+#include "snow.h"
+
+#include <glm/gtc/type_ptr.hpp>
+#include <array>
+#include <random>
+#include <string>
+
+namespace {
+constexpr glm::vec3 MINIMUM(-20.0f, -5.0f, -20.0f);
+constexpr glm::vec3 EXTENT(35.0f, 25.0f, 35.0f);
+}
+
+Snow::Snow(const Config& config)
+    : m_config(config)
+{
+    ShaderBuilder builder;
+    builder.addStage(GL_VERTEX_SHADER, std::string(PROJECT_ROOT) + "/shaders/snow.vert");
+    builder.addStage(GL_FRAGMENT_SHADER, std::string(PROJECT_ROOT) + "/shaders/snow.frag");
+    m_shader = builder.build();
+
+    std::mt19937 random(std::random_device{}());
+    std::uniform_real_distribution<float> unit(0.0f, 1.0f);
+    // Upload initial positions and per-flake size/fall-speed variation only once.
+    std::array<glm::vec4, PARTICLE_COUNT> particles;
+    for (auto& particle : particles) {
+        particle = glm::vec4(
+            MINIMUM.x + unit(random) * EXTENT.x,
+            MINIMUM.y + unit(random) * EXTENT.y,
+            MINIMUM.z + unit(random) * EXTENT.z,
+            0.7f + unit(random) * 0.6f);
+    }
+
+    glGenVertexArrays(1, &m_vao);
+    glGenBuffers(1, &m_vbo);
+    glBindVertexArray(m_vao);
+    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(particles), particles.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(glm::vec4), nullptr);
+    glEnableVertexAttribArray(0);
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+Snow::~Snow()
+{
+    glDeleteBuffers(1, &m_vbo);
+    glDeleteVertexArrays(1, &m_vao);
+}
+
+void Snow::update(float deltaTime)
+{
+    if (!m_config.snowEnabled)
+        return;
+
+    m_displacement.x += static_cast<double>(m_config.snowWind) * deltaTime;
+    m_displacement.y += static_cast<double>(m_config.snowFallSpeed) * deltaTime;
+}
+
+void Snow::draw(const glm::mat4& viewProjection) const
+{
+    if (!m_config.snowEnabled)
+        return;
+
+    const GLboolean blendEnabled = glIsEnabled(GL_BLEND);
+    const GLboolean pointSizeEnabled = glIsEnabled(GL_PROGRAM_POINT_SIZE);
+    GLboolean depthWrite;
+    GLint sourceRGB, destinationRGB, sourceAlpha, destinationAlpha;
+    glGetBooleanv(GL_DEPTH_WRITEMASK, &depthWrite);
+    glGetIntegerv(GL_BLEND_SRC_RGB, &sourceRGB);
+    glGetIntegerv(GL_BLEND_DST_RGB, &destinationRGB);
+    glGetIntegerv(GL_BLEND_SRC_ALPHA, &sourceAlpha);
+    glGetIntegerv(GL_BLEND_DST_ALPHA, &destinationAlpha);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_PROGRAM_POINT_SIZE);
+    glDepthMask(GL_FALSE);
+
+    m_shader.bind();
+    glUniformMatrix4fv(m_shader.getUniformLocation("viewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
+    glUniform1f(m_shader.getUniformLocation("snowSize"), m_config.snowSize);
+    glUniform2f(m_shader.getUniformLocation("displacement"), static_cast<float>(m_displacement.x), static_cast<float>(m_displacement.y));
+    glUniform3fv(m_shader.getUniformLocation("minimum"), 1, glm::value_ptr(MINIMUM));
+    glUniform3fv(m_shader.getUniformLocation("extent"), 1, glm::value_ptr(EXTENT));
+    glBindVertexArray(m_vao);
+    glDrawArrays(GL_POINTS, 0, PARTICLE_COUNT);
+    glBindVertexArray(0);
+
+    glDepthMask(depthWrite);
+    glBlendFuncSeparate(sourceRGB, destinationRGB, sourceAlpha, destinationAlpha);
+    if (!blendEnabled)
+        glDisable(GL_BLEND);
+    if (!pointSizeEnabled)
+        glDisable(GL_PROGRAM_POINT_SIZE);
+}

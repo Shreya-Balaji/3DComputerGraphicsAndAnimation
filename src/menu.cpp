@@ -33,6 +33,13 @@ void Menu::draw()
             ImGui::Text("WASD: move | Space/Ctrl: up/down | Left-drag: look");
         ImGui::Text("Cable Car Route");
         ImGui::SliderFloat("Cable car position", &m_config.cableCarT, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp);
+
+        ImGui::Separator();
+        ImGui::Text("Snow Settings");
+        ImGui::Checkbox("Snow enabled", &m_config.snowEnabled);
+        ImGui::SliderFloat("Snow fall speed", &m_config.snowFallSpeed, 0.0f, 5.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+        ImGui::SliderFloat("Snow wind", &m_config.snowWind, -5.0f, 5.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+        ImGui::SliderFloat("Snow size", &m_config.snowSize, 1.0f, 10.0f, "%.1f", ImGuiSliderFlags_AlwaysClamp);
     }
     ImGui::End();
 }

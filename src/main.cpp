@@ -5,6 +5,7 @@
 #include "minimap.h"
 #include "menu.h"
 #include "config.h"
+#include "snow.h"
 
 #include <framework/window.h>
 #include <imgui/imgui.h>
@@ -32,15 +33,17 @@ int main()
         const AttachedCamera& attachedCamera = cameraRig.attachedCamera();
         Menu menu(config, attachedCamera.maxTValue());
 
-        Environment environment;
+        // Temporarily disabled to avoid loading the mountain asset.
+        /* Environment environment;
         if (!environment.initialize())
         {
             throw std::runtime_error(
                 "Could not initialize mountain environment."
             );
-        }
+        } */
 
         CameraIcon cameraIcon;
+        Snow snow(config);
 
         Minimap minimap;
         if (!minimap.initialize(512, 512))
@@ -65,6 +68,7 @@ int main()
 
             const ImGuiIO& io = ImGui::GetIO();
             cableCar.update(io.DeltaTime);
+            snow.update(io.DeltaTime);
             cameraRig.updateInput(io.WantCaptureMouse || io.WantCaptureKeyboard);
 
             const glm::mat4 view = cameraRig.viewMatrix();
@@ -80,7 +84,7 @@ int main()
 
             cableCar.draw(viewProjection, cameraPosition);
 
-            environment.draw(view, projection);
+            // environment.draw(view, projection);
 
             if (config.showMinimap)
             {
@@ -96,7 +100,7 @@ int main()
 
                 const glm::vec3 minimapCameraPosition(-3.0f, 70.0f, -5.0f);
 
-                environment.draw(minimapView, minimapProjection);
+                // environment.draw(minimapView, minimapProjection);
                 cableCar.draw(minimapViewProjection, minimapCameraPosition);
 
                 minimap.unbind();
@@ -108,6 +112,8 @@ int main()
 
             if (config.freeCameraEnabled)
                 cameraIcon.draw(viewProjection, attachedCamera.viewMatrix());
+
+            snow.draw(viewProjection);
 
             if (config.showMinimap)
                 minimap.drawOverlay(size.x, size.y);

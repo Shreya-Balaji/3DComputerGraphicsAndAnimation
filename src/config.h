@@ -21,4 +21,9 @@ struct Config {
     float doorSlideFactor = 0.0f;
     float wheelSpeed = 10.0f; // Degrees per second.
     float cableCarT = 0.35f;
+
+    bool snowEnabled = true;
+    float snowFallSpeed = 1.5f;
+    float snowWind = 0.2f;
+    float snowSize = 4.0f; // Pixel size at a distance of 12 world units.
 };
