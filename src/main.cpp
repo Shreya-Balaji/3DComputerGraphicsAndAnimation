@@ -31,7 +31,7 @@ int main()
         CableCar cableCar(config);
         CameraRig cameraRig(window, cableCar, config);
         const AttachedCamera& attachedCamera = cameraRig.attachedCamera();
-        Menu menu(config, attachedCamera.maxTValue());
+        Menu menu(config, attachedCamera.curve().length());
 
         // Temporarily disabled to avoid loading the mountain asset.
         /* Environment environment;
@@ -69,7 +69,7 @@ int main()
             const ImGuiIO& io = ImGui::GetIO();
             cableCar.update(io.DeltaTime);
             snow.update(io.DeltaTime);
-            cameraRig.updateInput(io.WantCaptureMouse || io.WantCaptureKeyboard);
+            cameraRig.updateInput(io.WantCaptureMouse || io.WantCaptureKeyboard, io.DeltaTime);
 
             const glm::mat4 view = cameraRig.viewMatrix();
             const glm::vec3 cameraPosition = cameraRig.position();
@@ -108,7 +108,7 @@ int main()
             }
 
             if (config.drawBezierCurve)
-                attachedCamera.curve().draw(viewProjection);
+                attachedCamera.curve().draw(viewProjection * glm::translate(glm::mat4(1.0f), cableCar.position()));
 
             if (config.freeCameraEnabled)
                 cameraIcon.draw(viewProjection, attachedCamera.viewMatrix());

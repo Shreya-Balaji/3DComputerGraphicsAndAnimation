@@ -5,6 +5,7 @@
 #include <framework/window.h>
 #include <imgui/imgui.h>
 #include <glm/gtc/matrix_transform.hpp>
+#include <array>
 #include <cmath>
 
 
@@ -14,18 +15,21 @@ AttachedCamera::AttachedCamera(Window& window, const CableCar& cableCar, Config&
     , m_cableCar(cableCar)
     , m_curve([] {
         std::vector<BezierCurve> curves;
-        curves.emplace_back(
-            glm::vec3(-3.0f, 0.0f, 0.0f),
-            glm::vec3(-1.0f, 0.0f, 3.0f),
-            glm::vec3( 1.0f, 0.0f, 3.0f),
-            glm::vec3( 3.0f, 0.0f, 0.0f)
-        );
-        curves.emplace_back(
-            glm::vec3( 3.0f, 0.0f,  0.0f),
-            glm::vec3( 2.0f, 3.0f, -3.0f),
-            glm::vec3(-3.0f, 4.0f, -5.0f),
-            glm::vec3(-3.0f, 7.0f, -8.0f)
-        );
+        const std::array<glm::vec3, 3> points = {
+            glm::vec3(4.0f, -1.5f, 0.0f),
+            glm::vec3(-4.0f, 6.0f, 7.0f),
+            glm::vec3(-5.0f, 3.0f, -6.0f)
+        };
+        const std::array<glm::vec3, 3> handles = {
+            glm::vec3(0.0f, 1.5f, 4.0f),
+            glm::vec3(-5.0f, -0.5f, -3.0f),
+            glm::vec3(4.0f, -1.0f, -3.0f)
+        };
+        for (int i = 0; i < 3; ++i) {
+            const int next = (i + 1) % 3;
+            // Matching incoming/outgoing handles keep the climbs and turns smooth at every join.
+            curves.emplace_back(points[i], points[i] + handles[i], points[next] - handles[next], points[next]);
+        }
         return curves;
     }())
 
@@ -49,7 +53,7 @@ glm::vec3 AttachedCamera::position() const
     if (m_config.cameraMode == 2)
         return target + glm::vec3(0.0f, 2.5f, 8.0f);
     if (m_config.cameraMode == 3)
-        return m_curve.evaluate(m_config.tValue);
+        return target + m_curve.evaluateAtDistance(m_config.cameraLoopDistance);
 
     float yaw = glm::radians(m_config.yaw);
     float pitch = glm::radians(m_config.pitch);
@@ -65,8 +69,16 @@ glm::mat4 AttachedCamera::viewMatrix() const
     return glm::lookAt(position(), m_cableCar.position(), glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
-void AttachedCamera::updateInput()
+void AttachedCamera::updateInput(float deltaTime)
 {
+    if (m_config.cameraMode == 3 && !m_config.freeCameraEnabled) {
+        m_config.cameraLoopDistance = std::fmod(
+            m_config.cameraLoopDistance + m_config.cameraLoopSpeed * deltaTime,
+            m_curve.length());
+        if (m_config.cameraLoopDistance < 0.0f)
+            m_config.cameraLoopDistance += m_curve.length();
+    }
+
     if (m_config.freeCameraEnabled || !m_window.isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT) ||
         ImGui::GetIO().WantCaptureMouse) {
         m_dragging = false;

@@ -20,7 +20,7 @@ Snow::Snow(const Config& config)
 
     std::mt19937 random(std::random_device{}());
     std::uniform_real_distribution<float> unit(0.0f, 1.0f);
-    // Upload initial positions and per-flake size/fall-speed variation only once.
+    // Upload initial positions and per-flake size/fall-speed variation once.
     std::array<glm::vec4, PARTICLE_COUNT> particles;
     for (auto& particle : particles) {
         particle = glm::vec4(

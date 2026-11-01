@@ -15,8 +15,7 @@ public:
 
     glm::vec3 position() const;
     glm::mat4 viewMatrix() const;
-    void updateInput();
-    float maxTValue() const { return static_cast<float>(m_curve.curveCount()); }
+    void updateInput(float deltaTime);
     const CompositeBezierCurve& curve() const { return m_curve; }
 
 private:

@@ -15,7 +15,8 @@ struct Config {
     float yaw = 25.0f;
     float pitch = 15.0f;
     float distance = 7.0f;
-    float tValue = 0.0f;
+    float cameraLoopDistance = 0.0f;
+    float cameraLoopSpeed = 2.0f; // World units per second; negative reverses direction.
     bool drawBezierCurve = false;
     bool showMinimap = true;
     float doorSlideFactor = 0.0f;

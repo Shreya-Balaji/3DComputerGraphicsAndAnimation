@@ -4,9 +4,9 @@
 #include <imgui/imgui.h>
 #include <iterator>
 
-Menu::Menu(Config& config, float maxCameraT)
+Menu::Menu(Config& config, float cameraLoopLength)
     : m_config(config)
-    , m_maxCameraT(maxCameraT)
+    , m_cameraLoopLength(cameraLoopLength)
 {
 }
 
@@ -24,7 +24,8 @@ void Menu::draw()
         ImGui::SliderFloat("Pitch", &m_config.pitch, Config::MIN_PITCH, Config::MAX_PITCH, "%.3f", ImGuiSliderFlags_AlwaysClamp);
         ImGui::SliderFloat("Distance", &m_config.distance, Config::MIN_DISTANCE, Config::MAX_DISTANCE, "%.3f", ImGuiSliderFlags_AlwaysClamp);
         ImGui::Text("Bezier Camera Settings");
-        ImGui::SliderFloat("t value", &m_config.tValue, 0.0f, m_maxCameraT, "%.3f", ImGuiSliderFlags_AlwaysClamp);
+        ImGui::SliderFloat("Loop distance", &m_config.cameraLoopDistance, 0.0f, m_cameraLoopLength, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+        ImGui::SliderFloat("Loop speed", &m_config.cameraLoopSpeed, -10.0f, 10.0f, "%.2f units/s", ImGuiSliderFlags_AlwaysClamp);
         ImGui::Checkbox("Draw Bezier curve", &m_config.drawBezierCurve);
         ImGui::Checkbox("Show minimap", &m_config.showMinimap);
         ImGui::SliderFloat("Open doors", &m_config.doorSlideFactor, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp);
