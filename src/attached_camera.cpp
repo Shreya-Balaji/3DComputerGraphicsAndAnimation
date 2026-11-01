@@ -27,7 +27,6 @@ AttachedCamera::AttachedCamera(Window& window, const CableCar& cableCar, Config&
         };
         for (int i = 0; i < 3; ++i) {
             const int next = (i + 1) % 3;
-            // Matching incoming/outgoing handles keep the climbs and turns smooth at every join.
             curves.emplace_back(points[i], points[i] + handles[i], points[next] - handles[next], points[next]);
         }
         return curves;
