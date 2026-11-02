@@ -31,6 +31,7 @@ int main()
         CableCar cableCar(config);
         CameraRig cameraRig(window, cableCar, config);
         const AttachedCamera& attachedCamera = cameraRig.attachedCamera();
+        glm::vec3 attachedCameraPosition = attachedCamera.position();
         Menu menu(config, attachedCamera.curve().length());
 
         // Temporarily disabled to avoid loading the mountain asset.
@@ -43,7 +44,7 @@ int main()
         } */
 
         CameraIcon cameraIcon;
-        Snow snow(config);
+        Snow snow(config, attachedCameraPosition);
 
         Minimap minimap;
         if (!minimap.initialize(512, 512))
@@ -70,6 +71,7 @@ int main()
             cableCar.update(io.DeltaTime);
             snow.update(io.DeltaTime);
             cameraRig.updateInput(io.WantCaptureMouse || io.WantCaptureKeyboard, io.DeltaTime);
+            attachedCameraPosition = attachedCamera.position();
 
             const glm::mat4 view = cameraRig.viewMatrix();
             const glm::vec3 cameraPosition = cameraRig.position();
@@ -113,7 +115,7 @@ int main()
             if (config.freeCameraEnabled)
                 cameraIcon.draw(viewProjection, attachedCamera.viewMatrix());
 
-            snow.draw(viewProjection, attachedCamera.position());
+            snow.draw(viewProjection);
 
             if (config.showMinimap)
                 minimap.drawOverlay(size.x, size.y);

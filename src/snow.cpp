@@ -9,8 +9,9 @@ namespace {
 constexpr glm::vec3 EXTENT(50.0f, 50.0f, 50.0f);
 }
 
-Snow::Snow(const Config& config)
+Snow::Snow(const Config& config, const glm::vec3& position)
     : m_config(config)
+    , m_position(position)
 {
     ShaderBuilder builder;
     builder.addStage(GL_VERTEX_SHADER, std::string(PROJECT_ROOT) + "/shaders/snow.vert");
@@ -55,13 +56,13 @@ void Snow::update(float deltaTime)
     m_displacement.y += static_cast<double>(m_config.snowFallSpeed) * deltaTime;
 }
 
-void Snow::draw(const glm::mat4& viewProjection, const glm::vec3& attachedCameraPosition) const
+void Snow::draw(const glm::mat4& viewProjection) const
 {
     if (!m_config.snowEnabled)
         return;
 
     // Move the wrapping volume, keeping flakes in world space until they cross an edge.
-    const glm::vec3 minimum = attachedCameraPosition - EXTENT * 0.5f;
+    const glm::vec3 minimum = m_position - EXTENT * 0.5f;
 
     const GLboolean blendEnabled = glIsEnabled(GL_BLEND);
     const GLboolean pointSizeEnabled = glIsEnabled(GL_PROGRAM_POINT_SIZE);
