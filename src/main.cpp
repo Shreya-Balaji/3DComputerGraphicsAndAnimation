@@ -5,7 +5,7 @@
 #include "minimap.h"
 #include "menu.h"
 #include "config.h"
-#include "snow.h"
+#include "snow_particle_effect.h"
 
 #include <framework/window.h>
 #include <imgui/imgui.h>
@@ -44,7 +44,7 @@ int main()
         } */
 
         CameraIcon cameraIcon;
-        Snow snow(config, attachedCameraPosition);
+        SnowParticleEffect snow(config, attachedCameraPosition);
 
         Minimap minimap;
         if (!minimap.initialize(512, 512))

@@ -4,13 +4,13 @@
 #include <framework/shader.h>
 #include <glm/glm.hpp>
 
-class Snow {
+class SnowParticleEffect {
 public:
-    // The position must outlive Snow; changes to it move the snow volume.
-    Snow(const Config& config, const glm::vec3& position);
-    ~Snow();
-    Snow(const Snow&) = delete;
-    Snow& operator=(const Snow&) = delete;
+    // The position must outlive SnowParticleEffect; changes to it move the snow volume.
+    SnowParticleEffect(const Config& config, const glm::vec3& position);
+    ~SnowParticleEffect();
+    SnowParticleEffect(const SnowParticleEffect&) = delete;
+    SnowParticleEffect& operator=(const SnowParticleEffect&) = delete;
 
     void update(float deltaTime);
     void draw(const glm::mat4& viewProjection) const;

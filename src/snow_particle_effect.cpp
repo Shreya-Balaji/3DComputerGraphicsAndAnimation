@@ -1,4 +1,4 @@
-#include "snow.h"
+#include "snow_particle_effect.h"
 
 #include <glm/gtc/type_ptr.hpp>
 #include <array>
@@ -9,7 +9,7 @@ namespace {
 constexpr glm::vec3 EXTENT(50.0f, 50.0f, 50.0f);
 }
 
-Snow::Snow(const Config& config, const glm::vec3& position)
+SnowParticleEffect::SnowParticleEffect(const Config& config, const glm::vec3& position)
     : m_config(config)
     , m_position(position)
 {
@@ -41,13 +41,13 @@ Snow::Snow(const Config& config, const glm::vec3& position)
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-Snow::~Snow()
+SnowParticleEffect::~SnowParticleEffect()
 {
     glDeleteBuffers(1, &m_vbo);
     glDeleteVertexArrays(1, &m_vao);
 }
 
-void Snow::update(float deltaTime)
+void SnowParticleEffect::update(float deltaTime)
 {
     if (!m_config.snowEnabled)
         return;
@@ -56,12 +56,12 @@ void Snow::update(float deltaTime)
     m_displacement.y += static_cast<double>(m_config.snowFallSpeed) * deltaTime;
 }
 
-void Snow::draw(const glm::mat4& viewProjection) const
+void SnowParticleEffect::draw(const glm::mat4& viewProjection) const
 {
     if (!m_config.snowEnabled)
         return;
 
-    // Move the wrapping volume, keeping flakes in world space until they cross an edge.
+    // Move the wrapping volume, keeping flakes in world space until they cross an edge
     const glm::vec3 minimum = m_position - EXTENT * 0.5f;
 
     const GLboolean blendEnabled = glIsEnabled(GL_BLEND);
