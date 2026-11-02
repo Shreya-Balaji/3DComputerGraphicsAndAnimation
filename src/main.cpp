@@ -113,7 +113,7 @@ int main()
             if (config.freeCameraEnabled)
                 cameraIcon.draw(viewProjection, attachedCamera.viewMatrix());
 
-            snow.draw(viewProjection);
+            snow.draw(viewProjection, attachedCamera.position());
 
             if (config.showMinimap)
                 minimap.drawOverlay(size.x, size.y);

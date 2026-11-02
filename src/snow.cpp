@@ -6,8 +6,7 @@
 #include <string>
 
 namespace {
-constexpr glm::vec3 MINIMUM(-20.0f, -5.0f, -20.0f);
-constexpr glm::vec3 EXTENT(35.0f, 25.0f, 35.0f);
+constexpr glm::vec3 EXTENT(50.0f, 50.0f, 50.0f);
 }
 
 Snow::Snow(const Config& config)
@@ -24,9 +23,9 @@ Snow::Snow(const Config& config)
     std::array<glm::vec4, PARTICLE_COUNT> particles;
     for (auto& particle : particles) {
         particle = glm::vec4(
-            MINIMUM.x + unit(random) * EXTENT.x,
-            MINIMUM.y + unit(random) * EXTENT.y,
-            MINIMUM.z + unit(random) * EXTENT.z,
+            unit(random) * EXTENT.x,
+            unit(random) * EXTENT.y,
+            unit(random) * EXTENT.z,
             0.7f + unit(random) * 0.6f);
     }
 
@@ -56,10 +55,13 @@ void Snow::update(float deltaTime)
     m_displacement.y += static_cast<double>(m_config.snowFallSpeed) * deltaTime;
 }
 
-void Snow::draw(const glm::mat4& viewProjection) const
+void Snow::draw(const glm::mat4& viewProjection, const glm::vec3& attachedCameraPosition) const
 {
     if (!m_config.snowEnabled)
         return;
+
+    // Move the wrapping volume, keeping flakes in world space until they cross an edge.
+    const glm::vec3 minimum = attachedCameraPosition - EXTENT * 0.5f;
 
     const GLboolean blendEnabled = glIsEnabled(GL_BLEND);
     const GLboolean pointSizeEnabled = glIsEnabled(GL_PROGRAM_POINT_SIZE);
@@ -80,7 +82,7 @@ void Snow::draw(const glm::mat4& viewProjection) const
     glUniformMatrix4fv(m_shader.getUniformLocation("viewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
     glUniform1f(m_shader.getUniformLocation("snowSize"), m_config.snowSize);
     glUniform2f(m_shader.getUniformLocation("displacement"), static_cast<float>(m_displacement.x), static_cast<float>(m_displacement.y));
-    glUniform3fv(m_shader.getUniformLocation("minimum"), 1, glm::value_ptr(MINIMUM));
+    glUniform3fv(m_shader.getUniformLocation("minimum"), 1, glm::value_ptr(minimum));
     glUniform3fv(m_shader.getUniformLocation("extent"), 1, glm::value_ptr(EXTENT));
     glBindVertexArray(m_vao);
     glDrawArrays(GL_POINTS, 0, PARTICLE_COUNT);

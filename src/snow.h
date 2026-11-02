@@ -12,13 +12,12 @@ public:
     Snow& operator=(const Snow&) = delete;
 
     void update(float deltaTime);
-    void draw(const glm::mat4& viewProjection) const;
+    void draw(const glm::mat4& viewProjection, const glm::vec3& attachedCameraPosition) const;
 
 private:
     const Config& m_config;
     Shader m_shader;
-    static constexpr GLsizei PARTICLE_COUNT = 2000;
-    // Integrated wind and fall distances keep speed changes continuous.
+    static constexpr GLsizei PARTICLE_COUNT = 20000;
     glm::dvec2 m_displacement{ 0.0 };
     GLuint m_vao = 0;
     GLuint m_vbo = 0;
