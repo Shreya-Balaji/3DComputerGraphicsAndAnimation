@@ -41,6 +41,12 @@ void Menu::draw()
         ImGui::SliderFloat("Snow fall speed", &m_config.snowFallSpeed, 0.0f, 5.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
         ImGui::SliderFloat("Snow wind", &m_config.snowWind, -5.0f, 5.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
         ImGui::SliderFloat("Snow size", &m_config.snowSize, 1.0f, 10.0f, "%.1f", ImGuiSliderFlags_AlwaysClamp);
+
+        ImGui::Separator();
+        ImGui::Text("Terrain Settings");
+        ImGui::Checkbox("Terrain enabled", &m_config.terrainEnabled);
+        ImGui::Checkbox("Two-scale sampling", &m_config.terrainTwoScaleSampling);
+        ImGui::SliderFloat("Terrain speed", &m_config.terrainSpeed, -15.0f, 15.0f, "%.2f units/s", ImGuiSliderFlags_AlwaysClamp);
     }
     ImGui::End();
 }

@@ -6,6 +6,7 @@
 #include "menu.h"
 #include "config.h"
 #include "snow_particle_effect.h"
+#include "terrain.h"
 
 #include <framework/window.h>
 #include <imgui/imgui.h>
@@ -29,6 +30,8 @@ int main()
     try
     {
         CableCar cableCar(config);
+        glm::vec3 cableCarPosition = cableCar.position();
+        Terrain terrain(config, cableCarPosition);
         CameraRig cameraRig(window, cableCar, config);
         const AttachedCamera& attachedCamera = cameraRig.attachedCamera();
         glm::vec3 attachedCameraPosition = attachedCamera.position();
@@ -69,6 +72,8 @@ int main()
 
             const ImGuiIO& io = ImGui::GetIO();
             cableCar.update(io.DeltaTime);
+            cableCarPosition = cableCar.position();
+            terrain.update(io.DeltaTime);
             snow.update(io.DeltaTime);
             cameraRig.updateInput(io.WantCaptureMouse || io.WantCaptureKeyboard, io.DeltaTime);
             attachedCameraPosition = attachedCamera.position();
@@ -86,7 +91,7 @@ int main()
 
             cableCar.draw(viewProjection, cameraPosition);
 
-            // environment.draw(view, projection);
+            terrain.draw(viewProjection, cameraPosition);
 
             if (config.showMinimap)
             {
@@ -102,7 +107,7 @@ int main()
 
                 const glm::vec3 minimapCameraPosition(-3.0f, 70.0f, -5.0f);
 
-                // environment.draw(minimapView, minimapProjection);
+                terrain.draw(minimapViewProjection, minimapCameraPosition);
                 cableCar.draw(minimapViewProjection, minimapCameraPosition);
 
                 minimap.unbind();

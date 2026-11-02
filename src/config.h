@@ -27,4 +27,8 @@ struct Config {
     float snowFallSpeed = 1.5f;
     float snowWind = 0.2f;
     float snowSize = 4.0f; // Pixel size at a distance of 12 world units.
+
+    bool terrainEnabled = true;
+    bool terrainTwoScaleSampling = true;
+    float terrainSpeed = 3.0f; // World units per second; negative reverses travel.
 };
