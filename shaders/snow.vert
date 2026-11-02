@@ -16,7 +16,7 @@ void main()
 
     // Loop the particle back to the top when it hits the bottom
     vec3 position = minimum + mod(particle.xyz - minimum + offset, extent);
-    // Fade the particles near the edges, so they fade in at the top and out at the bottom 
+    // Fade the particles near the edges, so they fade in at the top and out at the bottom
     float height = position.y - minimum.y;
     edgeFade = smoothstep(0.0, 2.0, height)
         * smoothstep(0.0, 2.0, extent.y - height);
