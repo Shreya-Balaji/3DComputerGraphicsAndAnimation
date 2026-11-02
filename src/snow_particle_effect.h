@@ -13,7 +13,7 @@ public:
     SnowParticleEffect& operator=(const SnowParticleEffect&) = delete;
 
     void update(float deltaTime);
-    void draw(const glm::mat4& viewProjection) const;
+    void draw(const glm::mat4& viewProjection, const glm::vec3& viewPosition) const;
 
 private:
     const Config& m_config;

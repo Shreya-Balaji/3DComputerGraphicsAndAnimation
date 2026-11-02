@@ -27,4 +27,8 @@ struct Config {
     float snowFallSpeed = 1.5f;
     float snowWind = 0.2f;
     float snowSize = 4.0f; // Pixel size at a distance of 12 world units.
+
+    bool fogEnabled = true;
+    float fogStart = 15.0f;
+    float fogEnd = 45.0f; // World-space distance at which objects are fully obscured.
 };

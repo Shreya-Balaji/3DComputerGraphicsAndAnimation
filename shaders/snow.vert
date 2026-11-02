@@ -7,8 +7,10 @@ uniform float snowSize;
 uniform vec2 displacement;
 uniform vec3 minimum;
 uniform vec3 extent;
+uniform vec3 viewPosition;
 
 out float edgeFade;
+out float distanceToCamera;
 
 void main()
 {
@@ -16,6 +18,7 @@ void main()
 
     // Loop the particle back to the top when it hits the bottom
     vec3 position = minimum + mod(particle.xyz - minimum + offset, extent);
+    distanceToCamera = length(position - viewPosition);
     // Fade the particles near the edges, so they fade in at the top and out at the bottom
     float height = position.y - minimum.y;
     edgeFade = smoothstep(0.0, 2.0, height)

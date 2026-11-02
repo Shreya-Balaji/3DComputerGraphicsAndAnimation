@@ -41,6 +41,12 @@ void Menu::draw()
         ImGui::SliderFloat("Snow fall speed", &m_config.snowFallSpeed, 0.0f, 5.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
         ImGui::SliderFloat("Snow wind", &m_config.snowWind, -5.0f, 5.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
         ImGui::SliderFloat("Snow size", &m_config.snowSize, 1.0f, 10.0f, "%.1f", ImGuiSliderFlags_AlwaysClamp);
+
+        ImGui::Separator();
+        ImGui::Text("Fog Settings");
+        ImGui::Checkbox("Fog enabled", &m_config.fogEnabled);
+        ImGui::SliderFloat("Fog start", &m_config.fogStart, 0.0f, m_config.fogEnd - 0.1f, "%.1f units", ImGuiSliderFlags_AlwaysClamp);
+        ImGui::SliderFloat("Maximum view distance", &m_config.fogEnd, m_config.fogStart + 0.1f, 150.0f, "%.1f units", ImGuiSliderFlags_AlwaysClamp);
     }
     ImGui::End();
 }

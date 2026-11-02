@@ -6,6 +6,7 @@
 #include "menu.h"
 #include "config.h"
 #include "snow_particle_effect.h"
+#include "fog.h"
 
 #include <framework/window.h>
 #include <imgui/imgui.h>
@@ -45,6 +46,7 @@ int main()
 
         CameraIcon cameraIcon;
         SnowParticleEffect snow(config, attachedCameraPosition);
+        Fog fog(config);
 
         Minimap minimap;
         if (!minimap.initialize(512, 512))
@@ -61,10 +63,6 @@ int main()
                 window.close();
 
             auto size = window.getFrameBufferSize();
-            glViewport(0, 0, size.x, size.y);
-
-            glClearColor(0.25f, 0.45f, 0.65f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             menu.draw();
 
             const ImGuiIO& io = ImGui::GetIO();
@@ -76,17 +74,35 @@ int main()
             const glm::mat4 view = cameraRig.viewMatrix();
             const glm::vec3 cameraPosition = cameraRig.position();
 
+            if (size.x <= 0 || size.y <= 0) {
+                window.swapBuffers();
+                continue;
+            }
+
             glm::mat4 projection = glm::perspective(
                 glm::radians(45.0f),
-                1280.0f / 720.0f,
+                static_cast<float>(size.x) / size.y,
                 0.1f,
                 1000.0f
             );
             const glm::mat4 viewProjection = projection * view;
 
+            fog.begin(size.x, size.y);
+            glClearColor(0.55f, 0.65f, 0.72f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
             cableCar.draw(viewProjection, cameraPosition);
 
             // environment.draw(view, projection);
+
+            if (config.drawBezierCurve)
+                attachedCamera.curve().draw(viewProjection * glm::translate(glm::mat4(1.0f), cableCar.position()));
+
+            if (config.freeCameraEnabled)
+                cameraIcon.draw(viewProjection, attachedCamera.viewMatrix());
+
+            fog.draw(projection);
+            snow.draw(viewProjection, cameraPosition);
 
             if (config.showMinimap)
             {
@@ -107,18 +123,8 @@ int main()
 
                 minimap.unbind();
                 glViewport(0, 0, size.x, size.y);
-            }
-
-            if (config.drawBezierCurve)
-                attachedCamera.curve().draw(viewProjection * glm::translate(glm::mat4(1.0f), cableCar.position()));
-
-            if (config.freeCameraEnabled)
-                cameraIcon.draw(viewProjection, attachedCamera.viewMatrix());
-
-            snow.draw(viewProjection);
-
-            if (config.showMinimap)
                 minimap.drawOverlay(size.x, size.y);
+            }
 
             window.swapBuffers();
         }
