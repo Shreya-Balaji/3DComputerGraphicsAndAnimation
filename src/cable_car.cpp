@@ -22,8 +22,10 @@ glm::vec3 evaluateCableCarRoute(float t)
 
     return glm::mix(start, end, t);
 }
-void bindLighting(const Shader& shader, const glm::mat4& viewProjection,
-                  const glm::vec3& cameraPosition, const SkyLight& light, const Config& config)
+}
+
+void CableCar::bindLighting(const Shader& shader, const glm::mat4& viewProjection,
+                            const glm::vec3& cameraPosition, const SkyLight& light) const
 {
     shader.bind();
     glUniformMatrix4fv(shader.getUniformLocation("viewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
@@ -34,11 +36,10 @@ void bindLighting(const Shader& shader, const glm::mat4& viewProjection,
     glUniform3fv(shader.getUniformLocation("moonColor"), 1, glm::value_ptr(light.moonColor));
     glUniform3fv(shader.getUniformLocation("ambientColor"), 1, glm::value_ptr(light.ambientColor));
     glUniform3fv(shader.getUniformLocation("cabinLightPos"), 1, glm::value_ptr(light.cabinLightPos));
-    glUniform3fv(shader.getUniformLocation("cabinLightColor"), 1, glm::value_ptr(config.cabinLightColor));
+    glUniform3fv(shader.getUniformLocation("cabinLightColor"), 1, glm::value_ptr(m_config.cabinLightColor));
     glUniform1f(shader.getUniformLocation("cabinLightAmount"), light.cabinLightAmount);
-    glUniform1f(shader.getUniformLocation("cabinLightRadius"), config.cabinLightRadius);
-    glUniform1f(shader.getUniformLocation("cabinLightIntensity"), config.cabinLightIntensity);
-}
+    glUniform1f(shader.getUniformLocation("cabinLightRadius"), m_config.cabinLightRadius);
+    glUniform1f(shader.getUniformLocation("cabinLightIntensity"), m_config.cabinLightIntensity);
 }
 void CableCar::createCable()
 {
@@ -197,85 +198,85 @@ void CableCar::update(float deltaTime, float terrainOffset)
             glm::vec3(1.0f, 0.0f, 0.0f));
 }
 
-void CableCar::draw(const glm::mat4 viewProjection, const glm::vec3 cameraPosition, const SkyLight& light, bool usePbr, bool isMinimap) const {
-    if (m_cableMesh)
+void CableCar::draw(const glm::mat4& viewProjection, const glm::vec3& cameraPosition, const SkyLight& light) const
+{
+    drawCables(viewProjection, cameraPosition, light, glm::mat4(1.0f));
+    drawBody(viewProjection, cameraPosition, light);
+}
+
+void CableCar::drawMinimap(const glm::mat4& viewProjection, const glm::vec3& cameraPosition, const SkyLight& light) const
+{
+    glm::mat4 cableTransform = glm::translate(glm::mat4(1.0f), glm::vec3(-5.4f, 0.92f, 0.0f));
+    cableTransform = glm::scale(cableTransform, glm::vec3(5.0f, 5.0f, 1.0f));
+    cableTransform = glm::translate(cableTransform, glm::vec3(5.4f, -0.92f, 0.0f));
+    drawCables(viewProjection, cameraPosition, light, cableTransform);
+    drawBody(viewProjection, cameraPosition, light);
+}
+
+void CableCar::drawCables(const glm::mat4& viewProjection, const glm::vec3& cameraPosition,
+                          const SkyLight& light, const glm::mat4& cableTransform) const
+{
+    if (!m_cableMesh)
+        return;
+
+    m_cableCarShader.bind();
+
+    glUniformMatrix4fv(
+        m_cableCarShader.getUniformLocation("viewProjection"),
+        1,
+        GL_FALSE,
+        glm::value_ptr(viewProjection)
+    );
+
+    glUniform3fv(
+        m_cableCarShader.getUniformLocation("viewPos"),
+        1,
+        glm::value_ptr(cameraPosition)
+    );
+
+    glUniform3fv(m_cableCarShader.getUniformLocation("lightDir"), 1,
+        glm::value_ptr(light.sunDir));
+
+    glUniform3fv(m_cableCarShader.getUniformLocation("sunColor"), 1,
+        glm::value_ptr(light.sunColor));
+
+    glUniform3fv(m_cableCarShader.getUniformLocation("moonDir"), 1,
+        glm::value_ptr(light.moonDir));
+
+    glUniform3fv(m_cableCarShader.getUniformLocation("moonColor"), 1,
+        glm::value_ptr(light.moonColor));
+
+    glUniform3fv(m_cableCarShader.getUniformLocation("ambientColor"), 1,
+        glm::value_ptr(light.ambientColor));
+
+    constexpr float cableTileSize = 64.0f;
+
+    for (int z = -1; z <= 1; ++z)
     {
-        m_cableCarShader.bind();
-
-        glUniformMatrix4fv(
-            m_cableCarShader.getUniformLocation("viewProjection"),
-            1,
-            GL_FALSE,
-            glm::value_ptr(viewProjection)
+        glm::mat4 cableModel = glm::translate(
+            glm::mat4(1.0f),
+            glm::vec3(
+                0.0f,
+                0.0f,
+                m_terrainOffset + z * cableTileSize
+            )
         );
+        cableModel *= cableTransform;
 
-        glUniform3fv(
-            m_cableCarShader.getUniformLocation("viewPos"),
-            1,
-            glm::value_ptr(cameraPosition)
-        );
-
-        glUniform3fv(m_cableCarShader.getUniformLocation("lightDir"), 1,
-            glm::value_ptr(light.sunDir));
-
-        glUniform3fv(m_cableCarShader.getUniformLocation("sunColor"), 1,
-            glm::value_ptr(light.sunColor));
-
-        glUniform3fv(m_cableCarShader.getUniformLocation("moonDir"), 1,
-            glm::value_ptr(light.moonDir));
-
-        glUniform3fv(m_cableCarShader.getUniformLocation("moonColor"), 1,
-            glm::value_ptr(light.moonColor));
-
-        glUniform3fv(m_cableCarShader.getUniformLocation("ambientColor"), 1,
-            glm::value_ptr(light.ambientColor));
-
-        constexpr float cableTileSize = 64.0f;
-
-        for (int z = -1; z <= 1; ++z)
-        {
-            glm::mat4 cableModel = glm::translate(
-                glm::mat4(1.0f),
-                glm::vec3(
-                    0.0f,
-                    0.0f,
-                    m_terrainOffset + z * cableTileSize
-                )
-            );
-            if (isMinimap)
-            {
-                cableModel = glm::translate(
-                    cableModel,
-                    glm::vec3(-5.4f, 0.92f, 0.0f)
-                );
-
-                cableModel = glm::scale(
-                    cableModel,
-                    glm::vec3(5.0f, 5.0f, 1.0f)
-                );
-
-                cableModel = glm::translate(
-                    cableModel,
-                    glm::vec3(5.4f, -0.92f, 0.0f)
-                );
-            }
-
-            glUniformMatrix4fv(m_cableCarShader.getUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(cableModel));
-            m_cableMesh->draw(m_cableCarShader);
-        }
-    };
-    drawBody(viewProjection, cameraPosition, light, usePbr);
+        glUniformMatrix4fv(m_cableCarShader.getUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(cableModel));
+        m_cableMesh->draw(m_cableCarShader);
+    }
 }
 
 void CableCar::drawBody(const glm::mat4& viewProjection, const glm::vec3& cameraPosition,
-                        const SkyLight& light, bool usePbr) const
+                        const SkyLight& light) const
 {
     if (m_bodyMeshes.empty())
         return;
 
-    const Shader& shader = usePbr ? m_pbrShader : m_cableCarShader;
-    bindLighting(shader, viewProjection, cameraPosition, light, m_config);
-    if (usePbr) {
+    const Shader& shader = m_config.usePBR ? m_pbrShader : m_cableCarShader;
+    bindLighting(shader, viewProjection, cameraPosition, light);
+    if (m_config.usePBR) {
         glUniform1f(shader.getUniformLocation("metallic"), m_config.pbrMetallic);
         glUniform1f(shader.getUniformLocation("roughness"), m_config.pbrRoughness);
     }
@@ -285,9 +286,10 @@ void CableCar::drawBody(const glm::mat4& viewProjection, const glm::vec3& camera
 void CableCar::drawWindows(const glm::mat4& viewProjection, const glm::vec3& cameraPosition,
                            const SkyLight& light) const
 {
-    if (m_windowMeshes.empty())
+    if (m_windowMeshes.empty() || m_config.windowOpacity <= 0.0f)
         return;
 
+    // for blending the environment map with the transparent window
     const GLboolean blendEnabled = glIsEnabled(GL_BLEND);
     GLint sourceRGB, destinationRGB, sourceAlpha, destinationAlpha;
     glGetIntegerv(GL_BLEND_SRC_RGB, &sourceRGB);
@@ -297,7 +299,8 @@ void CableCar::drawWindows(const glm::mat4& viewProjection, const glm::vec3& cam
     glEnable(GL_BLEND);
     glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
-    bindLighting(m_windowShader, viewProjection, cameraPosition, light, m_config);
+    bindLighting(m_windowShader, viewProjection, cameraPosition, light);
+    glUniform1f(m_windowShader.getUniformLocation("windowOpacity"), m_config.windowOpacity);
     glUniform1i(m_windowShader.getUniformLocation("envMap"), 2);
     glUniform1f(m_windowShader.getUniformLocation("envMaxLod"), EnvironmentMap::MAX_LOD);
     glUniform1i(m_windowShader.getUniformLocation("useEnvMap"), m_config.useEnvMap);

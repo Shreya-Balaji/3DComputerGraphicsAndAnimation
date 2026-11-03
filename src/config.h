@@ -24,6 +24,7 @@ struct Config {
     float wheelSpeed = 10.0f; // Degrees per second.
     float cableCarT = 0.35f;
     bool useEnvMap = true;
+    float windowOpacity = 0.85f;
     bool usePBR = true;
     float pbrMetallic = 0.25f;
     float pbrRoughness = 0.25f;

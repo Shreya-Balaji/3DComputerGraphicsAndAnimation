@@ -1,11 +1,6 @@
 #version 330 core
 
 in float edgeFade;
-in float distanceToCamera;
-uniform bool fogEnabled;
-uniform float fogStart;
-uniform float fogEnd;
-const vec3 FOG_COLOR = vec3(0.55, 0.65, 0.72);
 out vec4 fragColor;
 
 void main()

@@ -39,14 +39,13 @@ void Menu::draw()
             ImGui::SliderFloat("Roughness", &m_config.pbrRoughness, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp);
         }
         ImGui::Checkbox("Use Environment Reflections", &m_config.useEnvMap);
+        ImGui::SliderFloat("Window opacity", &m_config.windowOpacity, 0.0f, 1.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
         ImGui::Separator();
         ImGui::Checkbox("Show minimap", &m_config.showMinimap);
         ImGui::SliderFloat("Open doors", &m_config.doorSlideFactor, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp);
         ImGui::SliderFloat("Wheel speed", &m_config.wheelSpeed, Config::MIN_WHEEL_SPEED, Config::MAX_WHEEL_SPEED, "%.0f deg/s", ImGuiSliderFlags_AlwaysClamp);
         if (m_config.freeCameraEnabled)
             ImGui::Text("WASD: move | Space/Ctrl: up/down | Left-drag: look");
-        ImGui::Text("Cable Car Route");
-        ImGui::SliderFloat("Cable car position", &m_config.cableCarT, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp);
 
         ImGui::Separator();
         ImGui::Text("Snow Settings");

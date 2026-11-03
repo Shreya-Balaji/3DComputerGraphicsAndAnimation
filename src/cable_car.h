@@ -16,13 +16,8 @@ glm::vec3 position(float terrainOffset) const;
 
 void update(float deltaTime, float terrainOffset);
 
-void draw(
-    const glm::mat4 viewProjection,
-    const glm::vec3 cameraPosition,
-    const SkyLight& light,
-    bool usePbr,
-    bool isMinimap = false
-) const;
+    void draw(const glm::mat4& viewProjection, const glm::vec3& cameraPosition, const SkyLight& light) const;
+    void drawMinimap(const glm::mat4& viewProjection, const glm::vec3& cameraPosition, const SkyLight& light) const;
 
     // Draw after the opaque scene so the glass blends with its background.
     void drawWindows(const glm::mat4& viewProjection, const glm::vec3& cameraPosition,
@@ -31,8 +26,12 @@ void draw(
 private:
     static constexpr glm::vec3 OPEN_DOOR = glm::vec3(0.0f, 0.0f, 0.3f);
     void createCable();
+    void drawCables(const glm::mat4& viewProjection, const glm::vec3& cameraPosition,
+                    const SkyLight& light, const glm::mat4& cableTransform) const;
+    void bindLighting(const Shader& shader, const glm::mat4& viewProjection,
+                      const glm::vec3& cameraPosition, const SkyLight& light) const;
     void drawBody(const glm::mat4& viewProjection, const glm::vec3& cameraPosition,
-                  const SkyLight& light, bool usePbr) const;
+                  const SkyLight& light) const;
     const Config& m_config;
     Model m_model;
     std::vector<unsigned int> m_windowMeshes;

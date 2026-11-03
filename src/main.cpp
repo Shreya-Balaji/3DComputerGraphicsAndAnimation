@@ -130,7 +130,7 @@ int main()
 
             skybox.draw(view, projection, cameraPosition, light, skyColor);
 
-            cableCar.draw(viewProjection, cameraPosition, light, config.usePBR, false);
+            cableCar.draw(viewProjection, cameraPosition, light);
 
             // environment.draw(view, projection);
             terrain.draw(viewProjection, cameraPosition, light);
@@ -175,7 +175,7 @@ int main()
 
                 glDisable(GL_DEPTH_TEST);
 
-                cableCar.draw(minimapViewProjection, minimapCameraPosition, light, config.usePBR, true);
+                cableCar.drawMinimap(minimapViewProjection, minimapCameraPosition, light);
                 cableCar.drawWindows(minimapViewProjection, minimapCameraPosition, light);
 
                 glEnable(GL_DEPTH_TEST);
