@@ -22,6 +22,7 @@ class CompositeBezierCurve {
         int curveCount() const;
         void buildArcLengthTable();
         glm::vec3 evaluateAtDistance(float distance) const;
+        float length() const { return m_arcLengths.back().distance; }
 
     private:
         std::vector<BezierCurve> m_curves;

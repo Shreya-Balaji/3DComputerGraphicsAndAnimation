@@ -7,7 +7,7 @@ class CameraRig {
 public:
     CameraRig(Window& window, const CableCar& cableCar, Config& config);
 
-    void updateInput(bool guiCapturesInput);
+    void updateInput(bool guiCapturesInput, float deltaTime);
 
     glm::vec3 position() const;
     glm::mat4 viewMatrix() const;

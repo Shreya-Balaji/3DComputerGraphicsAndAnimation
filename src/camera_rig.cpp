@@ -8,9 +8,9 @@ CameraRig::CameraRig(Window& window, const CableCar& cableCar, Config& config)
 {
 }
 
-void CameraRig::updateInput(bool guiCapturesInput)
+void CameraRig::updateInput(bool guiCapturesInput, float deltaTime)
 {
-    m_attachedCamera.updateInput();
+    m_attachedCamera.updateInput(deltaTime);
     m_freeCamera.updateInput(guiCapturesInput);
 }
 
