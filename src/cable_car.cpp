@@ -143,6 +143,10 @@ CableCar::CableCar(const Config& config)
         windowBuilder.addStage(GL_VERTEX_SHADER, std::string(PROJECT_ROOT) + "/shaders/basic.vert");
         windowBuilder.addStage(GL_FRAGMENT_SHADER, std::string(PROJECT_ROOT) + "/shaders/window.frag");
         m_windowShader = windowBuilder.build();
+        ShaderBuilder depthBuilder;
+        depthBuilder.addStage(GL_VERTEX_SHADER, std::string(PROJECT_ROOT) + "/shaders/basic.vert");
+        depthBuilder.addStage(GL_FRAGMENT_SHADER, std::string(PROJECT_ROOT) + "/shaders/depth.frag");
+        m_depthShader = depthBuilder.build();
 
 
     } catch (const ShaderLoadingException& e) {
@@ -191,6 +195,27 @@ void CableCar::drawMinimap(const glm::mat4& viewProjection, const glm::vec3& cam
     drawCables(viewProjection, cameraPosition, light, cableTransform);
     drawBody(viewProjection, cameraPosition, light);
 }
+static glm::mat4 ropeTileModel(int tile, float thickness)
+{
+    constexpr float cableTileSize = 64.0f;
+    glm::mat4 m = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, tile * cableTileSize));
+    m = glm::translate(m, glm::vec3(-5.4f, 0.92f, 0.0f));
+    m = glm::scale(m, glm::vec3(thickness, thickness, 1.0f));
+    m = glm::translate(m, glm::vec3(5.4f, -0.92f, 0.0f));
+    return m;
+}
+void CableCar::draw(const glm::mat4 viewProjection, const glm::vec3 cameraPosition, const SkyLight& light, bool usePbr, bool isMinimap) const {
+    if (m_cableMesh)
+    {
+        m_cableCarShader.bind();
+        glUniform1i(m_cableCarShader.getUniformLocation("envMap"), 2);
+        glUniform1i(m_cableCarShader.getUniformLocation("shadowMap"), 3);
+        glUniformMatrix4fv(
+            m_cableCarShader.getUniformLocation("viewProjection"),
+            1,
+            GL_FALSE,
+            glm::value_ptr(viewProjection)
+        );
 
 void CableCar::drawCables(const glm::mat4& viewProjection, const glm::vec3& cameraPosition,
                           const SkyLight& light, const glm::mat4& cableTransform) const
@@ -288,4 +313,11 @@ void CableCar::drawWindows(const glm::mat4& viewProjection, const glm::vec3& cam
     glBlendFuncSeparate(sourceRGB, destinationRGB, sourceAlpha, destinationAlpha);
     if (!blendEnabled)
         glDisable(GL_BLEND);
+}
+void CableCar::drawDepth(const glm::mat4& lightCamera) const
+{
+    m_depthShader.bind();
+    glUniformMatrix4fv(m_depthShader.getUniformLocation("viewProjection"),
+                       1, GL_FALSE, glm::value_ptr(lightCamera));
+    m_model.draw(m_depthShader);
 }

@@ -83,6 +83,8 @@ void Menu::draw()
             ImGui::SliderFloat("Light Coverage Radius", &m_config.cabinLightRadius, 0.0f, 20.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp);
             ImGui::SliderFloat("Light Intensity", &m_config.cabinLightIntensity, 0.0f, 20.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp);
         }
+        ImGui::Separator();
+        ImGui::Checkbox("Cable Car Shadow Enabled", &m_config.shadowsEnabled);
 
 
     }

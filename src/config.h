@@ -49,4 +49,5 @@ struct Config {
     bool terrainEnabled = true;
     bool terrainTwoScaleSampling = true;
     float terrainSpeed = 1.0f; // World units per second, negative reverses travel
+    bool shadowsEnabled = true;
 };

@@ -22,6 +22,8 @@ void update(float deltaTime);
     void drawWindows(const glm::mat4& viewProjection, const glm::vec3& cameraPosition,
                      const SkyLight& light) const;
 
+void drawDepth(const glm::mat4& lightCamera) const;
+
 private:
     static constexpr glm::vec3 OPEN_DOOR = glm::vec3(0.0f, 0.0f, 0.3f);
     void createCable();
@@ -39,5 +41,6 @@ private:
     Shader m_cableCarShader;
     Shader m_pbrShader;
     Shader m_windowShader;
+        Shader m_depthShader;
     float m_wheelAngle = 0.0f;
 };
