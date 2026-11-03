@@ -33,6 +33,11 @@ struct Config {
     glm::vec3 duskColor{0.9f, 0.5f, 0.3f};
     glm::vec3 dayColor{0.25f, 0.45f, 0.65f};
 
+    bool cabinLightEnabled = true;
+    glm::vec3 cabinLightColor{1.0f, 0.75f, 0.4f};
+    float cabinLightRadius = 10.0f;
+    float cabinLightIntensity = 10.0f;   
+
     bool snowEnabled = true;
     float snowFallSpeed = 1.5f;
     float snowWind = 0.2f;

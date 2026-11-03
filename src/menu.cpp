@@ -76,6 +76,16 @@ void Menu::draw()
         ImGui::ColorEdit3("Day sky", glm::value_ptr(m_config.dayColor));
         ImGui::ColorEdit3("Dusk", glm::value_ptr(m_config.duskColor));
         ImGui::ColorEdit3("Night sky", glm::value_ptr(m_config.nightColor));
+
+        ImGui::Separator();
+        ImGui::Checkbox("Cabin Light Enabled", &m_config.cabinLightEnabled);
+        if(m_config.cabinLightEnabled){
+            ImGui::ColorEdit3("Cabin Light Color", glm::value_ptr(m_config.cabinLightColor));
+            ImGui::SliderFloat("Light Coverage Radius", &m_config.cabinLightRadius, 0.0f, 20.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp);
+            ImGui::SliderFloat("Light Intensity", &m_config.cabinLightIntensity, 0.0f, 20.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp);
+        }
+
+
     }
     ImGui::End();
 }
