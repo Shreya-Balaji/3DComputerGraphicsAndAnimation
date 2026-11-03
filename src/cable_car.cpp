@@ -195,27 +195,6 @@ void CableCar::drawMinimap(const glm::mat4& viewProjection, const glm::vec3& cam
     drawCables(viewProjection, cameraPosition, light, cableTransform);
     drawBody(viewProjection, cameraPosition, light);
 }
-static glm::mat4 ropeTileModel(int tile, float thickness)
-{
-    constexpr float cableTileSize = 64.0f;
-    glm::mat4 m = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, tile * cableTileSize));
-    m = glm::translate(m, glm::vec3(-5.4f, 0.92f, 0.0f));
-    m = glm::scale(m, glm::vec3(thickness, thickness, 1.0f));
-    m = glm::translate(m, glm::vec3(5.4f, -0.92f, 0.0f));
-    return m;
-}
-void CableCar::draw(const glm::mat4 viewProjection, const glm::vec3 cameraPosition, const SkyLight& light, bool usePbr, bool isMinimap) const {
-    if (m_cableMesh)
-    {
-        m_cableCarShader.bind();
-        glUniform1i(m_cableCarShader.getUniformLocation("envMap"), 2);
-        glUniform1i(m_cableCarShader.getUniformLocation("shadowMap"), 3);
-        glUniformMatrix4fv(
-            m_cableCarShader.getUniformLocation("viewProjection"),
-            1,
-            GL_FALSE,
-            glm::value_ptr(viewProjection)
-        );
 
 void CableCar::drawCables(const glm::mat4& viewProjection, const glm::vec3& cameraPosition,
                           const SkyLight& light, const glm::mat4& cableTransform) const
@@ -224,6 +203,7 @@ void CableCar::drawCables(const glm::mat4& viewProjection, const glm::vec3& came
         return;
 
     m_cableCarShader.bind();
+    glUniform1i(m_cableCarShader.getUniformLocation("shadowMap"), 3);
 
     glUniformMatrix4fv(
         m_cableCarShader.getUniformLocation("viewProjection"),
@@ -283,6 +263,8 @@ void CableCar::drawBody(const glm::mat4& viewProjection, const glm::vec3& camera
     if (m_config.usePBR) {
         glUniform1f(shader.getUniformLocation("metallic"), m_config.pbrMetallic);
         glUniform1f(shader.getUniformLocation("roughness"), m_config.pbrRoughness);
+    } else {
+        glUniform1i(shader.getUniformLocation("shadowMap"), 3);
     }
     m_model.draw(shader, m_bodyMeshes);
 }
