@@ -16,9 +16,7 @@ public:
 
 	void draw(
 		const glm::mat4& view,
-		const glm::mat4& projection,
-		const glm::vec3& cameraPosition,
-		const glm::vec3& sunLightDir
+		const glm::mat4& projection
 	);
 	Environment(const Environment&) = delete;
 	Environment& operator=(const Environment&) = delete;
