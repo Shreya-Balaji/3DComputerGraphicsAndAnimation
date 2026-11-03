@@ -9,6 +9,10 @@ DISABLE_WARNINGS_PUSH()
 DISABLE_WARNINGS_POP()
 class Window;
 
+/* This class is mostly taken from the homework assignment materials.
+ * Some minor alterations have been made, like injecting the config.
+ */
+
 class FreeCamera {
 public:
     FreeCamera(Window* pWindow, const Config& config, const glm::vec3& position, const glm::vec3& forward);

@@ -16,6 +16,7 @@ public:
     void draw(const glm::mat4& viewProjection) const;
 
 private:
+    static constexpr glm::vec3 EXTENT = glm::vec3(50.0f, 50.0f, 50.0f);
     const Config& m_config;
     const glm::vec3& m_position;
     Shader m_shader;

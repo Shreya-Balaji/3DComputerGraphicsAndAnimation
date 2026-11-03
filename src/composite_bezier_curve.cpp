@@ -36,9 +36,10 @@ int CompositeBezierCurve::curveCount() const {
     return m_curves.size();
 }
 
+// table of arc lengths for reparametrization
 void CompositeBezierCurve::buildArcLengthTable()
 {
-    constexpr int samplesPerSegment = 200;
+    constexpr int samplesPerCurve = 200;
 
     m_arcLengths.clear();
     m_arcLengths.push_back({0.0f, 0.0f});
@@ -46,10 +47,10 @@ void CompositeBezierCurve::buildArcLengthTable()
     glm::vec3 previous = evaluate(0.0f);
     float distance = 0.0f;
 
-    for (int segment = 0; segment < curveCount(); ++segment) {
-        for (int i = 1; i <= samplesPerSegment; ++i) {
-            float tValue = static_cast<float>(segment)
-                + static_cast<float>(i) / samplesPerSegment;
+    for (int curve = 0; curve < curveCount(); ++curve) {
+        for (int i = 1; i <= samplesPerCurve; ++i) {
+            float tValue = static_cast<float>(curve)
+                + static_cast<float>(i) / samplesPerCurve;
 
             glm::vec3 current = evaluate(tValue);
             distance += glm::length(current - previous);
@@ -65,6 +66,7 @@ glm::vec3 CompositeBezierCurve::evaluateAtDistance(float distance) const
     float totalLength = m_arcLengths.back().distance;
     distance = glm::clamp(distance, 0.0f, totalLength);
 
+    // find the least sample that is greater than the distance
     auto upper = std::lower_bound(
         m_arcLengths.begin(),
         m_arcLengths.end(),
@@ -80,6 +82,7 @@ glm::vec3 CompositeBezierCurve::evaluateAtDistance(float distance) const
     if (upper == m_arcLengths.end())
         return evaluate(m_arcLengths.back().tValue);
 
+    // the actual distance must be between upper and lower
     const auto& lower = *(upper - 1);
 
     float span = upper->distance - lower.distance;
@@ -87,6 +90,7 @@ glm::vec3 CompositeBezierCurve::evaluateAtDistance(float distance) const
         ? (distance - lower.distance) / span
         : 0.0f;
 
+    // linearly interpolate the t value between the bounds
     float tValue = glm::mix(lower.tValue, upper->tValue, fraction);
     return evaluate(tValue);
 }

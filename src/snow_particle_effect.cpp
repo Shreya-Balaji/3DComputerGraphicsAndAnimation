@@ -5,10 +5,6 @@
 #include <random>
 #include <string>
 
-namespace {
-constexpr glm::vec3 EXTENT(50.0f, 50.0f, 50.0f);
-}
-
 SnowParticleEffect::SnowParticleEffect(const Config& config, const glm::vec3& position)
     : m_config(config)
     , m_position(position)
@@ -21,7 +17,9 @@ SnowParticleEffect::SnowParticleEffect(const Config& config, const glm::vec3& po
     std::mt19937 random(std::random_device{}());
     std::uniform_real_distribution<float> unit(0.0f, 1.0f);
 
+    // a particle consists of 3 fields for its position and one for size
     std::array<glm::vec4, PARTICLE_COUNT> particles;
+    // spawn particles in random positions inside the box defined by EXTENT
     for (auto& particle : particles) {
         particle = glm::vec4(
             unit(random) * EXTENT.x,
@@ -61,7 +59,7 @@ void SnowParticleEffect::draw(const glm::mat4& viewProjection) const
     if (!m_config.snowEnabled)
         return;
 
-    // Move the wrapping volume, keeping flakes in world space until they cross an edge
+    // the origin is at the center of the box
     const glm::vec3 minimum = m_position - EXTENT * 0.5f;
 
     const GLboolean blendEnabled = glIsEnabled(GL_BLEND);
