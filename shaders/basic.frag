@@ -1,4 +1,3 @@
-
 #version 330 core
 
 layout(std140) uniform Material {
@@ -20,7 +19,9 @@ uniform vec3 sunColor;
 uniform vec3 moonDir;
 uniform vec3 moonColor;
 uniform vec3 ambientColor;
-
+uniform samplerCube envMap; 
+uniform float envMaxLod = 8.0;
+uniform bool useEnvMap = false;
 uniform sampler2D kdTexture;
 uniform bool hasKdTexture;
 
@@ -84,6 +85,12 @@ void main()
 
     vec3 specular = ks * spec * sunColor;
     vec3 color = ambient + diffuse + specular + moonDiffuse;
-
+    if(useEnvMap){
+      vec3 R = reflect(-V, N);
+      float roughness = sqrt(2.0 / (shininess + 2.0));
+      float lod = roughness * envMaxLod;
+      vec3 env = textureLod(envMap, R, lod).rgb; 
+      color += ks * env; 
+    }
     FragColor = vec4(color, transparency);
 }

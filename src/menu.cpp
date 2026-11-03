@@ -34,11 +34,12 @@ void Menu::draw()
         }
         ImGui::Separator();
         ImGui::Checkbox("Use PBR shading", &m_config.usePBR);
-        ImGui::Separator();
         if(m_config.usePBR == true){
             ImGui::SliderFloat("Metallic", &m_config.pbrMetallic, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp);
             ImGui::SliderFloat("Roughness", &m_config.pbrRoughness, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp);
         }
+        ImGui::Checkbox("Use Environment Reflections", &m_config.useEnvMap);
+        ImGui::Separator();
         ImGui::Checkbox("Show minimap", &m_config.showMinimap);
         ImGui::SliderFloat("Open doors", &m_config.doorSlideFactor, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp);
         ImGui::SliderFloat("Wheel speed", &m_config.wheelSpeed, Config::MIN_WHEEL_SPEED, Config::MAX_WHEEL_SPEED, "%.0f deg/s", ImGuiSliderFlags_AlwaysClamp);

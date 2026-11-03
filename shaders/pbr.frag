@@ -1,4 +1,3 @@
-
 #version 330 core
 
 layout(std140) uniform Material {
@@ -21,7 +20,9 @@ uniform vec3 sunColor;
 uniform vec3 moonDir;
 uniform vec3 moonColor;
 uniform vec3 ambientColor;
-
+uniform samplerCube envMap; 
+uniform float envMaxLod = 8.0;
+uniform bool useEnvMap;
 uniform sampler2D kdTexture;
 uniform bool hasKdTexture;
 
@@ -57,11 +58,11 @@ vec3 shadeLight(vec3 N, vec3 V, vec3 L, vec3 lightColor, vec3 albedo){
     float dotProductNV = max(dot(N, V), 0.00000001);
     float dotProductNL = max(dot(N, L), 0.00000001);
     vec3 F0 = mix(vec3(0.04), albedo, metallic);
-    float D = distributionGGX(dotProductNL, roughness);
-    float G = geometrySchlick(dotProductNV, roughness);
+    float D = distributionGGX(dotProductNH, roughness);
+    float G = geometrySchlick(dotProductNL, roughness) * geometrySchlick(dotProductNV, roughness);
     vec3 F = fresnelSchlick(dotProductHV, F0);
     vec3 specular = D * G * F / (4.0 * dotProductNV * max(dotProductNL, 0.001));
-    vec3 kD = (1.0 - F0) * (1.0 - metallic);
+    vec3 kD = (1.0 - F) * (1.0 - metallic);
     vec3 diffuse = kD * albedo / PI;
     vec3 result = (diffuse + specular) * lightColor* dotProductNL;
     return result;
@@ -95,8 +96,23 @@ void main()
     vec3 Lsun= normalize(-lightDir);
     vec3 Lmoon = normalize(-moonDir);
     vec3 V = normalize(viewPos - FragPos);
-    vec3 ambient = ambientColor * baseColor;
+    float NdotV = max(dot(N, V), 0.0001);
+    vec3  F0 = mix(vec3(0.04), baseColor, metallic);
+    bool  isGlass = shininess > 300.0;
+    float rough   = isGlass ? 0.05 : roughness;
+    vec3 ambient = ambientColor * baseColor; 
+    vec3 env = vec3(0.0);
+    if(useEnvMap){
+        vec3 R   = reflect(-V, N);
+        env = textureLod(envMap, R, rough * envMaxLod).rgb;
+        vec3 Fenv = F0 + (max(vec3(1.0 - rough), F0) - F0) * pow(1.0 - NdotV, 5.0);
+        vec3 kDenv = (1.0 - Fenv) * (1.0 - metallic);
+        ambient = ambientColor * baseColor * kDenv + env * Fenv;
+    }
     vec3 color = ambient + shadeLight(N,V,Lsun,sunColor,baseColor) + shadeLight(N,V,Lmoon,moonColor,baseColor);
-
+    if (useEnvMap && isGlass) {
+        float glassMix = 0.35 + 0.65 * pow(1.0 - NdotV, 3.0);
+        color = mix(color, env, glassMix);
+    }
     FragColor = vec4(color, transparency);
 }

@@ -23,11 +23,10 @@ struct Config {
     float doorSlideFactor = 0.0f;
     float wheelSpeed = 10.0f; // Degrees per second.
     float cableCarT = 0.35f;
-
+    bool useEnvMap = true;
     bool usePBR = true;
     float pbrMetallic = 0.25f;
     float pbrRoughness = 0.25f;
-
     float timeOfDay = 0.25f; // 0.0 = sunrise, 0.25 = midday, 0.5 = sunset, 0.75 = midnight etc.
 
     glm::vec3 nightColor{0.0f, 0.0f, 0.03f};

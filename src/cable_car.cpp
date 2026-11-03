@@ -8,7 +8,7 @@
 #include <iostream>
 #include <string>
 #include "light.h"
-
+#include "environment_map.h"
 namespace {
 glm::vec3 evaluateCableCarRoute(float t)
 {
@@ -72,6 +72,9 @@ void CableCar::update(float deltaTime)
 void CableCar::draw(const glm::mat4 viewProjection, const glm::vec3 cameraPosition, const SkyLight& light, bool usePbr) const {
     const Shader& shader = usePbr ? m_pbrShader : m_cableCarShader;
     shader.bind();
+    glUniform1i(shader.getUniformLocation("envMap"), 2);
+    glUniform1f(shader.getUniformLocation("envMaxLod"), EnvironmentMap::MAX_LOD);
+    glUniform1i(shader.getUniformLocation("useEnvMap"), m_config.useEnvMap);
     glUniformMatrix4fv(
         shader.getUniformLocation("viewProjection"),
         1,
