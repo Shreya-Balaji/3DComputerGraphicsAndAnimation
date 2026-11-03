@@ -72,14 +72,18 @@ int main()
             auto size = window.getFrameBufferSize();
             glViewport(0, 0, size.x, size.y);
             menu.draw();
-            const SkyLight light = computeSkyLight(config.timeOfDay);
+            SkyLight light = computeSkyLight(config.timeOfDay);
             const glm::vec3 skyColor = computeSkyColor(light,config);
             glClearColor(skyColor.r, skyColor.g, skyColor.b, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            
+            float cabinMidY = -1.5f;
 
             const ImGuiIO& io = ImGui::GetIO();
             cableCar.update(io.DeltaTime);
+            light.cabinLightPos = cableCar.position() + glm::vec3(0.0f, cabinMidY, 0.0f);
+            if(!config.cabinLightEnabled){
+                light.cabinLightAmount = 0.0f;
+            }
             cableCarPosition = cableCar.position();
             terrain.update(io.DeltaTime);
             snow.update(io.DeltaTime);

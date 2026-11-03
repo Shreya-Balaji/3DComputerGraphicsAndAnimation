@@ -112,6 +112,11 @@ void Terrain::draw(const glm::mat4& viewProjection, const glm::vec3& viewPositio
     glUniform3fv(m_shader.getUniformLocation("moonColor"), 1, glm::value_ptr(light.moonColor));
     glUniform3fv(m_shader.getUniformLocation("ambientColor"), 1, glm::value_ptr(light.ambientColor));
     glUniform1i(m_shader.getUniformLocation("envMap"), 2);
+    glUniform3fv(m_shader.getUniformLocation("cabinLightPos"), 1, glm::value_ptr(light.cabinLightPos));
+    glUniform3fv(m_shader.getUniformLocation("cabinLightColor"), 1, glm::value_ptr(m_config.cabinLightColor));
+    glUniform1f(m_shader.getUniformLocation("cabinLightAmount"), light.cabinLightAmount);
+    glUniform1f(m_shader.getUniformLocation("cabinLightRadius"), m_config.cabinLightRadius);
+    glUniform1f(m_shader.getUniformLocation("cabinLightIntensity"), m_config.cabinLightIntensity);
 
     for (int z = -1; z <= 1; ++z) {
         for (int x = -1; x <= 1; ++x) {

@@ -92,6 +92,11 @@ void CableCar::draw(const glm::mat4 viewProjection, const glm::vec3 cameraPositi
     glUniform3fv(shader.getUniformLocation("moonDir"), 1, glm::value_ptr(light.moonDir));
     glUniform3fv(shader.getUniformLocation("moonColor"), 1, glm::value_ptr(light.moonColor));
     glUniform3fv(shader.getUniformLocation("ambientColor"), 1, glm::value_ptr(light.ambientColor));
+    glUniform3fv(shader.getUniformLocation("cabinLightPos"), 1, glm::value_ptr(light.cabinLightPos));
+    glUniform3fv(shader.getUniformLocation("cabinLightColor"), 1, glm::value_ptr(m_config.cabinLightColor));
+    glUniform1f(shader.getUniformLocation("cabinLightAmount"), light.cabinLightAmount);
+    glUniform1f(shader.getUniformLocation("cabinLightRadius"), m_config.cabinLightRadius);
+    glUniform1f(shader.getUniformLocation("cabinLightIntensity"), m_config.cabinLightIntensity);
     if(usePbr){
         glUniform1f(shader.getUniformLocation("metallic"), m_config.pbrMetallic);
         glUniform1f(shader.getUniformLocation("roughness"), m_config.pbrRoughness);

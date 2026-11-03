@@ -25,7 +25,11 @@ uniform float envMaxLod = 8.0;
 uniform bool useEnvMap;
 uniform sampler2D kdTexture;
 uniform bool hasKdTexture;
-
+uniform vec3 cabinLightPos;
+uniform vec3 cabinLightColor;
+uniform float cabinLightAmount;
+uniform float cabinLightRadius;
+uniform float cabinLightIntensity;
 uniform sampler2D normalTexture;
 uniform bool hasNormalTexture;
 uniform bool twoScaleSampling = false;
@@ -113,6 +117,17 @@ void main()
     if (useEnvMap && isGlass) {
         float glassMix = 0.35 + 0.65 * pow(1.0 - NdotV, 3.0);
         color = mix(color, env, glassMix);
+    }
+
+    vec3 toLamp = cabinLightPos - FragPos;
+    float d = length(toLamp);
+    vec3 Lc = toLamp / d;
+    float falloff = clamp(1.0 - d / cabinLightRadius, 0.0, 1.0);
+    falloff = pow(falloff,2);
+    vec3 lampLight = cabinLightColor * falloff * cabinLightAmount * cabinLightIntensity;
+    color += shadeLight(N, V, Lc, lampLight, baseColor);
+    if (isGlass) {
+        color += cabinLightColor * cabinLightAmount * 0.3;
     }
     FragColor = vec4(color, transparency);
 }
