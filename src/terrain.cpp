@@ -5,6 +5,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <cmath>
 #include <string>
+#include "light.h"
 
 namespace {
 constexpr int CELLS = 64;
@@ -93,7 +94,7 @@ void Terrain::update(float deltaTime)
         m_scroll = std::remainder(m_scroll + static_cast<double>(m_config.terrainSpeed) * deltaTime, TILE_SIZE);
 }
 
-void Terrain::draw(const glm::mat4& viewProjection, const glm::vec3& viewPosition) const
+void Terrain::draw(const glm::mat4& viewProjection, const glm::vec3& viewPosition, const SkyLight& light) const
 {
     if (!m_config.terrainEnabled)
         return;
@@ -102,7 +103,11 @@ void Terrain::draw(const glm::mat4& viewProjection, const glm::vec3& viewPositio
     glUniform1i(m_shader.getUniformLocation("twoScaleSampling"), m_config.terrainTwoScaleSampling);
     glUniformMatrix4fv(m_shader.getUniformLocation("viewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
     glUniform3fv(m_shader.getUniformLocation("viewPos"), 1, glm::value_ptr(viewPosition));
-    glUniform3f(m_shader.getUniformLocation("lightDir"), -0.5f, -1.0f, -0.3f);
+    glUniform3fv(m_shader.getUniformLocation("lightDir"), 1, glm::value_ptr(light.sunDir));
+    glUniform3fv(m_shader.getUniformLocation("sunColor"), 1, glm::value_ptr(light.sunColor));
+    glUniform3fv(m_shader.getUniformLocation("moonDir"), 1, glm::value_ptr(light.moonDir));
+    glUniform3fv(m_shader.getUniformLocation("moonColor"), 1, glm::value_ptr(light.moonColor));
+    glUniform3fv(m_shader.getUniformLocation("ambientColor"), 1, glm::value_ptr(light.ambientColor));
 
     for (int z = -1; z <= 1; ++z) {
         for (int x = -1; x <= 1; ++x) {

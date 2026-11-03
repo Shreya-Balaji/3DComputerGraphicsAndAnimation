@@ -16,6 +16,10 @@ in vec3 Bitangent;
 
 uniform vec3 lightDir;
 uniform vec3 viewPos;
+uniform vec3 sunColor;
+uniform vec3 moonDir;
+uniform vec3 moonColor;
+uniform vec3 ambientColor;
 
 uniform sampler2D kdTexture;
 uniform bool hasKdTexture;
@@ -60,10 +64,14 @@ void main()
     vec3 V = normalize(viewPos - FragPos);
     vec3 H = normalize(L + V);
 
-    vec3 ambient = 0.30 * baseColor;
+    vec3 L2 = normalize(-moonDir);
+    float diff2 = max(dot(N, L2), 0.0);
+    vec3 moonDiffuse = diff2 * baseColor * moonColor;
+
+    vec3 ambient = ambientColor * baseColor;
 
     float diff = max(dot(N, L), 0.0);
-    vec3 diffuse = diff * baseColor;
+    vec3 diffuse = diff * baseColor * sunColor;
 
     float spec = 0.0;
 
@@ -74,8 +82,8 @@ void main()
         );
     }
 
-    vec3 specular = ks * spec;
-    vec3 color = ambient + diffuse + specular;
+    vec3 specular = ks * spec * sunColor;
+    vec3 color = ambient + diffuse + specular + moonDiffuse;
 
     FragColor = vec4(color, transparency);
 }

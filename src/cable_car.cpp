@@ -7,6 +7,7 @@
 #include <cmath>
 #include <iostream>
 #include <string>
+#include "light.h"
 
 namespace {
 glm::vec3 evaluateCableCarRoute(float t)
@@ -63,13 +64,8 @@ void CableCar::update(float deltaTime)
         m_model.setNodeRotation("Wheel_" + std::to_string(i), m_wheelAngle, glm::vec3(1.0f, 0.0f, 0.0f));
 }
 
-void CableCar::draw(const glm::mat4 viewProjection, const glm::vec3 cameraPosition) const {
+void CableCar::draw(const glm::mat4 viewProjection, const glm::vec3 cameraPosition, const SkyLight& light) const {
     m_cableCarShader.bind();
-
-    glUniform3f(
-       m_cableCarShader.getUniformLocation("lightDir"),
-        -0.5f, -1.0f, -0.3f
-    );
     glUniformMatrix4fv(
         m_cableCarShader.getUniformLocation("viewProjection"),
         1,
@@ -82,6 +78,12 @@ void CableCar::draw(const glm::mat4 viewProjection, const glm::vec3 cameraPositi
         1,
         glm::value_ptr(cameraPosition)
     );
+    glUniform3fv(m_cableCarShader.getUniformLocation("lightDir"), 1, glm::value_ptr(light.sunDir));
+    glUniform3fv(m_cableCarShader.getUniformLocation("sunColor"), 1, glm::value_ptr(light.sunColor));
+    glUniform3fv(m_cableCarShader.getUniformLocation("moonDir"), 1, glm::value_ptr(light.moonDir));
+    glUniform3fv(m_cableCarShader.getUniformLocation("moonColor"), 1, glm::value_ptr(light.moonColor));
+    glUniform3fv(m_cableCarShader.getUniformLocation("ambientColor"), 1, glm::value_ptr(light.ambientColor));
+
 
     m_model.draw(m_cableCarShader);
 }

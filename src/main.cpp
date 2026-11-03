@@ -7,7 +7,8 @@
 #include "config.h"
 #include "snow_particle_effect.h"
 #include "terrain.h"
-
+#include "light.h"
+#include "sky.h"
 #include <framework/window.h>
 #include <imgui/imgui.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -65,10 +66,12 @@ int main()
 
             auto size = window.getFrameBufferSize();
             glViewport(0, 0, size.x, size.y);
-
-            glClearColor(0.25f, 0.45f, 0.65f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             menu.draw();
+            const SkyLight light = computeSkyLight(config.timeOfDay);
+            const glm::vec3 skyColor = computeSkyColor(light,config);
+            glClearColor(skyColor.r, skyColor.g, skyColor.b, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            
 
             const ImGuiIO& io = ImGui::GetIO();
             cableCar.update(io.DeltaTime);
@@ -89,15 +92,15 @@ int main()
             );
             const glm::mat4 viewProjection = projection * view;
 
-            cableCar.draw(viewProjection, cameraPosition);
+            cableCar.draw(viewProjection, cameraPosition, light);
 
-            terrain.draw(viewProjection, cameraPosition);
+            terrain.draw(viewProjection, cameraPosition, light);
 
             if (config.showMinimap)
             {
                 minimap.bind();
 
-                glClearColor(0.25f, 0.45f, 0.65f, 1.0f);
+                glClearColor(skyColor.r, skyColor.g, skyColor.b, 1.0f);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
                 const glm::mat4 minimapView = minimap.viewMatrix();
@@ -107,8 +110,8 @@ int main()
 
                 const glm::vec3 minimapCameraPosition(-3.0f, 70.0f, -5.0f);
 
-                terrain.draw(minimapViewProjection, minimapCameraPosition);
-                cableCar.draw(minimapViewProjection, minimapCameraPosition);
+                terrain.draw(minimapViewProjection, minimapCameraPosition, light);
+                cableCar.draw(minimapViewProjection, minimapCameraPosition, light);
 
                 minimap.unbind();
                 glViewport(0, 0, size.x, size.y);

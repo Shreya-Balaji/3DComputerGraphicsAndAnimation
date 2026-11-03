@@ -3,12 +3,13 @@
 #include "config.h"
 #include "mesh.h"
 #include <memory>
+#include "light.h"
 
 class Terrain {
 public:
     Terrain(const Config& config, const glm::vec3& position);
     void update(float deltaTime);
-    void draw(const glm::mat4& viewProjection, const glm::vec3& viewPosition) const;
+    void draw(const glm::mat4& viewProjection, const glm::vec3& viewPosition, const SkyLight& light) const;
 
 private:
     const Config& m_config;

@@ -1,8 +1,9 @@
 #include "menu.h"
 #include "config.h"
-
+#include <glm/gtc/type_ptr.hpp>
 #include <imgui/imgui.h>
 #include <iterator>
+#include <cmath>
 
 Menu::Menu(Config& config, float cameraLoopLength)
     : m_config(config)
@@ -47,6 +48,18 @@ void Menu::draw()
         ImGui::Checkbox("Terrain enabled", &m_config.terrainEnabled);
         ImGui::Checkbox("Two-scale sampling", &m_config.terrainTwoScaleSampling);
         ImGui::SliderFloat("Terrain speed", &m_config.terrainSpeed, -15.0f, 15.0f, "%.2f units/s", ImGuiSliderFlags_AlwaysClamp);
+
+        ImGui::Separator();
+        ImGui::Text("Sun and Moon Light Settings");
+        ImGui::SliderFloat("Time of the Day", &m_config.timeOfDay, 0.0f, 1.0f, "", ImGuiSliderFlags_AlwaysClamp);
+        const float hours = std::fmod(6.0f + 24.0f * m_config.timeOfDay, 24.0f);
+        const int hour = static_cast<int>(hours);
+        const int minute = static_cast<int>((hours - hour) * 60.0f);
+        ImGui::SameLine();
+        ImGui::Text("%02d:%02d", hour, minute);
+        ImGui::ColorEdit3("Day sky", glm::value_ptr(m_config.dayColor));
+        ImGui::ColorEdit3("Dusk", glm::value_ptr(m_config.duskColor));
+        ImGui::ColorEdit3("Night sky", glm::value_ptr(m_config.nightColor));
     }
     ImGui::End();
 }
