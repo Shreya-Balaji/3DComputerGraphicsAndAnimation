@@ -20,6 +20,7 @@ SkyLight computeSkyLight(float timeOfDay)
     const glm::vec3 moonBlue(0.078f, 0.235f, 0.706f); 
     const glm::vec3 nightAmbient(0.08f, 0.10f, 0.18f);
     const glm::vec3 dayAmbient(0.35f);
+    light.cabinLightAmount = 1.0f - glm::smoothstep(0.1f, 0.6f, h);
     light.sunColor = glm::mix(dusk, day, glm::smoothstep(0.0f, 0.3f, h))
                    * glm::smoothstep(-0.1f, 0.05f, h);
     light.moonDir = -light.sunDir;
