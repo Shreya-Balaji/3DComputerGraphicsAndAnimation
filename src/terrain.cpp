@@ -10,24 +10,25 @@
 
 namespace {
 constexpr int CELLS = 64;
+constexpr int SIMPLIFIED_CELLS = 16;
 constexpr float TILE_SIZE = 64.0f;
 constexpr float TEXTURE_REPEATS = 4.0f;
 
-Vertex terrainVertex(int x, int z)
+Vertex terrainVertex(int x, int z, int cells)
 {
     // Ensure that edges have the same parameters
-    const float a = glm::two_pi<float>() * static_cast<float>(x % CELLS) / CELLS;
-    const float b = glm::two_pi<float>() * static_cast<float>(z % CELLS) / CELLS;
+    const float a = glm::two_pi<float>() * static_cast<float>(x % cells) / cells;
+    const float b = glm::two_pi<float>() * static_cast<float>(z % cells) / cells;
     const float ridge = std::pow(std::abs(std::cos(a * 0.5f)), 1.5f);
     const float peaks = 14.0f + 5.0f * std::sin(b + 0.7f * std::sin(a))
         + 3.0f * std::cos(2.0f * b - a) + 1.5f * std::sin(3.0f * b + 2.0f * a);
 
     Vertex vertex{};
     vertex.position = glm::vec3(
-        (static_cast<float>(x) / CELLS - 0.5f) * TILE_SIZE,
+        (static_cast<float>(x) / cells - 0.5f) * TILE_SIZE,
         -10.0f + ridge * peaks + 0.6f * std::sin(2.0f * b),
-        (static_cast<float>(z) / CELLS - 0.5f) * TILE_SIZE);
-    vertex.texCoord = glm::vec2(x, z) / static_cast<float>(CELLS) * TEXTURE_REPEATS;
+        (static_cast<float>(z) / cells - 0.5f) * TILE_SIZE);
+    vertex.texCoord = glm::vec2(x, z) / static_cast<float>(cells) * TEXTURE_REPEATS;
     return vertex;
 }
 
@@ -51,6 +52,29 @@ void addTriangle(Mesh& mesh, Vertex a, Vertex b, Vertex c)
     }
     mesh.triangles.emplace_back(first, first + 1, first + 2);
 }
+
+Mesh terrainMesh(int cells)
+{
+    Mesh mesh;
+    mesh.vertices.reserve(cells * cells * 6);
+    mesh.triangles.reserve(cells * cells * 2);
+    for (int z = 0; z < cells; ++z) {
+        for (int x = 0; x < cells; ++x) {
+            const auto a = terrainVertex(x, z, cells);
+            const auto b = terrainVertex(x + 1, z, cells);
+            const auto c = terrainVertex(x, z + 1, cells);
+            const auto d = terrainVertex(x + 1, z + 1, cells);
+            if ((x + z) % 2 == 0) {
+                addTriangle(mesh, a, c, b);
+                addTriangle(mesh, b, c, d);
+            } else {
+                addTriangle(mesh, a, c, d);
+                addTriangle(mesh, a, d, b);
+            }
+        }
+    }
+    return mesh;
+}
 }
 
 Terrain::Terrain(const Config& config, const glm::vec3& position)
@@ -63,30 +87,43 @@ Terrain::Terrain(const Config& config, const glm::vec3& position)
     builder.addStage(GL_FRAGMENT_SHADER, root + "/shaders/basic.frag");
     m_shader = builder.build();
 
-    Mesh mesh;
-    mesh.vertices.reserve(CELLS * CELLS * 6);
-    mesh.triangles.reserve(CELLS * CELLS * 2);
+    ShaderBuilder reflectionBuilder;
+    reflectionBuilder.addStage(GL_VERTEX_SHADER, root + "/shaders/terrain_reflection.vert");
+    reflectionBuilder.addStage(GL_FRAGMENT_SHADER, root + "/shaders/terrain_reflection.frag");
+    m_reflectionShader = reflectionBuilder.build();
+    m_reflectionMesh = std::make_unique<GPUMesh>(terrainMesh(SIMPLIFIED_CELLS));
+
+    Mesh mesh = terrainMesh(CELLS);
     mesh.material.kd = glm::vec3(1.0f);
     mesh.material.ks = glm::vec3(0.04f);
     mesh.material.shininess = 16.0f;
     mesh.material.kdTexture = std::make_shared<Image>(root + "/assets/snow_02_diff_1k.png");
     mesh.material.normalTexture = std::make_shared<Image>(root + "/assets/snow_02_nor_gl_1k.png");
-    for (int z = 0; z < CELLS; ++z) {
-        for (int x = 0; x < CELLS; ++x) {
-            const auto a = terrainVertex(x, z);
-            const auto b = terrainVertex(x + 1, z);
-            const auto c = terrainVertex(x, z + 1);
-            const auto d = terrainVertex(x + 1, z + 1);
-            if ((x + z) % 2 == 0) {
-                addTriangle(mesh, a, c, b);
-                addTriangle(mesh, b, c, d);
-            } else {
-                addTriangle(mesh, a, c, d);
-                addTriangle(mesh, a, d, b);
-            }
+    m_mesh = std::make_unique<GPUMesh>(mesh);
+}
+
+void Terrain::drawReflection(const glm::mat4& viewProjection, const SkyLight& light) const
+{
+    if (!m_config.terrainEnabled)
+        return;
+
+    m_reflectionShader.bind();
+    glUniformMatrix4fv(m_reflectionShader.getUniformLocation("viewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
+    glUniform3fv(m_reflectionShader.getUniformLocation("sunDir"), 1, glm::value_ptr(light.sunDir));
+    glUniform3fv(m_reflectionShader.getUniformLocation("sunColor"), 1, glm::value_ptr(light.sunColor));
+    glUniform3fv(m_reflectionShader.getUniformLocation("moonDir"), 1, glm::value_ptr(light.moonDir));
+    glUniform3fv(m_reflectionShader.getUniformLocation("moonColor"), 1, glm::value_ptr(light.moonColor));
+    glUniform3fv(m_reflectionShader.getUniformLocation("ambientColor"), 1, glm::value_ptr(light.ambientColor));
+
+    const GLint modelLocation = m_reflectionShader.getUniformLocation("model");
+    for (int z = -1; z <= 1; ++z) {
+        for (int x = -1; x <= 1; ++x) {
+            const auto model = glm::translate(glm::mat4(1.0f),
+                m_position + glm::vec3(x * TILE_SIZE, 0.0f, z * TILE_SIZE + static_cast<float>(m_scroll)));
+            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
+            m_reflectionMesh->drawGeometry();
         }
     }
-    m_mesh = std::make_unique<GPUMesh>(mesh);
 }
 
 void Terrain::update(float deltaTime)

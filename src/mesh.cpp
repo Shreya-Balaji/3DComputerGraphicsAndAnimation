@@ -254,9 +254,7 @@ void GPUMesh::draw(const Shader& drawingShader) const
             hasNormalTextureLocation,
             m_normalTexture != INVALID ? 1 : 0);
     }
-    glBindVertexArray(m_vao);
-    glDrawElements(GL_TRIANGLES, m_numIndices,
-        GL_UNSIGNED_INT, nullptr);
+    drawGeometry();
 
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -265,6 +263,12 @@ void GPUMesh::draw(const Shader& drawingShader) const
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+
+void GPUMesh::drawGeometry() const
+{
+    glBindVertexArray(m_vao);
+    glDrawElements(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, nullptr);
+}
 
 void GPUMesh::moveInto(GPUMesh&& other)
 {

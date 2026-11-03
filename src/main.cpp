@@ -77,9 +77,6 @@ int main()
             menu.draw();
             const SkyLight light = computeSkyLight(config.timeOfDay);
             const glm::vec3 skyColor = computeSkyColor(light,config);
-            glClearColor(skyColor.r, skyColor.g, skyColor.b, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            
 
             const ImGuiIO& io = ImGui::GetIO();
             cableCar.update(io.DeltaTime);
@@ -104,21 +101,21 @@ int main()
                 1000.0f
             );
             const glm::mat4 viewProjection = projection * view;
-            const glm::vec3 capturePos = cableCar.position() + glm::vec3(0.0f, 1.0f, 0.0f);
-            environmentMap.capture(capturePos,[&](const glm::mat4& v, const glm::mat4& p, const glm::vec3& pos) {
-                skybox.draw(v, p, pos, light, skyColor);
-                terrain.draw(p * v, pos, light);
-            });
+            if (config.useEnvMap) {
+                const glm::vec3 capturePos = cableCar.position() + glm::vec3(0.0f, 1.0f, 0.0f);
+                environmentMap.capture(capturePos,[&](const glm::mat4& v, const glm::mat4& p, const glm::vec3& pos) {
+                    skybox.draw(v, p, pos, light, skyColor);
+                    terrain.drawReflection(p * v, light);
+                });
+            }
             environmentMap.bind(2);
-            skybox.draw(view, projection, cameraPosition, light, skyColor);
-            
-            cableCar.draw(viewProjection, cameraPosition, light, config.usePBR);
 
             fog.begin(size.x, size.y);
-            glClearColor(0.55f, 0.65f, 0.72f, 1.0f);
+            glClearColor(skyColor.r, skyColor.g, skyColor.b, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            cableCar.draw(viewProjection, cameraPosition);
+            skybox.draw(view, projection, cameraPosition, light, skyColor);
+            cableCar.draw(viewProjection, cameraPosition, light, config.usePBR);
 
             // environment.draw(view, projection);
             terrain.draw(viewProjection, cameraPosition, light);
