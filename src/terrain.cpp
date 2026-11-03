@@ -19,8 +19,12 @@ Vertex terrainVertex(int x, int z, int cells)
     const float a = glm::two_pi<float>() * static_cast<float>(x % cells) / cells;
     const float b = glm::two_pi<float>() * static_cast<float>(z % cells) / cells;
     const float ridge = std::pow(std::abs(std::cos(a * 0.5f)), 1.5f);
-    const float peaks = 14.0f + 5.0f * std::sin(b + 0.7f * std::sin(a))
-        + 3.0f * std::cos(2.0f * b - a) + 1.5f * std::sin(3.0f * b + 2.0f * a);
+    const float leftPeaks = 14.0f + 5.0f * std::sin(b + 0.6f)
+        + 3.0f * std::cos(3.0f * b - 1.1f) + 1.5f * std::sin(5.0f * b + 0.8f);
+    const float rightPeaks = 16.0f + 4.0f * std::sin(2.0f * b + 1.7f)
+        + 3.0f * std::cos(3.0f * b + 0.4f) + 2.0f * std::sin(5.0f * b - 1.2f);
+    const float peaks = glm::mix(leftPeaks, rightPeaks, static_cast<float>(x) / cells)
+        + 1.5f * std::sin(3.0f * b + 2.0f * a);
 
     Vertex vertex{};
     vertex.position = glm::vec3(

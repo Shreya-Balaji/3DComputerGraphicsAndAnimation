@@ -77,5 +77,5 @@ void main()
     color += lamp * baseColor * cabinLightColor;
     if (shininess > 300.0)
         color += cabinLightColor * cabinLightAmount * 0.3;
-    FragColor = vec4(color, transparency);
+    FragColor = vec4(color, transparency * 0.85);
 }

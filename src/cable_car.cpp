@@ -265,7 +265,6 @@ void CableCar::draw(const glm::mat4 viewProjection, const glm::vec3 cameraPositi
         }
     };
     drawBody(viewProjection, cameraPosition, light, usePbr);
-    drawWindows(viewProjection, cameraPosition, light);
 }
 
 void CableCar::drawBody(const glm::mat4& viewProjection, const glm::vec3& cameraPosition,
@@ -289,9 +288,22 @@ void CableCar::drawWindows(const glm::mat4& viewProjection, const glm::vec3& cam
     if (m_windowMeshes.empty())
         return;
 
+    const GLboolean blendEnabled = glIsEnabled(GL_BLEND);
+    GLint sourceRGB, destinationRGB, sourceAlpha, destinationAlpha;
+    glGetIntegerv(GL_BLEND_SRC_RGB, &sourceRGB);
+    glGetIntegerv(GL_BLEND_DST_RGB, &destinationRGB);
+    glGetIntegerv(GL_BLEND_SRC_ALPHA, &sourceAlpha);
+    glGetIntegerv(GL_BLEND_DST_ALPHA, &destinationAlpha);
+    glEnable(GL_BLEND);
+    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
     bindLighting(m_windowShader, viewProjection, cameraPosition, light, m_config);
     glUniform1i(m_windowShader.getUniformLocation("envMap"), 2);
     glUniform1f(m_windowShader.getUniformLocation("envMaxLod"), EnvironmentMap::MAX_LOD);
     glUniform1i(m_windowShader.getUniformLocation("useEnvMap"), m_config.useEnvMap);
     m_model.draw(m_windowShader, m_windowMeshes);
+
+    glBlendFuncSeparate(sourceRGB, destinationRGB, sourceAlpha, destinationAlpha);
+    if (!blendEnabled)
+        glDisable(GL_BLEND);
 }

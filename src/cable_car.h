@@ -24,13 +24,15 @@ void draw(
     bool isMinimap = false
 ) const;
 
+    // Draw after the opaque scene so the glass blends with its background.
+    void drawWindows(const glm::mat4& viewProjection, const glm::vec3& cameraPosition,
+                     const SkyLight& light) const;
+
 private:
     static constexpr glm::vec3 OPEN_DOOR = glm::vec3(0.0f, 0.0f, 0.3f);
     void createCable();
     void drawBody(const glm::mat4& viewProjection, const glm::vec3& cameraPosition,
                   const SkyLight& light, bool usePbr) const;
-    void drawWindows(const glm::mat4& viewProjection, const glm::vec3& cameraPosition,
-                     const SkyLight& light) const;
     const Config& m_config;
     Model m_model;
     std::vector<unsigned int> m_windowMeshes;

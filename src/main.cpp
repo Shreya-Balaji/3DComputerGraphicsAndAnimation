@@ -141,6 +141,7 @@ int main()
             if (config.freeCameraEnabled)
                 cameraIcon.draw(viewProjection, attachedCamera.viewMatrix());
 
+            cableCar.drawWindows(viewProjection, cameraPosition, light);
             fog.draw(projection, skyColor);
             snow.draw(viewProjection, cameraPosition);
 
@@ -175,6 +176,7 @@ int main()
                 glDisable(GL_DEPTH_TEST);
 
                 cableCar.draw(minimapViewProjection, minimapCameraPosition, light, config.usePBR, true);
+                cableCar.drawWindows(minimapViewProjection, minimapCameraPosition, light);
 
                 glEnable(GL_DEPTH_TEST);
 
