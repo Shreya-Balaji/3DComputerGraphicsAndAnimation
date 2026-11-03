@@ -12,6 +12,9 @@ find_package(assimp CONFIG REQUIRED)
 
 add_executable(CableCarAlps
     src/main.cpp
+    src/menu.cpp
+    src/snow_particle_effect.cpp
+    src/terrain.cpp
     src/cable_car.cpp
     src/environment.cpp
     src/bezier_curve.cpp

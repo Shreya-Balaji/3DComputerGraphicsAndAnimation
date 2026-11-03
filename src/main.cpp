@@ -3,6 +3,10 @@
 #include "camera_rig.h"
 #include "camera_icon.h"
 #include "minimap.h"
+#include "menu.h"
+#include "config.h"
+#include "snow_particle_effect.h"
+#include "terrain.h"
 
 #include <framework/window.h>
 #include <imgui/imgui.h>
@@ -49,22 +53,31 @@ int main()
     bool showMinimap = true;
     float timeOfDay = 0.25f; // 0.0 = sunrise, 0.25 = midday, 0.5 = sunset
   
+    Config config;
 
     glEnable(GL_DEPTH_TEST);
 
     try
     {
-        CableCar cableCar;
-      
-        Environment environment;
+        CableCar cableCar(config);
+        glm::vec3 cableCarPosition = cableCar.position();
+        Terrain terrain(config, cableCarPosition);
+        CameraRig cameraRig(window, cableCar, config);
+        const AttachedCamera& attachedCamera = cameraRig.attachedCamera();
+        glm::vec3 attachedCameraPosition = attachedCamera.position();
+        Menu menu(config, attachedCamera.curve().length());
+
+        // Temporarily disabled to avoid loading the mountain asset.
+        /* Environment environment;
         if (!environment.initialize())
         {
             throw std::runtime_error(
                 "Could not initialize mountain environment."
             );
-        }
+        } */
 
         CameraIcon cameraIcon;
+        SnowParticleEffect snow(config, attachedCameraPosition);
 
         Minimap minimap;
         if (!minimap.initialize(512, 512))
@@ -131,8 +144,15 @@ int main()
             );
             ImGui::End();
             
+            menu.draw();
+
             const ImGuiIO& io = ImGui::GetIO();
-            cameraRig.updateInput(io.WantCaptureMouse || io.WantCaptureKeyboard);
+            cableCar.update(io.DeltaTime);
+            cableCarPosition = cableCar.position();
+            terrain.update(io.DeltaTime);
+            snow.update(io.DeltaTime);
+            cameraRig.updateInput(io.WantCaptureMouse || io.WantCaptureKeyboard, io.DeltaTime);
+            attachedCameraPosition = attachedCamera.position();
 
             const glm::mat4 view = cameraRig.viewMatrix();
             const glm::vec3 cameraPosition = cameraRig.position();
@@ -157,8 +177,11 @@ int main()
             cableCar.draw(viewProjection, cameraPosition, sunLightDir);
 
             environment.draw(view, projection, cameraPosition, sunLightDir);
+            cableCar.draw(viewProjection, cameraPosition);
 
-            if (showMinimap)
+            terrain.draw(viewProjection, cameraPosition);
+
+            if (config.showMinimap)
             {
                 minimap.bind();
 
@@ -174,18 +197,22 @@ int main()
 
                 environment.draw(minimapView, minimapProjection, minimapCameraPosition, sunLightDir);
                 cableCar.draw(minimapViewProjection, minimapCameraPosition, sunLightDir);
+                terrain.draw(minimapViewProjection, minimapCameraPosition);
+                cableCar.draw(minimapViewProjection, minimapCameraPosition);
 
                 minimap.unbind();
                 glViewport(0, 0, size.x, size.y);
             }
 
-            if (drawBezierCurve)
-                attachedCamera.curve().draw(viewProjection);
+            if (config.drawBezierCurve)
+                attachedCamera.curve().draw(viewProjection * glm::translate(glm::mat4(1.0f), cableCar.position()));
 
-            if (cameraRig.freeCameraEnabled())
+            if (config.freeCameraEnabled)
                 cameraIcon.draw(viewProjection, attachedCamera.viewMatrix());
 
-            if (showMinimap)
+            snow.draw(viewProjection);
+
+            if (config.showMinimap)
                 minimap.drawOverlay(size.x, size.y);
 
             window.swapBuffers();

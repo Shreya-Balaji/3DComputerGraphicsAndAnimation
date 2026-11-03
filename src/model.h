@@ -19,6 +19,8 @@ class Model {
             const std::string& name,
             const glm::vec3 offset
         );
+        // Rotate about the node's geometry center in local space (angle in radians).
+        bool setNodeRotation(const std::string& name, float angle, const glm::vec3& axis);
     private:
         void calculateBounds(
             const aiNode* node,
@@ -43,6 +45,11 @@ class Model {
         const aiScene* m_scene = nullptr;
         std::vector<GPUMesh> m_meshes;
         std::unordered_map<const aiNode*, glm::vec3> m_nodeWorldOffsets;
+        struct NodeRotation {
+            glm::vec3 center{ 0.0f };
+            glm::mat4 transform{ 1.0f };
+        };
+        std::unordered_map<const aiNode*, NodeRotation> m_nodeRotations;
 
         glm::vec3 m_boundsMin{ 0.0f };
         glm::vec3 m_boundsMax{ 0.0f };

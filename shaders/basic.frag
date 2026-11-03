@@ -22,15 +22,19 @@ uniform bool hasKdTexture;
 
 uniform sampler2D normalTexture;
 uniform bool hasNormalTexture;
+uniform bool twoScaleSampling = false;
 
 out vec4 FragColor;
 
 void main()
 {
     vec3 baseColor = kd;
+    vec2 broadUV = TexCoord * 0.25 + vec2(0.37, 0.61);
 
     if (hasKdTexture) {
         baseColor = texture(kdTexture, TexCoord).rgb;
+        if (twoScaleSampling)
+            baseColor = mix(baseColor, texture(kdTexture, broadUV).rgb, 0.3);
     }
 
     vec3 N = normalize(Normal);
@@ -38,6 +42,10 @@ void main()
     if (hasNormalTexture) {
         vec3 tangentNormal =
             texture(normalTexture, TexCoord).rgb * 2.0 - 1.0;
+        if (twoScaleSampling) {
+            vec3 broadNormal = texture(normalTexture, broadUV).rgb * 2.0 - 1.0;
+            tangentNormal = normalize(mix(tangentNormal, broadNormal, 0.3));
+        }
 
         mat3 TBN = mat3(
             normalize(Tangent),

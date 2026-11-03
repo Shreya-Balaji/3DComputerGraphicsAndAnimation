@@ -1,30 +1,34 @@
 #include "attached_camera.h"
+#include "cable_car.h"
 #include "glm/common.hpp"
 
 #include <framework/window.h>
 #include <imgui/imgui.h>
 #include <glm/gtc/matrix_transform.hpp>
+#include <array>
 #include <cmath>
-#include <iostream>
 
 
-AttachedCamera::AttachedCamera(Window& window, const glm::vec3& target)
+AttachedCamera::AttachedCamera(Window& window, const CableCar& cableCar, Config& config)
     : m_window(window)
-    , m_target(target)
+    , m_config(config)
+    , m_cableCar(cableCar)
     , m_curve([] {
         std::vector<BezierCurve> curves;
-        curves.emplace_back(
-            glm::vec3(-3.0f, 0.0f, 0.0f),
-            glm::vec3(-1.0f, 0.0f, 3.0f),
-            glm::vec3( 1.0f, 0.0f, 3.0f),
-            glm::vec3( 3.0f, 0.0f, 0.0f)
-        );
-        curves.emplace_back(
-            glm::vec3( 3.0f, 0.0f,  0.0f),
-            glm::vec3( 2.0f, 3.0f, -3.0f),
-            glm::vec3(-3.0f, 4.0f, -5.0f),
-            glm::vec3(-3.0f, 7.0f, -8.0f)
-        );
+        const std::array<glm::vec3, 3> points = {
+            glm::vec3(4.0f, -1.5f, 0.0f),
+            glm::vec3(-4.0f, 6.0f, 7.0f),
+            glm::vec3(-5.0f, 3.0f, -6.0f)
+        };
+        const std::array<glm::vec3, 3> handles = {
+            glm::vec3(0.0f, 1.5f, 4.0f),
+            glm::vec3(-5.0f, -0.5f, -3.0f),
+            glm::vec3(4.0f, -1.0f, -3.0f)
+        };
+        for (int i = 0; i < 3; ++i) {
+            const int next = (i + 1) % 3;
+            curves.emplace_back(points[i], points[i] + handles[i], points[next] - handles[next], points[next]);
+        }
         return curves;
     }())
 
@@ -40,81 +44,50 @@ AttachedCamera::AttachedCamera(Window& window, const glm::vec3& target)
     });
 }
 
-void AttachedCamera::setTarget(const glm::vec3& target)
-{
-    m_target = target;
-}
-
 glm::vec3 AttachedCamera::position() const
 {
-    if (m_mode == 1)
-        return m_target + glm::vec3(0.0f, 12.0f, 0.01f);
-    if (m_mode == 2)
-        return m_target + glm::vec3(0.0f, 2.5f, 8.0f);
-    if (m_mode == 3)
-        return m_curve.evaluate(m_tValue);
+    const glm::vec3 target = m_cableCar.position();
+    if (m_config.cameraMode == 1)
+        return target + glm::vec3(0.0f, 12.0f, 0.01f);
+    if (m_config.cameraMode == 2)
+        return target + glm::vec3(0.0f, 2.5f, 8.0f);
+    if (m_config.cameraMode == 3)
+        return target + m_curve.evaluateAtDistance(m_config.cameraLoopDistance);
 
-    float yaw = glm::radians(m_yaw);
-    float pitch = glm::radians(m_pitch);
-    return m_target + glm::vec3(
-        m_distance * std::cos(pitch) * std::sin(yaw),
-        m_distance * std::sin(pitch),
-        m_distance * std::cos(pitch) * std::cos(yaw)
+    float yaw = glm::radians(m_config.yaw);
+    float pitch = glm::radians(m_config.pitch);
+    return target + glm::vec3(
+        m_config.distance * std::cos(pitch) * std::sin(yaw),
+        m_config.distance * std::sin(pitch),
+        m_config.distance * std::cos(pitch) * std::cos(yaw)
     );
 }
 
 glm::mat4 AttachedCamera::viewMatrix() const
 {
-    return glm::lookAt(position(), m_target, glm::vec3(0.0f, 1.0f, 0.0f));
+    return glm::lookAt(position(), m_cableCar.position(), glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
-void AttachedCamera::setUserInteraction(bool enabled)
+void AttachedCamera::updateInput(float deltaTime)
 {
-    m_userInteraction = enabled;
-    if (!enabled) {
-        m_dragging = false;
-        m_firstMouse = true;
+    if (m_config.cameraMode == 3 && !m_config.freeCameraEnabled) {
+        m_config.cameraLoopDistance = std::fmod(
+            m_config.cameraLoopDistance + m_config.cameraLoopSpeed * deltaTime,
+            m_curve.length());
+        if (m_config.cameraLoopDistance < 0.0f)
+            m_config.cameraLoopDistance += m_curve.length();
     }
-}
 
-void AttachedCamera::updateInput()
-{
-    if (!m_userInteraction || !m_window.isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT) ||
+    if (m_config.freeCameraEnabled || !m_window.isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT) ||
         ImGui::GetIO().WantCaptureMouse) {
         m_dragging = false;
         m_firstMouse = true;
     }
 }
 
-void AttachedCamera::setMode(int mode)
-{
-    if (mode < 0 || mode > MODE_COUNT - 1) {
-        std::cerr << "Incorrect mode index";
-    }
-    m_mode = mode;
-}
-
-void AttachedCamera::setYaw(float yaw)
-{
-    m_yaw = yaw;
-}
-
-void AttachedCamera::setPitch(float pitch)
-{
-    m_pitch = glm::clamp(pitch, MIN_PITCH, MAX_PITCH);
-}
-
-void AttachedCamera::setDistance(float distance)
-{
-    m_distance = glm::clamp(distance, MIN_DISTANCE, MAX_DISTANCE);
-}
-
-void AttachedCamera::setTValue(float tValue) {
-    m_tValue = glm::clamp(tValue, 0.0f, maxTValue());
-}
 void AttachedCamera::mouseButtonCallback(int button, int action)
 {
-    if (!m_userInteraction)
+    if (m_config.freeCameraEnabled)
         return;
     if (button == GLFW_MOUSE_BUTTON_LEFT) {
         m_dragging = (action == GLFW_PRESS);
@@ -124,7 +97,7 @@ void AttachedCamera::mouseButtonCallback(int button, int action)
 
 void AttachedCamera::mouseMoveCallback(const glm::vec2& position)
 {
-    if (!m_userInteraction || !m_dragging)
+    if (m_config.freeCameraEnabled || !m_dragging)
         return;
     if (m_firstMouse) {
         m_lastMouse = position;
@@ -132,14 +105,14 @@ void AttachedCamera::mouseMoveCallback(const glm::vec2& position)
         return;
     }
     glm::vec2 delta = position - m_lastMouse;
-    m_yaw += delta.x * 0.3f;
-    m_pitch = glm::clamp(m_pitch + delta.y * 0.3f, MIN_PITCH, MAX_PITCH);
+    m_config.yaw += delta.x * 0.3f;
+    m_config.pitch = glm::clamp(m_config.pitch + delta.y * 0.3f, Config::MIN_PITCH, Config::MAX_PITCH);
     m_lastMouse = position;
 }
 
 void AttachedCamera::scrollCallback(const glm::vec2& offset)
 {
-    if (!m_userInteraction)
+    if (m_config.freeCameraEnabled)
         return;
-    m_distance = glm::clamp(m_distance - offset.y * 0.5f, MIN_DISTANCE, MAX_DISTANCE);
+    m_config.distance = glm::clamp(m_config.distance - offset.y * 0.5f, Config::MIN_DISTANCE, Config::MAX_DISTANCE);
 }
