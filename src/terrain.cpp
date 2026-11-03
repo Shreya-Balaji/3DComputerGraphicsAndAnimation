@@ -117,12 +117,10 @@ void Terrain::drawReflection(const glm::mat4& viewProjection, const SkyLight& li
 
     const GLint modelLocation = m_reflectionShader.getUniformLocation("model");
     for (int z = -1; z <= 1; ++z) {
-        for (int x = -1; x <= 1; ++x) {
-            const auto model = glm::translate(glm::mat4(1.0f),
-                m_position + glm::vec3(x * TILE_SIZE, 0.0f, z * TILE_SIZE + static_cast<float>(m_scroll)));
-            glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
-            m_reflectionMesh->drawGeometry();
-        }
+        const auto model = glm::translate(glm::mat4(1.0f),
+            m_position + glm::vec3(0.0f, 0.0f, z * TILE_SIZE + static_cast<float>(m_scroll)));
+        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
+        m_reflectionMesh->drawGeometry();
     }
 }
 
@@ -156,11 +154,9 @@ void Terrain::draw(const glm::mat4& viewProjection, const glm::vec3& viewPositio
     glUniform1f(m_shader.getUniformLocation("cabinLightIntensity"), m_config.cabinLightIntensity);
 
     for (int z = -1; z <= 1; ++z) {
-        for (int x = -1; x <= 1; ++x) {
-            const auto model = glm::translate(glm::mat4(1.0f),
-                m_position + glm::vec3(x * TILE_SIZE, 0.0f, z * TILE_SIZE + static_cast<float>(m_scroll)));
-            glUniformMatrix4fv(m_shader.getUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
-            m_mesh->draw(m_shader);
-        }
+        const auto model = glm::translate(glm::mat4(1.0f),
+            m_position + glm::vec3(0.0f, 0.0f, z * TILE_SIZE + static_cast<float>(m_scroll)));
+        glUniformMatrix4fv(m_shader.getUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(model));
+        m_mesh->draw(m_shader);
     }
 }
