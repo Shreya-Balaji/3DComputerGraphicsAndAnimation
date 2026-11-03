@@ -14,7 +14,5 @@ void main()
     float alpha = 0.7 * edgeFade * (1.0 - smoothstep(0.25, 0.5, radius));
     if (alpha <= 0.0)
         discard;
-    float fog = fogEnabled
-        ? smoothstep(fogStart, max(fogEnd, fogStart + 0.001), distanceToCamera) : 0.0;
-    fragColor = vec4(mix(vec3(1.0), FOG_COLOR, fog), alpha);
+    fragColor = vec4(1.0, 1.0, 1.0, alpha);
 }
