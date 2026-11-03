@@ -56,7 +56,7 @@ void SnowParticleEffect::update(float deltaTime)
     m_displacement.y += static_cast<double>(m_config.snowFallSpeed) * deltaTime;
 }
 
-void SnowParticleEffect::draw(const glm::mat4& viewProjection, const glm::vec3& viewPosition) const
+void SnowParticleEffect::draw(const glm::mat4& viewProjection) const
 {
     if (!m_config.snowEnabled)
         return;
@@ -85,10 +85,6 @@ void SnowParticleEffect::draw(const glm::mat4& viewProjection, const glm::vec3& 
     glUniform2f(m_shader.getUniformLocation("displacement"), static_cast<float>(m_displacement.x), static_cast<float>(m_displacement.y));
     glUniform3fv(m_shader.getUniformLocation("minimum"), 1, glm::value_ptr(minimum));
     glUniform3fv(m_shader.getUniformLocation("extent"), 1, glm::value_ptr(EXTENT));
-    glUniform3fv(m_shader.getUniformLocation("viewPosition"), 1, glm::value_ptr(viewPosition));
-    glUniform1i(m_shader.getUniformLocation("fogEnabled"), m_config.fogEnabled);
-    glUniform1f(m_shader.getUniformLocation("fogStart"), m_config.fogStart);
-    glUniform1f(m_shader.getUniformLocation("fogEnd"), m_config.fogEnd);
     glBindVertexArray(m_vao);
     glDrawArrays(GL_POINTS, 0, PARTICLE_COUNT);
     glBindVertexArray(0);

@@ -12,18 +12,6 @@
 #include <glm/geometric.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-namespace {
-glm::vec3 evaluateCableCarRoute(float t)
-{
-    const glm::vec3 start(-5.4f, 0.0f, -2.0f);
-    const glm::vec3 end(-5.4f, 0.4f, -8.0f);
-
-    t = glm::clamp(t, 0.0f, 1.0f);
-
-    return glm::mix(start, end, t);
-}
-}
-
 void CableCar::bindLighting(const Shader& shader, const glm::mat4& viewProjection,
                             const glm::vec3& cameraPosition, const SkyLight& light) const
 {
@@ -166,20 +154,11 @@ CableCar::CableCar(const Config& config)
 
 glm::vec3 CableCar::position() const
 {
-    return position(m_terrainOffset);
+    return glm::vec3(-5.4f, 0.26f, -5.9f);
 }
 
-glm::vec3 CableCar::position(float terrainOffset) const
+void CableCar::update(float deltaTime)
 {
-    glm::vec3 result = evaluateCableCarRoute(1.0f - m_config.cableCarT);
-    result.z += terrainOffset;
-    return result;
-}
-
-void CableCar::update(float deltaTime, float terrainOffset)
-{
-    m_terrainOffset = terrainOffset;
-
     m_model.setWorldTransform(position(), 0.55f);
 
     m_model.setNodeWorldOffset("Door_Back_Left", -OPEN_DOOR * m_config.doorSlideFactor);
@@ -258,7 +237,7 @@ void CableCar::drawCables(const glm::mat4& viewProjection, const glm::vec3& came
             glm::vec3(
                 0.0f,
                 0.0f,
-                m_terrainOffset + z * cableTileSize
+                z * cableTileSize
             )
         );
         cableModel *= cableTransform;

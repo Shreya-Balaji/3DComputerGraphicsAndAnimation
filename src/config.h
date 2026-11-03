@@ -21,8 +21,7 @@ struct Config {
     bool drawBezierCurve = false;
     bool showMinimap = true;
     float doorSlideFactor = 0.0f;
-    float wheelSpeed = 10.0f; // Degrees per second.
-    float cableCarT = 0.35f;
+    float wheelSpeed = -20.0f; // Degrees per second.
     bool useEnvMap = true;
     float windowOpacity = 0.85f;
     bool usePBR = true;
@@ -37,7 +36,7 @@ struct Config {
     bool cabinLightEnabled = true;
     glm::vec3 cabinLightColor{1.0f, 0.75f, 0.4f};
     float cabinLightRadius = 10.0f;
-    float cabinLightIntensity = 10.0f;   
+    float cabinLightIntensity = 10.0f;
 
     bool snowEnabled = true;
     float snowFallSpeed = 1.5f;
@@ -49,5 +48,5 @@ struct Config {
     float fogEnd = 45.0f; // World-space distance at which objects are fully obscured.
     bool terrainEnabled = true;
     bool terrainTwoScaleSampling = true;
-    float terrainSpeed = 3.0f; // World units per second; negative reverses travel.
+    float terrainSpeed = 1.0f; // World units per second, negative reverses travel
 };

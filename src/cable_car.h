@@ -12,9 +12,8 @@ public:
     explicit CableCar(const Config& config);
 
 glm::vec3 position() const;
-glm::vec3 position(float terrainOffset) const;
 
-void update(float deltaTime, float terrainOffset);
+void update(float deltaTime);
 
     void draw(const glm::mat4& viewProjection, const glm::vec3& cameraPosition, const SkyLight& light) const;
     void drawMinimap(const glm::mat4& viewProjection, const glm::vec3& cameraPosition, const SkyLight& light) const;
@@ -41,5 +40,4 @@ private:
     Shader m_pbrShader;
     Shader m_windowShader;
     float m_wheelAngle = 0.0f;
-    float m_terrainOffset = 0.0f;
 };

@@ -89,8 +89,7 @@ int main()
                 light.cabinLightAmount = 0.0f;
             }
             terrain.update(io.DeltaTime);
-            cableCarPosition = cableCar.position();
-            cableCar.update(io.DeltaTime, terrain.scrollOffset());
+            cableCar.update(io.DeltaTime);
             cableCarPosition = cableCar.position();
             snow.update(io.DeltaTime);
             cameraRig.updateInput(io.WantCaptureMouse || io.WantCaptureKeyboard, io.DeltaTime);
@@ -143,7 +142,7 @@ int main()
 
             cableCar.drawWindows(viewProjection, cameraPosition, light);
             fog.draw(projection, skyColor);
-            snow.draw(viewProjection, cameraPosition);
+            snow.draw(viewProjection);
 
             if (config.showMinimap)
             {

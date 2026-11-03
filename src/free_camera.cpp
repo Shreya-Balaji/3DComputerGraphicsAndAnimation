@@ -44,7 +44,7 @@ void FreeCamera::rotateY(float angle)
 
 void FreeCamera::updateInput(bool guiCapturesInput)
 {
-    constexpr float moveSpeed = 0.05f;
+    constexpr float moveSpeed = 0.5f;
     constexpr float lookSpeed = 0.0035f;
 
     const bool enabled = m_config.freeCameraEnabled && !guiCapturesInput;
