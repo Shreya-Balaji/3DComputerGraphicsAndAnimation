@@ -63,12 +63,12 @@ void CableCar::update(float deltaTime)
         m_model.setNodeRotation("Wheel_" + std::to_string(i), m_wheelAngle, glm::vec3(1.0f, 0.0f, 0.0f));
 }
 
-void CableCar::draw(const glm::mat4 viewProjection, const glm::vec3 cameraPosition) const {
+void CableCar::draw(const glm::mat4 viewProjection, const glm::vec3 cameraPosition, const glm::vec3 sunLightDir) const {
     m_cableCarShader.bind();
 
     glUniform3f(
        m_cableCarShader.getUniformLocation("lightDir"),
-        -0.5f, -1.0f, -0.3f
+        sunLightDir.x, sunLightDir.y, sunLightDir.z
     );
     glUniformMatrix4fv(
         m_cableCarShader.getUniformLocation("viewProjection"),
@@ -82,6 +82,7 @@ void CableCar::draw(const glm::mat4 viewProjection, const glm::vec3 cameraPositi
         1,
         glm::value_ptr(cameraPosition)
     );
+    
 
     m_model.draw(m_cableCarShader);
 }
