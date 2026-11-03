@@ -9,7 +9,7 @@ uniform mat4 inverseProjection;
 uniform bool fogEnabled;
 uniform float fogStart;
 uniform float fogEnd;
-const vec3 FOG_COLOR = vec3(0.55, 0.65, 0.72);
+uniform vec3 fogColor;
 
 void main()
 {
@@ -19,5 +19,5 @@ void main()
     float distanceToCamera = length(viewPosition.xyz / viewPosition.w);
     float amount = fogEnabled
         ? smoothstep(fogStart, max(fogEnd, fogStart + 0.001), distanceToCamera) : 0.0;
-    fragColor = vec4(mix(color.rgb, FOG_COLOR, amount), color.a);
+    fragColor = vec4(mix(color.rgb, fogColor, amount), color.a);
 }

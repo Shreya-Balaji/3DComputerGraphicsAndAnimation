@@ -12,7 +12,7 @@ public:
     Fog& operator=(const Fog&) = delete;
 
     void begin(int width, int height);
-    void draw(const glm::mat4& projection) const;
+    void draw(const glm::mat4& projection, const glm::vec3& skyColor) const;
 
 private:
     const Config& m_config;

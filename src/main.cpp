@@ -141,7 +141,7 @@ int main()
             if (config.freeCameraEnabled)
                 cameraIcon.draw(viewProjection, attachedCamera.viewMatrix());
 
-            fog.draw(projection);
+            fog.draw(projection, skyColor);
             snow.draw(viewProjection, cameraPosition);
 
             if (config.showMinimap)

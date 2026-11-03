@@ -56,7 +56,7 @@ void Fog::begin(int width, int height)
     glViewport(0, 0, width, height);
 }
 
-void Fog::draw(const glm::mat4& projection) const
+void Fog::draw(const glm::mat4& projection, const glm::vec3& skyColor) const
 {
     // Keep the scene depth for snow, which is rendered after the first fog pass
     glBindFramebuffer(GL_READ_FRAMEBUFFER, m_framebuffer);
@@ -76,6 +76,7 @@ void Fog::draw(const glm::mat4& projection) const
     m_shader.bind();
     const glm::mat4 inverseProjection = glm::inverse(projection);
     glUniformMatrix4fv(m_shader.getUniformLocation("inverseProjection"), 1, GL_FALSE, glm::value_ptr(inverseProjection));
+    glUniform3fv(m_shader.getUniformLocation("fogColor"), 1, glm::value_ptr(skyColor));
     glUniform1i(m_shader.getUniformLocation("fogEnabled"), m_config.fogEnabled);
     glUniform1f(m_shader.getUniformLocation("fogStart"), m_config.fogStart);
     glUniform1f(m_shader.getUniformLocation("fogEnd"), m_config.fogEnd);
