@@ -188,7 +188,7 @@ glm::mat4 Minimap::projectionMatrix() const
     return glm::ortho(
         -6.0f, 6.0f,
         -6.0f, 6.0f,
-        0.1f, 150.0f
+        0.1f, 500.0f
     );
 }
 void Minimap::drawOverlay(int windowWidth, int windowHeight)

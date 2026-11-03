@@ -122,9 +122,9 @@ CableCar::CableCar(const Config& config)
         pbrBuilder.addStage(GL_FRAGMENT_SHADER, std::string(PROJECT_ROOT) + "/shaders/pbr.frag");
         m_pbrShader = pbrBuilder.build();
         ShaderBuilder depthBuilder;
-    depthBuilder.addStage(GL_VERTEX_SHADER, std::string(PROJECT_ROOT) + "/shaders/basic.vert");
-    depthBuilder.addStage(GL_FRAGMENT_SHADER, std::string(PROJECT_ROOT) + "/shaders/depth.frag");
-    m_depthShader = depthBuilder.build();
+        depthBuilder.addStage(GL_VERTEX_SHADER, std::string(PROJECT_ROOT) + "/shaders/basic.vert");
+        depthBuilder.addStage(GL_FRAGMENT_SHADER, std::string(PROJECT_ROOT) + "/shaders/depth.frag");
+        m_depthShader = depthBuilder.build();
 
 
     } catch (const ShaderLoadingException& e) {
@@ -142,7 +142,7 @@ glm::vec3 CableCar::position() const
 glm::vec3 CableCar::position(float terrainOffset) const
 {
     glm::vec3 result = evaluateCableCarRoute(1.0f - m_config.cableCarT);
-    result.z += terrainOffset;
+    //result.z += terrainOffset;
     return result;
 }
 
@@ -172,7 +172,8 @@ void CableCar::draw(const glm::mat4 viewProjection, const glm::vec3 cameraPositi
     if (m_cableMesh)
     {
         m_cableCarShader.bind();
-
+        glUniform1i(m_cableCarShader.getUniformLocation("envMap"), 2);
+        glUniform1i(m_cableCarShader.getUniformLocation("shadowMap"), 3);
         glUniformMatrix4fv(
             m_cableCarShader.getUniformLocation("viewProjection"),
             1,
@@ -210,7 +211,7 @@ void CableCar::draw(const glm::mat4 viewProjection, const glm::vec3 cameraPositi
                 glm::vec3(
                     0.0f,
                     0.0f,
-                    m_terrainOffset + z * cableTileSize
+                    z * cableTileSize
                 )
             );
             if (isMinimap)
@@ -240,7 +241,6 @@ void CableCar::draw(const glm::mat4 viewProjection, const glm::vec3 cameraPositi
     glUniform1i(shader.getUniformLocation("envMap"), 2);
     glUniform1f(shader.getUniformLocation("envMaxLod"), EnvironmentMap::MAX_LOD);
     glUniform1i(shader.getUniformLocation("useEnvMap"), m_config.useEnvMap);
-    glUniform1i(shader.getUniformLocation("shadowMap"), 3);
     glUniformMatrix4fv(
         shader.getUniformLocation("viewProjection"),
         1,
