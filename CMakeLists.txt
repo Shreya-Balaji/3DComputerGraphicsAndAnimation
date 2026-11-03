@@ -27,6 +27,8 @@ add_executable(CableCarAlps
     src/assimp_utils.cpp
     src/model.cpp
     src/minimap.cpp
+    src/light.cpp
+    src/sky.cpp
 )
 
 target_link_libraries(CableCarAlps PRIVATE

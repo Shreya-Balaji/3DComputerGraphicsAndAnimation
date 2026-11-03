@@ -2,12 +2,13 @@
 
 #include "model.h"
 #include "config.h"
+#include "light.h"
 
 class CableCar {
     public:
         explicit CableCar(const Config& config);
         glm::vec3 position() const;
-        void draw(const glm::mat4 viewProjection, const glm::vec3 cameraPosition) const;
+        void draw(const glm::mat4 viewProjection, const glm::vec3 cameraPosition, const SkyLight& light) const;
         void update(float deltaTime);
     private:
         static constexpr glm::vec3 OPEN_DOOR = glm::vec3(0.0f, 0.0f, 0.3f);
