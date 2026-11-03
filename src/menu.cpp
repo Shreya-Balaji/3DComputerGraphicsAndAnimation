@@ -1,8 +1,9 @@
 #include "menu.h"
 #include "config.h"
-
+#include <glm/gtc/type_ptr.hpp>
 #include <imgui/imgui.h>
 #include <iterator>
+#include <cmath>
 
 Menu::Menu(Config& config, float cameraLoopLength)
     : m_config(config)
@@ -19,14 +20,26 @@ void Menu::draw()
         ImGui::Combo("Camera Mode", &m_config.cameraMode, modes, static_cast<int>(std::size(modes)));
 
         ImGui::Separator();
-        ImGui::Text("Orbit Camera Settings");
-        ImGui::SliderFloat("Yaw", &m_config.yaw, Config::MIN_YAW, Config::MAX_YAW, "%.3f", ImGuiSliderFlags_AlwaysClamp);
-        ImGui::SliderFloat("Pitch", &m_config.pitch, Config::MIN_PITCH, Config::MAX_PITCH, "%.3f", ImGuiSliderFlags_AlwaysClamp);
-        ImGui::SliderFloat("Distance", &m_config.distance, Config::MIN_DISTANCE, Config::MAX_DISTANCE, "%.3f", ImGuiSliderFlags_AlwaysClamp);
-        ImGui::Text("Bezier Camera Settings");
-        ImGui::SliderFloat("Loop distance", &m_config.cameraLoopDistance, 0.0f, m_cameraLoopLength, "%.2f", ImGuiSliderFlags_AlwaysClamp);
-        ImGui::SliderFloat("Loop speed", &m_config.cameraLoopSpeed, -10.0f, 10.0f, "%.2f units/s", ImGuiSliderFlags_AlwaysClamp);
-        ImGui::Checkbox("Draw Bezier curve", &m_config.drawBezierCurve);
+        if (m_config.cameraMode == 0 && !m_config.freeCameraEnabled) {
+            ImGui::Text("Orbit Camera Settings");
+            ImGui::SliderFloat("Yaw", &m_config.yaw, Config::MIN_YAW, Config::MAX_YAW, "%.3f", ImGuiSliderFlags_AlwaysClamp);
+            ImGui::SliderFloat("Pitch", &m_config.pitch, Config::MIN_PITCH, Config::MAX_PITCH, "%.3f", ImGuiSliderFlags_AlwaysClamp);
+            ImGui::SliderFloat("Distance", &m_config.distance, Config::MIN_DISTANCE, Config::MAX_DISTANCE, "%.3f", ImGuiSliderFlags_AlwaysClamp);
+        }
+        if (m_config.cameraMode == 3 && !m_config.freeCameraEnabled) {
+            ImGui::Text("Bezier Camera Settings");
+            ImGui::SliderFloat("Loop distance", &m_config.cameraLoopDistance, 0.0f, m_cameraLoopLength, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+            ImGui::SliderFloat("Loop speed", &m_config.cameraLoopSpeed, -10.0f, 10.0f, "%.2f units/s", ImGuiSliderFlags_AlwaysClamp);
+            ImGui::Checkbox("Draw Bezier curve", &m_config.drawBezierCurve);
+        }
+        ImGui::Separator();
+        ImGui::Checkbox("Use PBR shading", &m_config.usePBR);
+        if(m_config.usePBR == true){
+            ImGui::SliderFloat("Metallic", &m_config.pbrMetallic, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp);
+            ImGui::SliderFloat("Roughness", &m_config.pbrRoughness, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp);
+        }
+        ImGui::Checkbox("Use Environment Reflections", &m_config.useEnvMap);
+        ImGui::Separator();
         ImGui::Checkbox("Show minimap", &m_config.showMinimap);
         ImGui::SliderFloat("Open doors", &m_config.doorSlideFactor, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp);
         ImGui::SliderFloat("Wheel speed", &m_config.wheelSpeed, Config::MIN_WHEEL_SPEED, Config::MAX_WHEEL_SPEED, "%.0f deg/s", ImGuiSliderFlags_AlwaysClamp);
@@ -47,6 +60,22 @@ void Menu::draw()
         ImGui::Checkbox("Fog enabled", &m_config.fogEnabled);
         ImGui::SliderFloat("Fog start", &m_config.fogStart, 0.0f, m_config.fogEnd - 0.1f, "%.1f units", ImGuiSliderFlags_AlwaysClamp);
         ImGui::SliderFloat("Maximum view distance", &m_config.fogEnd, m_config.fogStart + 0.1f, 150.0f, "%.1f units", ImGuiSliderFlags_AlwaysClamp);
+        ImGui::Text("Terrain Settings");
+        ImGui::Checkbox("Terrain enabled", &m_config.terrainEnabled);
+        ImGui::Checkbox("Two-scale sampling", &m_config.terrainTwoScaleSampling);
+        ImGui::SliderFloat("Terrain speed", &m_config.terrainSpeed, -15.0f, 15.0f, "%.2f units/s", ImGuiSliderFlags_AlwaysClamp);
+
+        ImGui::Separator();
+        ImGui::Text("Sun and Moon Light Settings");
+        ImGui::SliderFloat("Time of the Day", &m_config.timeOfDay, 0.0f, 1.0f, "", ImGuiSliderFlags_AlwaysClamp);
+        const float hours = std::fmod(6.0f + 24.0f * m_config.timeOfDay, 24.0f);
+        const int hour = static_cast<int>(hours);
+        const int minute = static_cast<int>((hours - hour) * 60.0f);
+        ImGui::SameLine();
+        ImGui::Text("%02d:%02d", hour, minute);
+        ImGui::ColorEdit3("Day sky", glm::value_ptr(m_config.dayColor));
+        ImGui::ColorEdit3("Dusk", glm::value_ptr(m_config.duskColor));
+        ImGui::ColorEdit3("Night sky", glm::value_ptr(m_config.nightColor));
     }
     ImGui::End();
 }

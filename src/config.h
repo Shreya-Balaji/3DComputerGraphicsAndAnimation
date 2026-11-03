@@ -1,4 +1,5 @@
 #pragma once
+#include <glm/glm.hpp>
 
 struct Config {
     static constexpr float MIN_YAW = -180.0f;
@@ -22,6 +23,15 @@ struct Config {
     float doorSlideFactor = 0.0f;
     float wheelSpeed = 10.0f; // Degrees per second.
     float cableCarT = 0.35f;
+    bool useEnvMap = true;
+    bool usePBR = true;
+    float pbrMetallic = 0.25f;
+    float pbrRoughness = 0.25f;
+    float timeOfDay = 0.25f; // 0.0 = sunrise, 0.25 = midday, 0.5 = sunset, 0.75 = midnight etc.
+
+    glm::vec3 nightColor{0.0f, 0.0f, 0.03f};
+    glm::vec3 duskColor{0.9f, 0.5f, 0.3f};
+    glm::vec3 dayColor{0.25f, 0.45f, 0.65f};
 
     bool snowEnabled = true;
     float snowFallSpeed = 1.5f;
@@ -31,4 +41,7 @@ struct Config {
     bool fogEnabled = true;
     float fogStart = 15.0f;
     float fogEnd = 45.0f; // World-space distance at which objects are fully obscured.
+    bool terrainEnabled = true;
+    bool terrainTwoScaleSampling = true;
+    float terrainSpeed = 3.0f; // World units per second; negative reverses travel.
 };

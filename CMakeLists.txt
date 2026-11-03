@@ -15,6 +15,7 @@ add_executable(CableCarAlps
     src/menu.cpp
     src/snow_particle_effect.cpp
     src/fog.cpp
+    src/terrain.cpp
     src/cable_car.cpp
     src/environment.cpp
     src/bezier_curve.cpp
@@ -27,6 +28,10 @@ add_executable(CableCarAlps
     src/assimp_utils.cpp
     src/model.cpp
     src/minimap.cpp
+    src/light.cpp
+    src/sky.cpp
+    src/skybox.cpp
+    src/environment_map.cpp
 )
 
 target_link_libraries(CableCarAlps PRIVATE

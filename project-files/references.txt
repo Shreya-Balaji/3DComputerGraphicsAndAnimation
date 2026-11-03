@@ -1,0 +1,6 @@
+References
+
+1. https://stackoverflow.com/questions/4770735/shader-sun-position-glsl - idea taken for moving sun
+2. https://community.khronos.org/t/day-night-cycle-light/57752- inspiration taken for sunlight affecting sky color
+3. https://github.com/ocornut/imgui/issues/4213- discussions referred for imgui controls
+4. https://learnopengl.com/PBR/Theory- formula for pbr shaders (also in lecture slides)
