@@ -17,6 +17,9 @@
 #include <exception>
 #include <iostream>
 #include <stdexcept>
+#include "shadow.h"
+#include "shadow.h" 
+#include <cmath>
 
 int main()
 {
@@ -55,6 +58,7 @@ int main()
         Minimap minimap;
         Skybox skybox;
         EnvironmentMap environmentMap;
+        ShadowMap shadowMap;
 
         if (!minimap.initialize(512, 512))
         {
@@ -100,6 +104,12 @@ int main()
                 1000.0f
             );
             const glm::mat4 viewProjection = projection * view;
+            glm::vec3 shadowLightDir = light.sunDir.y<0 ? light.sunDir : light.moonDir;
+            light.lightCamera = computeLightSpace(shadowLightDir, cableCar.position());
+            shadowMap.begin();
+            cableCar.drawDepth(light.lightCamera);
+            shadowMap.end();
+            shadowMap.bind(3);
             const glm::vec3 capturePos = cableCar.position() + glm::vec3(0.0f, 1.0f, 0.0f);
             environmentMap.capture(capturePos,[&](const glm::mat4& v, const glm::mat4& p, const glm::vec3& pos) {
                 skybox.draw(v, p, pos, light, skyColor);

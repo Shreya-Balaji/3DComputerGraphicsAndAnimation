@@ -1,5 +1,5 @@
 #pragma once
-
+#include <glm/glm.hpp>
 
 struct SkyLight{
     glm::vec3 sunDir;
@@ -9,6 +9,7 @@ struct SkyLight{
     glm::vec3 ambientColor;
     float cabinLightAmount;
     glm::vec3 cabinLightPos;
+    glm::mat4 lightCamera{1.0f};
 };
 glm::vec3 movingSun(float timeOfDay);
 SkyLight computeSkyLight(float timeOfDay);

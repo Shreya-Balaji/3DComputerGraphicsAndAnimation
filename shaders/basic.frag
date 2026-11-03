@@ -32,8 +32,31 @@ uniform float cabinLightIntensity;
 uniform sampler2D normalTexture;
 uniform bool hasNormalTexture;
 uniform bool twoScaleSampling = false;
-
+uniform sampler2D shadowMap;
+uniform mat4 lightSpaceMatrix;
+uniform bool useShadows = false;
 out vec4 FragColor;
+
+float shadowFactor(vec3 fragPos, vec3 N, vec3 L)
+{
+    vec4 clip = lightSpaceMatrix * vec4(fragPos, 1.0);
+    vec3 p = clip.xyz / clip.w * 0.5 + 0.5;
+
+    if (p.z > 1.0 || p.x < 0.0 || p.x > 1.0 || p.y < 0.0 || p.y > 1.0)
+        return 1.0;
+
+    float bias = max(0.002 * (1.0 - dot(N, L)), 0.0005);
+
+    vec2 texel = 1.0 / vec2(textureSize(shadowMap, 0));
+    float inShadow = 0.0;
+    for (int x = -1; x <= 1; ++x) {
+        for (int y = -1; y <= 1; ++y) {
+            float closest = texture(shadowMap, p.xy + vec2(x, y) * texel).r;
+            inShadow += (p.z - bias > closest) ? 1.0 : 0.0;
+        }
+    }
+    return 1.0 - inShadow / 9.0;
+}
 
 void main()
 {
@@ -64,19 +87,20 @@ void main()
 
         N = normalize(TBN * tangentNormal);
     }
-
     vec3 L = normalize(-lightDir);
     vec3 V = normalize(viewPos - FragPos);
     vec3 H = normalize(L + V);
 
     vec3 L2 = normalize(-moonDir);
     float diff2 = max(dot(N, L2), 0.0);
-    vec3 moonDiffuse = diff2 * baseColor * moonColor;
-
     vec3 ambient = ambientColor * baseColor;
-
     float diff = max(dot(N, L), 0.0);
-    vec3 diffuse = diff * baseColor * sunColor;
+
+    bool sunOrMoon = lightDir.y<0.0;
+    vec3 Ls = sunOrMoon ? L : L2;
+    float shadow = useShadows ? shadowFactor(FragPos, N, Ls) : 1.0;
+    vec3 diffuse  = diff * baseColor * sunColor * shadow;
+    vec3 moonDiffuse = diff2 * baseColor * moonColor * shadow;
 
     float spec = 0.0;
 
@@ -87,7 +111,7 @@ void main()
         );
     }
 
-    vec3 specular = ks * spec * sunColor;
+    vec3 specular = ks * spec * sunColor * shadow;
     vec3 color = ambient + diffuse + specular + moonDiffuse;
     if(useEnvMap){
       vec3 R = reflect(-V, N);

@@ -40,6 +40,10 @@ CableCar::CableCar(const Config& config)
         pbrBuilder.addStage(GL_VERTEX_SHADER, std::string(PROJECT_ROOT) + "/shaders/basic.vert");
         pbrBuilder.addStage(GL_FRAGMENT_SHADER, std::string(PROJECT_ROOT) + "/shaders/pbr.frag");
         m_pbrShader = pbrBuilder.build();
+        ShaderBuilder depthBuilder;
+    depthBuilder.addStage(GL_VERTEX_SHADER, std::string(PROJECT_ROOT) + "/shaders/basic.vert");
+    depthBuilder.addStage(GL_FRAGMENT_SHADER, std::string(PROJECT_ROOT) + "/shaders/depth.frag");
+    m_depthShader = depthBuilder.build();
 
 
     } catch (const ShaderLoadingException& e) {
@@ -75,6 +79,7 @@ void CableCar::draw(const glm::mat4 viewProjection, const glm::vec3 cameraPositi
     glUniform1i(shader.getUniformLocation("envMap"), 2);
     glUniform1f(shader.getUniformLocation("envMaxLod"), EnvironmentMap::MAX_LOD);
     glUniform1i(shader.getUniformLocation("useEnvMap"), m_config.useEnvMap);
+    glUniform1i(shader.getUniformLocation("shadowMap"), 3);
     glUniformMatrix4fv(
         shader.getUniformLocation("viewProjection"),
         1,
@@ -104,4 +109,11 @@ void CableCar::draw(const glm::mat4 viewProjection, const glm::vec3 cameraPositi
 
 
     m_model.draw(shader);
+}
+void CableCar::drawDepth(const glm::mat4& lightCamera) const
+{
+    m_depthShader.bind();
+    glUniformMatrix4fv(m_depthShader.getUniformLocation("viewProjection"),
+                       1, GL_FALSE, glm::value_ptr(lightCamera));
+    m_model.draw(m_depthShader);
 }

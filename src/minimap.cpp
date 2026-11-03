@@ -186,8 +186,8 @@ glm::mat4 Minimap::viewMatrix() const
 glm::mat4 Minimap::projectionMatrix() const
 {
     return glm::ortho(
-        -6.0f, 6.0f,
-        -6.0f, 6.0f,
+        -25.0f, 25.0f,
+        -25.0f, 25.0f,
         0.1f, 150.0f
     );
 }
