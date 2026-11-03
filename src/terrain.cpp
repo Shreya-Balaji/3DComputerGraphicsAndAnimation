@@ -9,8 +9,8 @@
 #include "environment_map.h"
 
 namespace {
-constexpr int CELLS = 64;
-constexpr int SIMPLIFIED_CELLS = 16;
+constexpr int CELLS = 32;
+constexpr int SIMPLIFIED_CELLS = 8;
 constexpr float TILE_SIZE = 64.0f;
 constexpr float TEXTURE_REPEATS = 4.0f;
 
@@ -91,8 +91,8 @@ Terrain::Terrain(const Config& config, const glm::vec3& position)
     reflectionBuilder.addStage(GL_VERTEX_SHADER, root + "/shaders/terrain_reflection.vert");
     reflectionBuilder.addStage(GL_FRAGMENT_SHADER, root + "/shaders/terrain_reflection.frag");
     m_reflectionShader = reflectionBuilder.build();
-    m_reflectionMesh = std::make_unique<GPUMesh>(terrainMesh(SIMPLIFIED_CELLS));
-
+    Mesh reflectionMesh = terrainMesh(SIMPLIFIED_CELLS);
+    m_reflectionMesh = std::make_unique<GPUMesh>(reflectionMesh);
     Mesh mesh = terrainMesh(CELLS);
     mesh.material.kd = glm::vec3(1.0f);
     mesh.material.ks = glm::vec3(0.04f);
