@@ -92,7 +92,7 @@ int main()
             );
             const glm::mat4 viewProjection = projection * view;
 
-            cableCar.draw(viewProjection, cameraPosition, light);
+            cableCar.draw(viewProjection, cameraPosition, light, config.usePBR);
 
             terrain.draw(viewProjection, cameraPosition, light);
 
@@ -111,7 +111,7 @@ int main()
                 const glm::vec3 minimapCameraPosition(-3.0f, 70.0f, -5.0f);
 
                 terrain.draw(minimapViewProjection, minimapCameraPosition, light);
-                cableCar.draw(minimapViewProjection, minimapCameraPosition, light);
+                cableCar.draw(minimapViewProjection, minimapCameraPosition, light, config.usePBR);
 
                 minimap.unbind();
                 glViewport(0, 0, size.x, size.y);
