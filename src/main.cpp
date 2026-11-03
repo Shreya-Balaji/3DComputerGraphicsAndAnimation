@@ -103,6 +103,7 @@ int main()
             );
             const glm::mat4 viewProjection = projection * view;
             glm::vec3 shadowLightDir = light.sunDir.y < 0 ? light.sunDir : light.moonDir;
+            light.shadowToLight = computeShadowToLight(shadowLightDir);
             light.lightCamera = computeLightSpace(shadowLightDir, cableCar.position());
             shadowMap.begin();
             cableCar.drawDepth(light.lightCamera);

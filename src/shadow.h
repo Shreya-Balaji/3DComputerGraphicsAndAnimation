@@ -5,7 +5,7 @@
 
 class ShadowMap {
 public:
-    static constexpr int SIZE = 2048;
+    static constexpr int SIZE = 4096;
 
     ShadowMap();
     ~ShadowMap();
@@ -22,3 +22,4 @@ private:
     GLint m_previousViewport[4] = {0, 0, 0, 0};
 };
 glm::mat4 computeLightSpace(const glm::vec3& shadowLightDir, const glm::vec3& centre);
+glm::vec3 computeShadowToLight(const glm::vec3& shadowLightDir);

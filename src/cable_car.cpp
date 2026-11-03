@@ -167,7 +167,15 @@ void CableCar::update(float deltaTime, float terrainOffset)
             m_wheelAngle,
             glm::vec3(1.0f, 0.0f, 0.0f));
 }
-
+static glm::mat4 ropeTileModel(int tile, float thickness)
+{
+    constexpr float cableTileSize = 64.0f;
+    glm::mat4 m = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, tile * cableTileSize));
+    m = glm::translate(m, glm::vec3(-5.4f, 0.92f, 0.0f));
+    m = glm::scale(m, glm::vec3(thickness, thickness, 1.0f));
+    m = glm::translate(m, glm::vec3(5.4f, -0.92f, 0.0f));
+    return m;
+}
 void CableCar::draw(const glm::mat4 viewProjection, const glm::vec3 cameraPosition, const SkyLight& light, bool usePbr, bool isMinimap) const {
     if (m_cableMesh)
     {

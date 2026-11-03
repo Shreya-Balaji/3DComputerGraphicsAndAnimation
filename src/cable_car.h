@@ -22,7 +22,8 @@ void draw(
     bool usePbr,
     bool isMinimap = false
 ) const;
-        void drawDepth(const glm::mat4& lightCamera) const;
+
+void drawDepth(const glm::mat4& lightCamera) const;
 
 private:
     static constexpr glm::vec3 OPEN_DOOR = glm::vec3(0.0f, 0.0f, 0.3f);

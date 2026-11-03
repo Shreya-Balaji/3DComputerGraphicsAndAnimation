@@ -61,16 +61,27 @@ void ShadowMap::bind(int textureUnit) const
 
 glm::mat4 computeLightSpace(const glm::vec3& shadowLightDir, const glm::vec3& centre)
 {
-    glm::vec3 toSunMoon = -shadowLightDir;
+    glm::vec3 toLight = computeShadowToLight(shadowLightDir);
     const float minElev = glm::radians(40.0f);
-    if(toSunMoon.y < sin(minElev)){
-        glm::vec2 horizontal = normalize(glm::vec2(toSunMoon.x, toSunMoon.z));
-        toSunMoon = glm::vec3(horizontal.x * cos(minElev), sin(minElev), horizontal.y * cos(minElev));
+    if(toLight.y < sin(minElev)){
+        glm::vec2 horizontal = normalize(glm::vec2(toLight.x, toLight.z));
+        toLight = glm::vec3(horizontal.x * cos(minElev), sin(minElev), horizontal.y * cos(minElev));
 
     }
-    const glm::vec3 lightPos = centre + toSunMoon * 40.0f;
-    const glm::vec3 up = std::abs(toSunMoon.y) > 0.99f ? glm::vec3(0.0f, 0.0f, 1.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
+    const glm::vec3 lightPos = centre + toLight * 40.0f;
+    const glm::vec3 up = std::abs(toLight.y) > 0.99f ? glm::vec3(0.0f, 0.0f, 1.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
     const glm::mat4 lightView = glm::lookAt(lightPos, centre, up);
-    const glm::mat4 lightProjection = glm::ortho(-6.0f, 6.0f, -6.0f, 6.0f, 0.1f, 100.0f);
+    const glm::mat4 lightProjection = glm::ortho(-30.0f, 30.0f, -30.0f, 30.0f, 0.1f, 100.0f);
     return lightProjection * lightView;
+}
+glm::vec3 computeShadowToLight(const glm::vec3& shadowLightDir)
+{
+    glm::vec3 toLight = -shadowLightDir;
+    const float minElev = glm::radians(40.0f);
+    if (toLight.y < std::sin(minElev))
+    {
+        glm::vec2 horiz = glm::normalize(glm::vec2(toLight.x, toLight.z));
+        toLight = glm::vec3(horiz.x * std::cos(minElev), std::sin(minElev), horiz.y * std::cos(minElev));
+    }
+    return toLight;
 }

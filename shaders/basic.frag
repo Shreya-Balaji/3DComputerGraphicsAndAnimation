@@ -35,6 +35,7 @@ uniform bool twoScaleSampling = false;
 uniform sampler2D shadowMap;
 uniform mat4 lightSpaceMatrix;
 uniform bool useShadows = false;
+uniform vec3 shadowToLight = vec3(0.0, 1.0, 0.0);
 out vec4 FragColor;
 
 float shadowFactor(vec3 fragPos, vec3 N, vec3 L)
@@ -55,9 +56,32 @@ float shadowFactor(vec3 fragPos, vec3 N, vec3 L)
             inShadow += (p.z - bias > closest) ? 1.0 : 0.0;
         }
     }
-    return 1.0 - inShadow / 9.0;
+    float edge = min(min(p.x, 1.0 - p.x), min(p.y, 1.0 - p.y));
+    float fade = smoothstep(0.0, 0.1, edge);
+    return mix(1.0, 1.0 - inShadow / 9.0, fade);
 }
-
+const vec2  ropeXY = vec2(-5.4, 0.92);
+const float ropeThickness= 0.025; 
+const float ropeHalf = 96.0;
+float ropeShadow(vec3 fragPos, vec3 toLight)
+{
+    vec2 p = fragPos.xy;                  
+    vec2 l = toLight.xy;
+    float ll = dot(l, l);
+    if (ll < 1e-6){
+        return 1.0; 
+    }           
+    float t = dot(ropeXY - p, l) / ll;   
+    if (t <= 0.0){
+        return 1.0;
+    }            
+    float zHit = fragPos.z + t * toLight.z;
+    if (abs(zHit) > ropeHalf){
+        return 1.0;   
+    }
+    float d = length(p + t * l - ropeXY);         
+    return smoothstep(0.5 * ropeThickness, ropeThickness, d);
+}
 void main()
 {
     vec3 baseColor = kd;
@@ -98,7 +122,10 @@ void main()
 
     bool sunOrMoon = lightDir.y<0.0;
     vec3 Ls = sunOrMoon ? L : L2;
-    float shadow = useShadows ? shadowFactor(FragPos, N, Ls) : 1.0;
+    float shadow = 1.0;
+    if (useShadows){
+        shadow = min(shadowFactor(FragPos, N, Ls), ropeShadow(FragPos, shadowToLight));
+    }
     vec3 diffuse  = diff * baseColor * sunColor * shadow;
     vec3 moonDiffuse = diff2 * baseColor * moonColor * shadow;
 
