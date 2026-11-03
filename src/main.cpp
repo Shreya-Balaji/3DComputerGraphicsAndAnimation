@@ -58,6 +58,8 @@ int main()
         Minimap minimap;
         Skybox skybox;
         EnvironmentMap environmentMap;
+        constexpr double environmentCaptureInterval = 1.0 / 20.0;
+        double nextEnvironmentCaptureTime = 0.0;
 
         if (!minimap.initialize(512, 512))
         {
@@ -109,12 +111,16 @@ int main()
                 1000.0f
             );
             const glm::mat4 viewProjection = projection * view;
-            if (config.useEnvMap) {
+            const double now = glfwGetTime();
+            if (config.useEnvMap && now >= nextEnvironmentCaptureTime) {
                 const glm::vec3 capturePos = cableCar.position() + glm::vec3(0.0f, 1.0f, 0.0f);
                 environmentMap.capture(capturePos,[&](const glm::mat4& v, const glm::mat4& p, const glm::vec3& pos) {
                     skybox.draw(v, p, pos, light, skyColor);
                     terrain.drawReflection(p * v, light);
                 });
+                nextEnvironmentCaptureTime = now + environmentCaptureInterval;
+            } else if (!config.useEnvMap) {
+                nextEnvironmentCaptureTime = 0.0;
             }
             environmentMap.bind(2);
 
@@ -123,7 +129,7 @@ int main()
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             skybox.draw(view, projection, cameraPosition, light, skyColor);
-            
+
             cableCar.draw(viewProjection, cameraPosition, light, config.usePBR, false);
 
             // environment.draw(view, projection);
