@@ -9,22 +9,103 @@
 #include <string>
 #include "light.h"
 #include "environment_map.h"
+#include <glm/geometric.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 namespace {
 glm::vec3 evaluateCableCarRoute(float t)
 {
-    // Route along the outside edge of the mountain.
-    const glm::vec3 p0(-5.4f, 0.0f, -2.0f);
-    const glm::vec3 p1(-5.7f, 0.7f, -3.8f);
-    const glm::vec3 p2(-5.7f, 1.0f, -6.0f);
-    const glm::vec3 p3(-5.4f, 0.4f, -8.0f);
+    const glm::vec3 start(-5.4f, 0.0f, -2.0f);
+    const glm::vec3 end(-5.4f, 0.4f, -8.0f);
 
     t = glm::clamp(t, 0.0f, 1.0f);
-    const float u = 1.0f - t;
-    return u * u * u * p0
-        + 3.0f * u * u * t * p1
-        + 3.0f * u * t * t * p2
-        + t * t * t * p3;
+
+    return glm::mix(start, end, t);
 }
+}
+void CableCar::createCable()
+{
+    Mesh cable;
+
+    cable.material.kd = glm::vec3(0.12f, 0.12f, 0.14f);
+    cable.material.ks = glm::vec3(0.5f);
+    cable.material.shininess = 64.0f;
+    cable.material.transparency = 1.0f;
+
+    constexpr int segments = 128;
+    constexpr int radialSegments = 8;
+    constexpr float radius = 0.0095f;
+    constexpr float cableLength = 64.0f;
+
+
+    for (int i = 0; i <= segments; ++i)
+    {
+        float t = static_cast<float>(i) / segments;
+
+        glm::vec3 center(
+            -5.4f,
+            0.92f,
+            -cableLength * 0.5f + t * cableLength
+        );
+
+        glm::vec3 tangent(0.0f, 0.0f, 1.0f);
+        glm::vec3 referenceUp(0.0f, 1.0f, 0.0f);
+
+        glm::vec3 side = glm::normalize(
+            glm::cross(tangent, referenceUp));
+
+        glm::vec3 up = glm::normalize(
+            glm::cross(side, tangent));
+
+        for (int j = 0; j < radialSegments; ++j)
+        {
+            float angle =
+                glm::two_pi<float>() * j / radialSegments;
+
+            glm::vec3 normal =
+                glm::cos(angle) * side +
+                glm::sin(angle) * up;
+
+            Vertex vertex;
+            vertex.position = center + radius * normal;
+            vertex.normal = normal;
+            vertex.texCoord = glm::vec2(
+                static_cast<float>(i) / segments,
+                static_cast<float>(j) / radialSegments
+            );
+            vertex.tangent = glm::vec4(tangent, 1.0f);
+
+            cable.vertices.push_back(vertex);
+        }
+    }
+
+    for (int i = 0; i < segments; ++i)
+    {
+        for (int j = 0; j < radialSegments; ++j)
+        {
+            unsigned int current =
+                i * radialSegments + j;
+
+            unsigned int next =
+                i * radialSegments +
+                (j + 1) % radialSegments;
+
+            unsigned int nextRing =
+                (i + 1) * radialSegments + j;
+
+            unsigned int nextRingNext =
+                (i + 1) * radialSegments +
+                (j + 1) % radialSegments;
+
+            cable.triangles.emplace_back(
+                current, next, nextRing);
+
+            cable.triangles.emplace_back(
+                next, nextRingNext, nextRing);
+        }
+    }
+
+    m_cableMesh = std::make_unique<GPUMesh>(cable);
 }
 
 CableCar::CableCar(const Config& config)
@@ -46,16 +127,27 @@ CableCar::CableCar(const Config& config)
         std::cerr << e.what() << std::endl;
         throw;
     }
-};
+    createCable();
+}
 
 glm::vec3 CableCar::position() const
 {
-    return evaluateCableCarRoute(1.0f - m_config.cableCarT);
+    return position(m_terrainOffset);
 }
 
-void CableCar::update(float deltaTime)
+glm::vec3 CableCar::position(float terrainOffset) const
 {
+    glm::vec3 result = evaluateCableCarRoute(1.0f - m_config.cableCarT);
+    result.z += terrainOffset;
+    return result;
+}
+
+void CableCar::update(float deltaTime, float terrainOffset)
+{
+    m_terrainOffset = terrainOffset;
+
     m_model.setWorldTransform(position(), 0.55f);
+
     m_model.setNodeWorldOffset("Door_Back_Left", -OPEN_DOOR * m_config.doorSlideFactor);
     m_model.setNodeWorldOffset("Door_Back_Right", -OPEN_DOOR * m_config.doorSlideFactor);
     m_model.setNodeWorldOffset("Door_Front_Left", OPEN_DOOR * m_config.doorSlideFactor);
@@ -66,10 +158,79 @@ void CableCar::update(float deltaTime)
         glm::two_pi<float>());
 
     for (int i = 1; i <= 8; ++i)
-        m_model.setNodeRotation("Wheel_" + std::to_string(i), m_wheelAngle, glm::vec3(1.0f, 0.0f, 0.0f));
+        m_model.setNodeRotation(
+            "Wheel_" + std::to_string(i),
+            m_wheelAngle,
+            glm::vec3(1.0f, 0.0f, 0.0f));
 }
 
-void CableCar::draw(const glm::mat4 viewProjection, const glm::vec3 cameraPosition, const SkyLight& light, bool usePbr) const {
+void CableCar::draw(const glm::mat4 viewProjection, const glm::vec3 cameraPosition, const SkyLight& light, bool usePbr, bool isMinimap) const {
+    if (m_cableMesh)
+    {
+        m_cableCarShader.bind();
+
+        glUniformMatrix4fv(
+            m_cableCarShader.getUniformLocation("viewProjection"),
+            1,
+            GL_FALSE,
+            glm::value_ptr(viewProjection)
+        );
+
+        glUniform3fv(
+            m_cableCarShader.getUniformLocation("viewPos"),
+            1,
+            glm::value_ptr(cameraPosition)
+        );
+
+        glUniform3fv(m_cableCarShader.getUniformLocation("lightDir"), 1,
+            glm::value_ptr(light.sunDir));
+
+        glUniform3fv(m_cableCarShader.getUniformLocation("sunColor"), 1,
+            glm::value_ptr(light.sunColor));
+
+        glUniform3fv(m_cableCarShader.getUniformLocation("moonDir"), 1,
+            glm::value_ptr(light.moonDir));
+
+        glUniform3fv(m_cableCarShader.getUniformLocation("moonColor"), 1,
+            glm::value_ptr(light.moonColor));
+
+        glUniform3fv(m_cableCarShader.getUniformLocation("ambientColor"), 1,
+            glm::value_ptr(light.ambientColor));
+
+        constexpr float cableTileSize = 64.0f;
+
+        for (int z = -1; z <= 1; ++z)
+        {
+            glm::mat4 cableModel = glm::translate(
+                glm::mat4(1.0f),
+                glm::vec3(
+                    0.0f,
+                    0.0f,
+                    m_terrainOffset + z * cableTileSize
+                )
+            );
+            if (isMinimap)
+            {
+                cableModel = glm::translate(
+                    cableModel,
+                    glm::vec3(-5.4f, 0.92f, 0.0f)
+                );
+
+                cableModel = glm::scale(
+                    cableModel,
+                    glm::vec3(5.0f, 5.0f, 1.0f)
+                );
+
+                cableModel = glm::translate(
+                    cableModel,
+                    glm::vec3(5.4f, -0.92f, 0.0f)
+                );
+            }
+
+            glUniformMatrix4fv(m_cableCarShader.getUniformLocation("model"), 1, GL_FALSE, glm::value_ptr(cableModel));
+            m_cableMesh->draw(m_cableCarShader);
+        }
+    };
     const Shader& shader = usePbr ? m_pbrShader : m_cableCarShader;
     shader.bind();
     glUniform1i(shader.getUniformLocation("envMap"), 2);

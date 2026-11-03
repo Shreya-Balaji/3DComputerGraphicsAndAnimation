@@ -79,9 +79,9 @@ int main()
             
 
             const ImGuiIO& io = ImGui::GetIO();
-            cableCar.update(io.DeltaTime);
-            cableCarPosition = cableCar.position();
             terrain.update(io.DeltaTime);
+            cableCar.update(io.DeltaTime, terrain.scrollOffset());
+            cableCarPosition = cableCar.position();
             snow.update(io.DeltaTime);
             cameraRig.updateInput(io.WantCaptureMouse || io.WantCaptureKeyboard, io.DeltaTime);
             attachedCameraPosition = attachedCamera.position();
@@ -104,7 +104,7 @@ int main()
             environmentMap.bind(2);
             skybox.draw(view, projection, cameraPosition, light, skyColor);
             
-            cableCar.draw(viewProjection, cameraPosition, light, config.usePBR);
+            cableCar.draw(viewProjection, cameraPosition, light, config.usePBR, false);
 
             terrain.draw(viewProjection, cameraPosition, light);
 
@@ -115,15 +115,32 @@ int main()
                 glClearColor(skyColor.r, skyColor.g, skyColor.b, 1.0f);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-                const glm::mat4 minimapView = minimap.viewMatrix();
+                const glm::vec3 currentCableCarPosition = cableCar.position();
+
+                const glm::vec3 minimapCameraPosition(
+                    currentCableCarPosition.x,
+                    currentCableCarPosition.y + 70.0f,
+                    currentCableCarPosition.z
+                );
+
+                const glm::mat4 minimapView = glm::lookAt(
+                    minimapCameraPosition,
+                    currentCableCarPosition,
+                    glm::vec3(0.0f, 0.0f, -1.0f)
+                );
+
                 const glm::mat4 minimapProjection = minimap.projectionMatrix();
+
                 const glm::mat4 minimapViewProjection =
                     minimapProjection * minimapView;
 
-                const glm::vec3 minimapCameraPosition(-3.0f, 70.0f, -5.0f);
-
                 terrain.draw(minimapViewProjection, minimapCameraPosition, light);
-                cableCar.draw(minimapViewProjection, minimapCameraPosition, light, config.usePBR);
+
+                glDisable(GL_DEPTH_TEST);
+
+                cableCar.draw(minimapViewProjection, minimapCameraPosition, light, config.usePBR, true);
+
+                glEnable(GL_DEPTH_TEST);
 
                 minimap.unbind();
                 glViewport(0, 0, size.x, size.y);
