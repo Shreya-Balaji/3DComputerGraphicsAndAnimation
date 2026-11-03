@@ -114,7 +114,6 @@ void Terrain::draw(const glm::mat4& viewProjection, const glm::vec3& viewPositio
     glUniform1i(m_shader.getUniformLocation("envMap"), 2);
     glUniform3fv(m_shader.getUniformLocation("cabinLightPos"), 1, glm::value_ptr(light.cabinLightPos));
     glUniform3fv(m_shader.getUniformLocation("cabinLightColor"), 1, glm::value_ptr(m_config.cabinLightColor));
-    glUniform1f(m_shader.getUniformLocation("cabinLightAmount"), light.cabinLightAmount);
     glUniform1f(m_shader.getUniformLocation("cabinLightRadius"), m_config.cabinLightRadius);
     glUniform1f(m_shader.getUniformLocation("cabinLightIntensity"), m_config.cabinLightIntensity);
     glUniformMatrix4fv(m_shader.getUniformLocation("lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(light.lightCamera));

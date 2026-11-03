@@ -84,9 +84,6 @@ int main()
 
             const ImGuiIO& io = ImGui::GetIO();
             light.cabinLightPos = cableCar.position() + glm::vec3(0.0f, cabinMidY, 0.0f);
-            if(!config.cabinLightEnabled){
-                light.cabinLightAmount = 0.0f;
-            }
             terrain.update(io.DeltaTime);
             cableCarPosition = cableCar.position();
             cableCar.update(io.DeltaTime, terrain.scrollOffset());

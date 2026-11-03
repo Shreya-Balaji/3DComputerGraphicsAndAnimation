@@ -26,7 +26,6 @@ uniform sampler2D kdTexture;
 uniform bool hasKdTexture;
 uniform vec3 cabinLightPos;
 uniform vec3 cabinLightColor;
-uniform float cabinLightAmount;
 uniform float cabinLightRadius;
 uniform float cabinLightIntensity;
 uniform sampler2D normalTexture;
@@ -126,10 +125,10 @@ void main()
     vec3 Lc = toLamp / d;
     float falloff = clamp(1.0 - d / cabinLightRadius, 0.0, 1.0);
     falloff = pow(falloff,2);
-    float lamp = max(dot(N, Lc), 0.0) * falloff * cabinLightAmount * cabinLightIntensity;
+    float lamp = max(dot(N, Lc), 0.0) * falloff * cabinLightIntensity;
     color += lamp * baseColor * cabinLightColor;
     if (isGlass) {
-        color += cabinLightColor * cabinLightAmount * 0.3;
+        color += cabinLightColor * 0.3;
     }
     FragColor = vec4(color, transparency);
 }
