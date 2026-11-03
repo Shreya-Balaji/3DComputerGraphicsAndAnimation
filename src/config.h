@@ -21,8 +21,8 @@ struct Config {
     bool drawBezierCurve = false;
     bool showMinimap = true;
     float doorSlideFactor = 0.0f;
-    float wheelSpeed = 10.0f; // Degrees per second.
-    float cableCarT = 0.35f;
+    bool doorWindowsOpen = false;
+    float wheelSpeed = -20.0f; // Degrees per second.
     bool useEnvMap = true;
     bool usePBR = true;
     float pbrMetallic = 0.25f;
@@ -36,7 +36,7 @@ struct Config {
     bool cabinLightEnabled = true;
     glm::vec3 cabinLightColor{1.0f, 0.75f, 0.4f};
     float cabinLightRadius = 10.0f;
-    float cabinLightIntensity = 10.0f;   
+    float cabinLightIntensity = 10.0f;
 
     bool snowEnabled = true;
     float snowFallSpeed = 1.5f;
