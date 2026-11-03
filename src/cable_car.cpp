@@ -1,6 +1,6 @@
 #include "cable_car.h"
 
-#include <assimp/Importer.hpp>
+#include <assimp/material.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/constants.hpp>
 #include <glm/common.hpp>
@@ -21,6 +21,23 @@ glm::vec3 evaluateCableCarRoute(float t)
     t = glm::clamp(t, 0.0f, 1.0f);
 
     return glm::mix(start, end, t);
+}
+void bindLighting(const Shader& shader, const glm::mat4& viewProjection,
+                  const glm::vec3& cameraPosition, const SkyLight& light, const Config& config)
+{
+    shader.bind();
+    glUniformMatrix4fv(shader.getUniformLocation("viewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
+    glUniform3fv(shader.getUniformLocation("viewPos"), 1, glm::value_ptr(cameraPosition));
+    glUniform3fv(shader.getUniformLocation("lightDir"), 1, glm::value_ptr(light.sunDir));
+    glUniform3fv(shader.getUniformLocation("sunColor"), 1, glm::value_ptr(light.sunColor));
+    glUniform3fv(shader.getUniformLocation("moonDir"), 1, glm::value_ptr(light.moonDir));
+    glUniform3fv(shader.getUniformLocation("moonColor"), 1, glm::value_ptr(light.moonColor));
+    glUniform3fv(shader.getUniformLocation("ambientColor"), 1, glm::value_ptr(light.ambientColor));
+    glUniform3fv(shader.getUniformLocation("cabinLightPos"), 1, glm::value_ptr(light.cabinLightPos));
+    glUniform3fv(shader.getUniformLocation("cabinLightColor"), 1, glm::value_ptr(config.cabinLightColor));
+    glUniform1f(shader.getUniformLocation("cabinLightAmount"), light.cabinLightAmount);
+    glUniform1f(shader.getUniformLocation("cabinLightRadius"), config.cabinLightRadius);
+    glUniform1f(shader.getUniformLocation("cabinLightIntensity"), config.cabinLightIntensity);
 }
 }
 void CableCar::createCable()
@@ -112,6 +129,18 @@ CableCar::CableCar(const Config& config)
 : m_config(config)
 , m_model(Model(std::string(PROJECT_ROOT) + "/assets/cable_car/scene.gltf"))
 {
+    const aiScene* scene = m_model.getScene();
+    for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
+        aiString materialName;
+        const unsigned int materialIndex = scene->mMeshes[i]->mMaterialIndex;
+        if (materialIndex < scene->mNumMaterials)
+            scene->mMaterials[materialIndex]->Get(AI_MATKEY_NAME, materialName);
+        if (std::string(materialName.C_Str()) == "Windows")
+            m_windowMeshes.push_back(i);
+        else
+            m_bodyMeshes.push_back(i);
+    }
+
     try {
         ShaderBuilder cableCarBuilder;
         cableCarBuilder.addStage(GL_VERTEX_SHADER, std::string(PROJECT_ROOT) + "/shaders/basic.vert");
@@ -121,6 +150,10 @@ CableCar::CableCar(const Config& config)
         pbrBuilder.addStage(GL_VERTEX_SHADER, std::string(PROJECT_ROOT) + "/shaders/basic.vert");
         pbrBuilder.addStage(GL_FRAGMENT_SHADER, std::string(PROJECT_ROOT) + "/shaders/pbr.frag");
         m_pbrShader = pbrBuilder.build();
+        ShaderBuilder windowBuilder;
+        windowBuilder.addStage(GL_VERTEX_SHADER, std::string(PROJECT_ROOT) + "/shaders/basic.vert");
+        windowBuilder.addStage(GL_FRAGMENT_SHADER, std::string(PROJECT_ROOT) + "/shaders/window.frag");
+        m_windowShader = windowBuilder.build();
 
 
     } catch (const ShaderLoadingException& e) {
@@ -231,38 +264,34 @@ void CableCar::draw(const glm::mat4 viewProjection, const glm::vec3 cameraPositi
             m_cableMesh->draw(m_cableCarShader);
         }
     };
-    const Shader& shader = usePbr ? m_pbrShader : m_cableCarShader;
-    shader.bind();
-    glUniform1i(shader.getUniformLocation("envMap"), 2);
-    glUniform1f(shader.getUniformLocation("envMaxLod"), EnvironmentMap::MAX_LOD);
-    glUniform1i(shader.getUniformLocation("useEnvMap"), m_config.useEnvMap);
-    glUniformMatrix4fv(
-        shader.getUniformLocation("viewProjection"),
-        1,
-        GL_FALSE,
-        glm::value_ptr(viewProjection)
-    );
+    drawBody(viewProjection, cameraPosition, light, usePbr);
+    drawWindows(viewProjection, cameraPosition, light);
+}
 
-    glUniform3fv(
-        shader.getUniformLocation("viewPos"),
-        1,
-        glm::value_ptr(cameraPosition)
-    );
-    glUniform3fv(shader.getUniformLocation("lightDir"), 1, glm::value_ptr(light.sunDir));
-    glUniform3fv(shader.getUniformLocation("sunColor"), 1, glm::value_ptr(light.sunColor));
-    glUniform3fv(shader.getUniformLocation("moonDir"), 1, glm::value_ptr(light.moonDir));
-    glUniform3fv(shader.getUniformLocation("moonColor"), 1, glm::value_ptr(light.moonColor));
-    glUniform3fv(shader.getUniformLocation("ambientColor"), 1, glm::value_ptr(light.ambientColor));
-    glUniform3fv(shader.getUniformLocation("cabinLightPos"), 1, glm::value_ptr(light.cabinLightPos));
-    glUniform3fv(shader.getUniformLocation("cabinLightColor"), 1, glm::value_ptr(m_config.cabinLightColor));
-    glUniform1f(shader.getUniformLocation("cabinLightAmount"), light.cabinLightAmount);
-    glUniform1f(shader.getUniformLocation("cabinLightRadius"), m_config.cabinLightRadius);
-    glUniform1f(shader.getUniformLocation("cabinLightIntensity"), m_config.cabinLightIntensity);
-    if(usePbr){
+void CableCar::drawBody(const glm::mat4& viewProjection, const glm::vec3& cameraPosition,
+                        const SkyLight& light, bool usePbr) const
+{
+    if (m_bodyMeshes.empty())
+        return;
+
+    const Shader& shader = usePbr ? m_pbrShader : m_cableCarShader;
+    bindLighting(shader, viewProjection, cameraPosition, light, m_config);
+    if (usePbr) {
         glUniform1f(shader.getUniformLocation("metallic"), m_config.pbrMetallic);
         glUniform1f(shader.getUniformLocation("roughness"), m_config.pbrRoughness);
     }
+    m_model.draw(shader, m_bodyMeshes);
+}
 
+void CableCar::drawWindows(const glm::mat4& viewProjection, const glm::vec3& cameraPosition,
+                           const SkyLight& light) const
+{
+    if (m_windowMeshes.empty())
+        return;
 
-    m_model.draw(shader);
+    bindLighting(m_windowShader, viewProjection, cameraPosition, light, m_config);
+    glUniform1i(m_windowShader.getUniformLocation("envMap"), 2);
+    glUniform1f(m_windowShader.getUniformLocation("envMaxLod"), EnvironmentMap::MAX_LOD);
+    glUniform1i(m_windowShader.getUniformLocation("useEnvMap"), m_config.useEnvMap);
+    m_model.draw(m_windowShader, m_windowMeshes);
 }

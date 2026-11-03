@@ -6,11 +6,10 @@
 #include <cmath>
 #include <string>
 #include "light.h"
-#include "environment_map.h"
 
 namespace {
 constexpr int CELLS = 32;
-constexpr int SIMPLIFIED_CELLS = 8;
+constexpr int SIMPLIFIED_CELLS = 16;
 constexpr float TILE_SIZE = 64.0f;
 constexpr float TEXTURE_REPEATS = 4.0f;
 
@@ -136,8 +135,6 @@ void Terrain::draw(const glm::mat4& viewProjection, const glm::vec3& viewPositio
         return;
 
     m_shader.bind();
-    glUniform1i(m_shader.getUniformLocation("envMap"), 2);
-    glUniform1f(m_shader.getUniformLocation("envMaxLod"), EnvironmentMap::MAX_LOD);
     glUniform1i(m_shader.getUniformLocation("twoScaleSampling"), m_config.terrainTwoScaleSampling);
     glUniformMatrix4fv(m_shader.getUniformLocation("viewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
     glUniform3fv(m_shader.getUniformLocation("viewPos"), 1, glm::value_ptr(viewPosition));
@@ -146,7 +143,6 @@ void Terrain::draw(const glm::mat4& viewProjection, const glm::vec3& viewPositio
     glUniform3fv(m_shader.getUniformLocation("moonDir"), 1, glm::value_ptr(light.moonDir));
     glUniform3fv(m_shader.getUniformLocation("moonColor"), 1, glm::value_ptr(light.moonColor));
     glUniform3fv(m_shader.getUniformLocation("ambientColor"), 1, glm::value_ptr(light.ambientColor));
-    glUniform1i(m_shader.getUniformLocation("envMap"), 2);
     glUniform3fv(m_shader.getUniformLocation("cabinLightPos"), 1, glm::value_ptr(light.cabinLightPos));
     glUniform3fv(m_shader.getUniformLocation("cabinLightColor"), 1, glm::value_ptr(m_config.cabinLightColor));
     glUniform1f(m_shader.getUniformLocation("cabinLightAmount"), light.cabinLightAmount);
