@@ -121,6 +121,10 @@ CableCar::CableCar(const Config& config)
         pbrBuilder.addStage(GL_VERTEX_SHADER, std::string(PROJECT_ROOT) + "/shaders/basic.vert");
         pbrBuilder.addStage(GL_FRAGMENT_SHADER, std::string(PROJECT_ROOT) + "/shaders/pbr.frag");
         m_pbrShader = pbrBuilder.build();
+        ShaderBuilder depthBuilder;
+        depthBuilder.addStage(GL_VERTEX_SHADER, std::string(PROJECT_ROOT) + "/shaders/basic.vert");
+        depthBuilder.addStage(GL_FRAGMENT_SHADER, std::string(PROJECT_ROOT) + "/shaders/depth.frag");
+        m_depthShader = depthBuilder.build();
 
 
     } catch (const ShaderLoadingException& e) {
@@ -138,7 +142,7 @@ glm::vec3 CableCar::position() const
 glm::vec3 CableCar::position(float terrainOffset) const
 {
     glm::vec3 result = evaluateCableCarRoute(1.0f - m_config.cableCarT);
-    result.z += terrainOffset;
+    //result.z += terrainOffset;
     return result;
 }
 
@@ -163,12 +167,21 @@ void CableCar::update(float deltaTime, float terrainOffset)
             m_wheelAngle,
             glm::vec3(1.0f, 0.0f, 0.0f));
 }
-
+static glm::mat4 ropeTileModel(int tile, float thickness)
+{
+    constexpr float cableTileSize = 64.0f;
+    glm::mat4 m = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, tile * cableTileSize));
+    m = glm::translate(m, glm::vec3(-5.4f, 0.92f, 0.0f));
+    m = glm::scale(m, glm::vec3(thickness, thickness, 1.0f));
+    m = glm::translate(m, glm::vec3(5.4f, -0.92f, 0.0f));
+    return m;
+}
 void CableCar::draw(const glm::mat4 viewProjection, const glm::vec3 cameraPosition, const SkyLight& light, bool usePbr, bool isMinimap) const {
     if (m_cableMesh)
     {
         m_cableCarShader.bind();
-
+        glUniform1i(m_cableCarShader.getUniformLocation("envMap"), 2);
+        glUniform1i(m_cableCarShader.getUniformLocation("shadowMap"), 3);
         glUniformMatrix4fv(
             m_cableCarShader.getUniformLocation("viewProjection"),
             1,
@@ -206,7 +219,7 @@ void CableCar::draw(const glm::mat4 viewProjection, const glm::vec3 cameraPositi
                 glm::vec3(
                     0.0f,
                     0.0f,
-                    m_terrainOffset + z * cableTileSize
+                    z * cableTileSize
                 )
             );
             if (isMinimap)
@@ -265,4 +278,11 @@ void CableCar::draw(const glm::mat4 viewProjection, const glm::vec3 cameraPositi
 
 
     m_model.draw(shader);
+}
+void CableCar::drawDepth(const glm::mat4& lightCamera) const
+{
+    m_depthShader.bind();
+    glUniformMatrix4fv(m_depthShader.getUniformLocation("viewProjection"),
+                       1, GL_FALSE, glm::value_ptr(lightCamera));
+    m_model.draw(m_depthShader);
 }

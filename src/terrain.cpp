@@ -117,7 +117,10 @@ void Terrain::draw(const glm::mat4& viewProjection, const glm::vec3& viewPositio
     glUniform1f(m_shader.getUniformLocation("cabinLightAmount"), light.cabinLightAmount);
     glUniform1f(m_shader.getUniformLocation("cabinLightRadius"), m_config.cabinLightRadius);
     glUniform1f(m_shader.getUniformLocation("cabinLightIntensity"), m_config.cabinLightIntensity);
-
+    glUniformMatrix4fv(m_shader.getUniformLocation("lightSpaceMatrix"), 1, GL_FALSE, glm::value_ptr(light.lightCamera));
+    glUniform1i(m_shader.getUniformLocation("useShadows"), m_config.shadowsEnabled);
+    glUniform1i(m_shader.getUniformLocation("shadowMap"), 3);
+    glUniform3fv(m_shader.getUniformLocation("shadowToLight"), 1, glm::value_ptr(light.shadowToLight));
     for (int z = -1; z <= 1; ++z) {
         for (int x = -1; x <= 1; ++x) {
             const auto model = glm::translate(glm::mat4(1.0f),

@@ -31,6 +31,7 @@ add_executable(CableCarAlps
     src/sky.cpp
     src/skybox.cpp
     src/environment_map.cpp
+    src/shadow.cpp
 )
 
 target_link_libraries(CableCarAlps PRIVATE

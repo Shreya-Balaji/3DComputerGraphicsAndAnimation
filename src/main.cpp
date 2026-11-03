@@ -17,7 +17,8 @@
 #include <exception>
 #include <iostream>
 #include <stdexcept>
-
+#include "shadow.h"
+#include <cmath>
 int main()
 {
     Window window(
@@ -55,7 +56,7 @@ int main()
         Minimap minimap;
         Skybox skybox;
         EnvironmentMap environmentMap;
-
+        ShadowMap shadowMap;
         if (!minimap.initialize(512, 512))
         {
             throw std::runtime_error(
@@ -89,7 +90,7 @@ int main()
             cableCarPosition = cableCar.position();
             snow.update(io.DeltaTime);
             cameraRig.updateInput(io.WantCaptureMouse || io.WantCaptureKeyboard, io.DeltaTime);
-            attachedCameraPosition = attachedCamera.position();
+            attachedCameraPosition = cameraRig.position();
 
             const glm::mat4 view = cameraRig.viewMatrix();
             const glm::vec3 cameraPosition = cameraRig.position();
@@ -101,6 +102,13 @@ int main()
                 1000.0f
             );
             const glm::mat4 viewProjection = projection * view;
+            glm::vec3 shadowLightDir = light.sunDir.y < 0 ? light.sunDir : light.moonDir;
+            light.shadowToLight = computeShadowToLight(shadowLightDir);
+            light.lightCamera = computeLightSpace(shadowLightDir, cableCar.position());
+            shadowMap.begin();
+            cableCar.drawDepth(light.lightCamera);
+            shadowMap.end();
+            shadowMap.bind(3);
             const glm::vec3 capturePos = cableCar.position() + glm::vec3(0.0f, 1.0f, 0.0f);
             environmentMap.capture(capturePos,[&](const glm::mat4& v, const glm::mat4& p, const glm::vec3& pos) {
                 skybox.draw(v, p, pos, light, skyColor);

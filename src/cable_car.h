@@ -23,6 +23,8 @@ void draw(
     bool isMinimap = false
 ) const;
 
+void drawDepth(const glm::mat4& lightCamera) const;
+
 private:
     static constexpr glm::vec3 OPEN_DOOR = glm::vec3(0.0f, 0.0f, 0.3f);
     void createCable();
@@ -31,6 +33,7 @@ private:
     std::unique_ptr<GPUMesh> m_cableMesh;
     Shader m_cableCarShader;
     Shader m_pbrShader;
+        Shader m_depthShader;
     float m_wheelAngle = 0.0f;
     float m_terrainOffset = 0.0f;
 };
