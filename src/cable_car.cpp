@@ -8,7 +8,7 @@
 #include <iostream>
 #include <string>
 #include "light.h"
-
+#include "environment_map.h"
 namespace {
 glm::vec3 evaluateCableCarRoute(float t)
 {
@@ -36,6 +36,11 @@ CableCar::CableCar(const Config& config)
         cableCarBuilder.addStage(GL_VERTEX_SHADER, std::string(PROJECT_ROOT) + "/shaders/basic.vert");
         cableCarBuilder.addStage(GL_FRAGMENT_SHADER, std::string(PROJECT_ROOT) + "/shaders/basic.frag");
         m_cableCarShader = cableCarBuilder.build();
+        ShaderBuilder pbrBuilder;
+        pbrBuilder.addStage(GL_VERTEX_SHADER, std::string(PROJECT_ROOT) + "/shaders/basic.vert");
+        pbrBuilder.addStage(GL_FRAGMENT_SHADER, std::string(PROJECT_ROOT) + "/shaders/pbr.frag");
+        m_pbrShader = pbrBuilder.build();
+
 
     } catch (const ShaderLoadingException& e) {
         std::cerr << e.what() << std::endl;
@@ -64,26 +69,34 @@ void CableCar::update(float deltaTime)
         m_model.setNodeRotation("Wheel_" + std::to_string(i), m_wheelAngle, glm::vec3(1.0f, 0.0f, 0.0f));
 }
 
-void CableCar::draw(const glm::mat4 viewProjection, const glm::vec3 cameraPosition, const SkyLight& light) const {
-    m_cableCarShader.bind();
+void CableCar::draw(const glm::mat4 viewProjection, const glm::vec3 cameraPosition, const SkyLight& light, bool usePbr) const {
+    const Shader& shader = usePbr ? m_pbrShader : m_cableCarShader;
+    shader.bind();
+    glUniform1i(shader.getUniformLocation("envMap"), 2);
+    glUniform1f(shader.getUniformLocation("envMaxLod"), EnvironmentMap::MAX_LOD);
+    glUniform1i(shader.getUniformLocation("useEnvMap"), m_config.useEnvMap);
     glUniformMatrix4fv(
-        m_cableCarShader.getUniformLocation("viewProjection"),
+        shader.getUniformLocation("viewProjection"),
         1,
         GL_FALSE,
         glm::value_ptr(viewProjection)
     );
 
     glUniform3fv(
-        m_cableCarShader.getUniformLocation("viewPos"),
+        shader.getUniformLocation("viewPos"),
         1,
         glm::value_ptr(cameraPosition)
     );
-    glUniform3fv(m_cableCarShader.getUniformLocation("lightDir"), 1, glm::value_ptr(light.sunDir));
-    glUniform3fv(m_cableCarShader.getUniformLocation("sunColor"), 1, glm::value_ptr(light.sunColor));
-    glUniform3fv(m_cableCarShader.getUniformLocation("moonDir"), 1, glm::value_ptr(light.moonDir));
-    glUniform3fv(m_cableCarShader.getUniformLocation("moonColor"), 1, glm::value_ptr(light.moonColor));
-    glUniform3fv(m_cableCarShader.getUniformLocation("ambientColor"), 1, glm::value_ptr(light.ambientColor));
+    glUniform3fv(shader.getUniformLocation("lightDir"), 1, glm::value_ptr(light.sunDir));
+    glUniform3fv(shader.getUniformLocation("sunColor"), 1, glm::value_ptr(light.sunColor));
+    glUniform3fv(shader.getUniformLocation("moonDir"), 1, glm::value_ptr(light.moonDir));
+    glUniform3fv(shader.getUniformLocation("moonColor"), 1, glm::value_ptr(light.moonColor));
+    glUniform3fv(shader.getUniformLocation("ambientColor"), 1, glm::value_ptr(light.ambientColor));
+    if(usePbr){
+        glUniform1f(shader.getUniformLocation("metallic"), m_config.pbrMetallic);
+        glUniform1f(shader.getUniformLocation("roughness"), m_config.pbrRoughness);
+    }
 
 
-    m_model.draw(m_cableCarShader);
+    m_model.draw(shader);
 }

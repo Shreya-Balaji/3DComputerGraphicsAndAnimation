@@ -9,6 +9,8 @@
 #include "terrain.h"
 #include "light.h"
 #include "sky.h"
+#include "skybox.h"
+#include "environment_map.h"
 #include <framework/window.h>
 #include <imgui/imgui.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -51,6 +53,9 @@ int main()
         SnowParticleEffect snow(config, attachedCameraPosition);
 
         Minimap minimap;
+        Skybox skybox;
+        EnvironmentMap environmentMap;
+
         if (!minimap.initialize(512, 512))
         {
             throw std::runtime_error(
@@ -91,8 +96,15 @@ int main()
                 1000.0f
             );
             const glm::mat4 viewProjection = projection * view;
-
-            cableCar.draw(viewProjection, cameraPosition, light);
+            const glm::vec3 capturePos = cableCar.position() + glm::vec3(0.0f, 1.0f, 0.0f);
+            environmentMap.capture(capturePos,[&](const glm::mat4& v, const glm::mat4& p, const glm::vec3& pos) {
+                skybox.draw(v, p, pos, light, skyColor);
+                terrain.draw(p * v, pos, light);
+            });
+            environmentMap.bind(2);
+            skybox.draw(view, projection, cameraPosition, light, skyColor);
+            
+            cableCar.draw(viewProjection, cameraPosition, light, config.usePBR);
 
             terrain.draw(viewProjection, cameraPosition, light);
 
@@ -111,7 +123,7 @@ int main()
                 const glm::vec3 minimapCameraPosition(-3.0f, 70.0f, -5.0f);
 
                 terrain.draw(minimapViewProjection, minimapCameraPosition, light);
-                cableCar.draw(minimapViewProjection, minimapCameraPosition, light);
+                cableCar.draw(minimapViewProjection, minimapCameraPosition, light, config.usePBR);
 
                 minimap.unbind();
                 glViewport(0, 0, size.x, size.y);
