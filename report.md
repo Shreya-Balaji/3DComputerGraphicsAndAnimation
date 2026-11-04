@@ -480,10 +480,17 @@ To conceal the terrain resets and limited background geometry, we implemented a 
 [2] https://sketchfab.com/3d-models/mountain-range-01-6dff907d427f4c9f8d301075f8019c82
 
 [3] https://stackoverflow.com/questions/4770735/shader-sun-position-glsl - idea taken for moving sun
+
 [4] https://community.khronos.org/t/day-night-cycle-light/57752- inspiration taken for sunlight affecting sky color
+
 [5] https://github.com/ocornut/imgui/issues/4213- discussions referred for imgui controls
+
 [6] https://learnopengl.com/PBR/Theory- formula for pbr shaders (also in lecture slides)
+
 [7] https://learnopengl.com/Advanced-OpenGL/Cubemaps- to understand cubemaps for environment mapping
+
 [8] https://medium.com/@arda.yildirim158/environment-mapping-ceng469-hw2-eaeb3745f137- for environment mapping, used a discussion from this
+
 [9] https://polyhaven.com/a/snow_02 - this is public domain, no credit necessary
+
 [10] https://www.versluis.com/2023/05/how-to-use-macro-variations-for-unreal-engine-landscape-materials/
