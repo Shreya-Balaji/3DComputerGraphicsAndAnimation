@@ -8,11 +8,13 @@
 #include <array>
 #include <cmath>
 
-
+// Initialise the attached camera with references to the window, cable car and configuration.
+// The camera uses the cable car position as its target and reads camera settings from Config.
 AttachedCamera::AttachedCamera(Window& window, const CableCar& cableCar, Config& config)
     : m_window(window)
     , m_config(config)
     , m_cableCar(cableCar)
+    // Constructing Bezier Camera Path
     , m_curve([] {
         std::vector<BezierCurve> curves;
         const std::array<glm::vec3, 3> points = {
@@ -25,6 +27,7 @@ AttachedCamera::AttachedCamera(Window& window, const CableCar& cableCar, Config&
             glm::vec3(-5.0f, -0.5f, -3.0f),
             glm::vec3(4.0f, -1.0f, -3.0f)
         };
+        // Create 3 cubic bezier segments
         for (int i = 0; i < 3; ++i) {
             const int next = (i + 1) % 3;
             curves.emplace_back(points[i], points[i] + handles[i], points[next] - handles[next], points[next]);
@@ -43,7 +46,7 @@ AttachedCamera::AttachedCamera(Window& window, const CableCar& cableCar, Config&
         scrollCallback(offset);
     });
 }
-
+// Camera modes - Top, Follow, Bezier View
 glm::vec3 AttachedCamera::position() const
 {
     const glm::vec3 target = m_cableCar.position();
@@ -63,6 +66,7 @@ glm::vec3 AttachedCamera::position() const
     );
 }
 
+// View Matrix construction
 glm::mat4 AttachedCamera::viewMatrix() const
 {
     return glm::lookAt(position(), m_cableCar.position(), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -84,7 +88,7 @@ void AttachedCamera::updateInput(float deltaTime)
         m_firstMouse = true;
     }
 }
-
+// Handle mouse button presses and releases
 void AttachedCamera::mouseButtonCallback(int button, int action)
 {
     if (m_config.freeCameraEnabled)
@@ -94,7 +98,7 @@ void AttachedCamera::mouseButtonCallback(int button, int action)
         m_firstMouse = true;
     }
 }
-
+// Orbit camera angles in response to mouse movements
 void AttachedCamera::mouseMoveCallback(const glm::vec2& position)
 {
     if (m_config.freeCameraEnabled || !m_dragging)

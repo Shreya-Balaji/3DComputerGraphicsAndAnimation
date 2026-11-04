@@ -4,8 +4,7 @@
 #include <framework/opengl_includes.h>
 #include <framework/shader.h>
 #include <glm/glm.hpp>
-#include <framework/shader.h>
-
+// Represents the minimap redering system
 class Minimap
 {
 public:

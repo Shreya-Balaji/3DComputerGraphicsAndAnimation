@@ -1,5 +1,6 @@
 # Cable Car Through the Alps
 
+
 **Cable Car Through the Alps** is a C++/OpenGL project developed by our team: it features an endlessly scrolling cable car ride through a snowy mountain landscape. The viewer can follow the cable car from several camera viewpoints, change the time of day, and adjust the lighting and materials live from a control panel. The scene is enhanced by an animated cable car (opening doors and turning wheels), a rope, falling snow and fog.
 
 This report gives an overview of the implemented features, along with screenshots. Each team member's contribution is summarised, and described alongside the features they implemented.
@@ -15,10 +16,11 @@ The project applies the concepts taught in the lectures of 3D Computer Graphics 
 | Day and Night (Light and Sky Settings) | Shreya Balaji (100%) |
 | Cabin Lights | Shreya Balaji (100%) |
 | Cable Car and Rope Shadow | Shreya Balaji (100%) |
-| Material Textures and Lighting | Srinitish Ramesh (%) |
-| Cable Car Model Adjustments and Import | Srinitish Ramesh (%) |
-| Cable Path for Cable Car | Srinitish Ramesh (%) |
-| Mountain Import and Normal Mapping | Srinitish Ramesh ([ ]%) |
+| Material Textures and Lighting | Srinitish Ramesh (100%) |
+| Cable Car Model Adjustments and Import | Srinitish Ramesh (100%) |
+| Cable Path for Cable Car | Srinitish Ramesh (100%) |
+| Minimap | Srinitish Ramesh (100%) |
+| Mountain Import and Normal Mapping | Henrik Innos ([ ]%), Srinitish Ramesh ([ ]%) |
 | | Henrik Innos ([ ]%) |
 
 *Table 1: List of features and percentage contribution from each team member*
@@ -45,7 +47,7 @@ This view (as depicted in Figure 1) is used to orbit around the cable car. This 
 *Figure 1: Orbit View*
 
 ##### Top View
-The camera hangs about 12 units above the targeted cable car and looks straight down, which gives a top view. Figure 2 shows an over view of this. Also, GLM's lookAt computes the camera's right axis as the cross product of the looking direction and the up vector (0,1,0). If the camera looks exactly down, these two are parallel making the cross product zero; hence a small offset of 0.01 is added along z, which makes them slightly non-parallel without changing the view entirely.
+The camera hangs about 12 units above the targeted cable car and looks straight down, which gives a top view. Figure 2 shows an overview of this. Also, GLM's lookAt computes the camera's right axis as the cross product of the looking direction and the up vector (0,1,0). If the camera looks exactly down, these two are parallel making the cross product zero; hence a small offset of 0.01 is added along z, which makes them slightly non-parallel without changing the view entirely.
 
 <p align="left">
   <img src="Figures/top_view.png" width="48%">

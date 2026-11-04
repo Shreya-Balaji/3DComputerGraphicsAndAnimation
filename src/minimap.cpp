@@ -18,6 +18,8 @@ Minimap::~Minimap()
     if (m_overlayVAO != 0)
         glDeleteVertexArrays(1, &m_overlayVAO);
 }
+// Initializes the minimap's framebuffer, texture, depth buffer,
+// overlay geometry and shader program.
 bool Minimap::initialize(int width, int height)
 {
     if (width <= 0 || height <= 0)
@@ -26,6 +28,8 @@ bool Minimap::initialize(int width, int height)
     m_width = width;
     m_height = height;
 
+    // Build the shader program responsible for displaying the minimap
+    // as a 2D overlay on the main window.
     ShaderBuilder builder;
     builder.addStage(
         GL_VERTEX_SHADER,
@@ -49,103 +53,31 @@ bool Minimap::initialize(int width, int height)
 
     glGenVertexArrays(1, &m_overlayVAO);
     glGenBuffers(1, &m_overlayVBO);
-
     glBindVertexArray(m_overlayVAO);
     glBindBuffer(GL_ARRAY_BUFFER, m_overlayVBO);
-
-    glBufferData(
-        GL_ARRAY_BUFFER,
-        sizeof(vertices),
-        vertices,
-        GL_STATIC_DRAW
-    );
-
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(
-        0, 2, GL_FLOAT, GL_FALSE,
-        4 * sizeof(float), nullptr
-    );
-
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), nullptr);
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(
-        1, 2, GL_FLOAT, GL_FALSE,
-        4 * sizeof(float),
-        reinterpret_cast<void*>(2 * sizeof(float))
-    );
-
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), reinterpret_cast<void*>(2 * sizeof(float)));
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-
-       glGenFramebuffers(1, &m_framebuffer);
+    glGenFramebuffers(1, &m_framebuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer);
-
     glGenTextures(1, &m_colorTexture);
     glBindTexture(GL_TEXTURE_2D, m_colorTexture);
-
-    glTexImage2D(
-        GL_TEXTURE_2D,
-        0,
-        GL_RGB8,
-        m_width,
-        m_height,
-        0,
-        GL_RGB,
-        GL_UNSIGNED_BYTE,
-        nullptr
-    );
-
-    glTexParameteri(
-        GL_TEXTURE_2D,
-        GL_TEXTURE_MIN_FILTER,
-        GL_LINEAR
-    );
-    glTexParameteri(
-        GL_TEXTURE_2D,
-        GL_TEXTURE_MAG_FILTER,
-        GL_LINEAR
-    );
-    glTexParameteri(
-        GL_TEXTURE_2D,
-        GL_TEXTURE_WRAP_S,
-        GL_CLAMP_TO_EDGE
-    );
-    glTexParameteri(
-        GL_TEXTURE_2D,
-        GL_TEXTURE_WRAP_T,
-        GL_CLAMP_TO_EDGE
-    );
-
-    glFramebufferTexture2D(
-        GL_FRAMEBUFFER,
-        GL_COLOR_ATTACHMENT0,
-        GL_TEXTURE_2D,
-        m_colorTexture,
-        0
-    );
-
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, m_width, m_height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_colorTexture, 0);
     glGenRenderbuffers(1, &m_depthBuffer);
     glBindRenderbuffer(GL_RENDERBUFFER, m_depthBuffer);
-
-    glRenderbufferStorage(
-        GL_RENDERBUFFER,
-        GL_DEPTH_COMPONENT24,
-        m_width,
-        m_height
-    );
-
-    glFramebufferRenderbuffer(
-        GL_FRAMEBUFFER,
-        GL_DEPTH_ATTACHMENT,
-        GL_RENDERBUFFER,
-        m_depthBuffer
-    );
-
-    const bool complete =
-        glCheckFramebufferStatus(GL_FRAMEBUFFER)
-        == GL_FRAMEBUFFER_COMPLETE;
-
-    
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, m_width, m_height);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depthBuffer);
+    const bool complete = glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
@@ -166,19 +98,19 @@ bool Minimap::initialize(int width, int height)
 
     return true;
 }
-
+// Bind the minimap framebuffer
 void Minimap::bind()
 {
     glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer);
     glViewport(0, 0, m_width, m_height);
 }
-
+// Unbind the minimap framebuffer
 void Minimap::unbind()
 {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-
+// Returns a fixed top-down view matrix for the minimap camera.
 glm::mat4 Minimap::viewMatrix() const
 {
     return glm::lookAt(
@@ -188,7 +120,7 @@ glm::mat4 Minimap::viewMatrix() const
     );
 }
 
-
+// Returns an orthographic projection matrix for the minimap.
 glm::mat4 Minimap::projectionMatrix() const
 {
     return glm::ortho(
@@ -197,6 +129,7 @@ glm::mat4 Minimap::projectionMatrix() const
         0.1f, 500.0f
     );
 }
+// Draws the previously rendered minimap texture as a 2D overlay
 void Minimap::drawOverlay(int windowWidth, int windowHeight)
 {
     if (windowWidth <= 0 || windowHeight <= 0)

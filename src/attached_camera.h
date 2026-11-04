@@ -6,7 +6,7 @@
 
 class Window;
 class CableCar;
-
+// Manages the camera attached to the cable car
 class AttachedCamera {
 public:
     AttachedCamera(Window& window, const CableCar& cableCar, Config& config);

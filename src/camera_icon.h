@@ -3,6 +3,7 @@
 #include <framework/shader.h>
 #include <glm/glm.hpp>
 
+// Visual camera icon rendered for 3d scene
 class CameraIcon {
 public:
     CameraIcon();
