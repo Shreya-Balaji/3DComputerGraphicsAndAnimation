@@ -6,35 +6,45 @@ layout(std140) uniform Material {
     float shininess;
     float transparency;
 };
-
+// Input from vertex shader
 in vec3 FragPos;
 in vec3 Normal;
 in vec2 TexCoord;
 in vec3 Tangent;
 in vec3 Bitangent;
 
+// Lighting and camera uniforms
 uniform vec3 lightDir;
 uniform vec3 viewPos;
 uniform vec3 sunColor;
 uniform vec3 moonDir;
 uniform vec3 moonColor;
 uniform vec3 ambientColor;
+
+// Diffuse texture
 uniform sampler2D kdTexture;
 uniform bool hasKdTexture;
+
+// Cabin light properties
 uniform vec3 cabinLightPos;
 uniform vec3 cabinLightColor;
 uniform float cabinLightAmount;
 uniform float cabinLightRadius;
 uniform float cabinLightIntensity;
+
+// Normal mapping properties
 uniform sampler2D normalTexture;
 uniform bool hasNormalTexture;
 uniform bool twoScaleSampling = false;
+
+// Shadow mapping properties
 uniform sampler2D shadowMap;
 uniform mat4 lightSpaceMatrix;
 uniform bool useShadows = false;
 uniform vec3 shadowToLight = vec3(0.0, 1.0, 0.0);
 out vec4 FragColor;
 
+// Calculate shadow visibility
 float shadowFactor(vec3 fragPos, vec3 N, vec3 L)
 {
     vec4 clip = lightSpaceMatrix * vec4(fragPos, 1.0);

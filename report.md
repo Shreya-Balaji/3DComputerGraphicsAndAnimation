@@ -16,10 +16,11 @@ The project applies the concepts taught in the lectures of 3D Computer Graphics 
 | Day and Night (Light and Sky Settings) | Shreya Balaji (100%) |
 | Cabin Lights | Shreya Balaji (100%) |
 | Cable Car and Rope Shadow | Shreya Balaji (100%) |
-| Material Textures and Lighting | Srinitish Ramesh (%) |
-| Cable Car Model Adjustments and Import | Srinitish Ramesh (%) |
-| Cable Path for Cable Car | Srinitish Ramesh (%) |
-| Mountain Import and Normal Mapping | Srinitish Ramesh ([ ]%) |
+| Material Textures and Lighting | Srinitish Ramesh (100%) |
+| Cable Car Model Adjustments and Import | Srinitish Ramesh (100%) |
+| Cable Path for Cable Car | Srinitish Ramesh (100%) |
+| Minimap | Srinitish Ramesh (100%) |
+| Mountain Import and Normal Mapping | Henrik Innos ([ ]%), Srinitish Ramesh ([ ]%) |
 | | Henrik Innos ([ ]%) |
 
 *Table 1: List of features and percentage contribution from each team member*

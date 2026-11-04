@@ -7,6 +7,7 @@
 #include <iostream>
 #include <utility>
 
+// Evaluate the position of cubic Bezier curve at parameter tValue
 glm::vec3 BezierCurve::evaluate(float tValue) const
 {
     float u = 1.0f - tValue;
@@ -16,7 +17,8 @@ glm::vec3 BezierCurve::evaluate(float tValue) const
          + 3.0f * u * tValue * tValue * m_p2
          + tValue * tValue * tValue * m_p3;
 }
-
+// Constructs a cubic Bezier curve and generates a set of points
+// that approximate its shape for rendering.
 BezierCurve::BezierCurve(
     const glm::vec3& p0,
     const glm::vec3& p1,
@@ -57,7 +59,7 @@ BezierCurve::BezierCurve(
     glEnableVertexAttribArray(0);
 
     glBindVertexArray(0);
-
+    // Load shaders
     try {
         ShaderBuilder curveBuilder;
         curveBuilder.addStage(GL_VERTEX_SHADER, static_cast<std::string>(PROJECT_ROOT) + "/shaders/curve.vert");

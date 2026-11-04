@@ -5,6 +5,7 @@
 #include <vector>
 #include "framework/shader.h"
 
+// Represents a cubic Bezier curve that can be evaluated and rendered using OpenGL.
 class BezierCurve {
     public:
         BezierCurve(
@@ -26,6 +27,7 @@ class BezierCurve {
         std::vector<BezierCurve> fromControlPoints(const std::vector<glm::vec3>& controlPoints) const;
 
     private:
+        // Four control points defining the cubic Bezier curve
         glm::vec3 m_p0, m_p1, m_p2, m_p3;
 
         GLuint m_vao = 0;
