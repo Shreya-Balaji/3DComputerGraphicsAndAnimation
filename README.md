@@ -6,7 +6,7 @@ This is a A C++/OpenGL 4.1 project and the application features an endlessly scr
 
 ### 1. Prerequisites
 
-- [Assimp](https://github.com/assimp/assimp), which is the only external dependency (GLFW, glad, glm, ImGui and the other libraries are bundled in `framework/third_party`)
+- [Assimp](https://github.com/assimp/assimp), is the only external dependency required (GLFW, glad, glm, ImGui and the other libraries are already a part of `framework/third_party`)
 
 On macOS, install Assimp with Homebrew:
 
