@@ -16,6 +16,7 @@ void CableCar::bindLighting(const Shader& shader, const glm::mat4& viewProjectio
                             const glm::vec3& cameraPosition, const SkyLight& light) const
 {
     shader.bind();
+    glUniform1i(shader.getUniformLocation("useNormalMaps"), m_config.useNormalMaps);
     glUniformMatrix4fv(shader.getUniformLocation("viewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
     glUniform3fv(shader.getUniformLocation("viewPos"), 1, glm::value_ptr(cameraPosition));
     glUniform3fv(shader.getUniformLocation("lightDir"), 1, glm::value_ptr(light.sunDir));
@@ -215,6 +216,7 @@ void CableCar::drawCables(const glm::mat4& viewProjection, const glm::vec3& came
         return;
 
     m_cableCarShader.bind();
+    glUniform1i(m_cableCarShader.getUniformLocation("useNormalMaps"), m_config.useNormalMaps);
     glUniform1i(m_cableCarShader.getUniformLocation("shadowMap"), 3);
 
     glUniformMatrix4fv(
@@ -314,6 +316,7 @@ void CableCar::drawWindows(const glm::mat4& viewProjection, const glm::vec3& cam
     glUniform1i(m_windowShader.getUniformLocation("envMap"), 2);
     glUniform1f(m_windowShader.getUniformLocation("envMaxLod"), EnvironmentMap::MAX_LOD);
     glUniform1i(m_windowShader.getUniformLocation("useEnvMap"), m_config.useEnvMap);
+    glUniform1i(m_windowShader.getUniformLocation("windowPCFSampling"), m_config.windowPCFSampling);
     m_model.draw(m_windowShader, m_windowMeshes);
 
     glBlendFuncSeparate(sourceRGB, destinationRGB, sourceAlpha, destinationAlpha);

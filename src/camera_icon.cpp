@@ -9,6 +9,7 @@ CameraIcon::CameraIcon()
 {
     ShaderBuilder builder;
     const std::string root = PROJECT_ROOT;
+    // reuse the line shader of the bezier curves
     builder.addStage(GL_VERTEX_SHADER, root + "/shaders/curve.vert");
     builder.addStage(GL_FRAGMENT_SHADER, root + "/shaders/curve.frag");
     m_shader = builder.build();
@@ -20,12 +21,12 @@ CameraIcon::CameraIcon()
         { 1, -0.7f, -2}, { 1,  0.7f, -2},
         { 1,  0.7f, -2}, {-1,  0.7f, -2},
         {-1,  0.7f, -2}, {-1, -0.7f, -2},
-        // rectangle to source lines
+        // lines connecting the source and rectangle vertices
         {0, 0, 0}, {-1, -0.7f, -2},
         {0, 0, 0}, { 1, -0.7f, -2},
         {0, 0, 0}, { 1,  0.7f, -2},
         {0, 0, 0}, {-1,  0.7f, -2},
-        // triangle to show up direciton
+        // triangle to show the "up" direciton
         {-0.4f, 0.7f, -2}, {0, 1.2f, -2},
         {0, 1.2f, -2}, {0.4f, 0.7f, -2}
     };

@@ -24,8 +24,10 @@ struct Config {
     bool doorWindowsOpen = false;
     float wheelSpeed = -20.0f; // Degrees per second.
     bool useEnvMap = true;
+    bool windowPCFSampling = true;
     float windowOpacity = 0.85f;
     bool usePBR = true;
+    bool useNormalMaps = true;
     float pbrMetallic = 0.25f;
     float pbrRoughness = 0.25f;
     float timeOfDay = 0.25f; // 0.0 = sunrise, 0.25 = midday, 0.5 = sunset, 0.75 = midnight etc.
@@ -42,6 +44,8 @@ struct Config {
     float cabinLightIntensity = 10.0f;
 
     bool snowEnabled = true;
+    static constexpr int MAX_SNOWFLAKES = 20000;
+    int snowflakeCount = 2000;
     float snowFallSpeed = 1.5f;
     float snowWind = 0.2f;
     float snowSize = 4.0f; // Pixel size at a distance of 12 world units.
@@ -50,7 +54,7 @@ struct Config {
     float fogStart = 15.0f;
     float fogEnd = 45.0f; // World-space distance at which objects are fully obscured.
     bool terrainEnabled = true;
-    bool terrainTwoScaleSampling = true;
+    bool twoScaleBlending = true;
     float terrainSpeed = 1.0f; // World units per second, negative reverses travel
     bool shadowsEnabled = true;
 };

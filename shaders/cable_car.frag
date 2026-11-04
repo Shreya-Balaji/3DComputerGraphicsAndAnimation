@@ -38,9 +38,8 @@ uniform float cabinLightIntensity;
 // Normal mapping settings
 uniform sampler2D normalTexture;
 uniform bool hasNormalTexture;
-uniform bool twoScaleSampling = false;
-
-// Shadow map parameters
+uniform bool useNormalMaps = true;
+uniform bool twoScaleBlending = false;
 uniform sampler2D shadowMap;
 uniform mat4 lightSpaceMatrix;
 uniform bool useShadows = false;
@@ -73,25 +72,25 @@ float shadowFactor(vec3 fragPos, vec3 N, vec3 L)
 
 // Parameters for cable position
 const vec2  ropeXY = vec2(-5.4, 0.92);
-const float ropeThickness= 0.025; 
+const float ropeThickness= 0.025;
 const float ropeHalf = 96.0;
 float ropeShadow(vec3 fragPos, vec3 toLight)
 {
-    vec2 p = fragPos.xy;                  
+    vec2 p = fragPos.xy;
     vec2 l = toLight.xy;
     float ll = dot(l, l);
     if (ll < 1e-6){
-        return 1.0; 
-    }           
-    float t = dot(ropeXY - p, l) / ll;   
+        return 1.0;
+    }
+    float t = dot(ropeXY - p, l) / ll;
     if (t <= 0.0){
         return 1.0;
-    }            
+    }
     float zHit = fragPos.z + t * toLight.z;
     if (abs(zHit) > ropeHalf){
-        return 1.0;   
+        return 1.0;
     }
-    float d = length(p + t * l - ropeXY);         
+    float d = length(p + t * l - ropeXY);
     return smoothstep(0.5 * ropeThickness, ropeThickness, d);
 }
 void main()
@@ -103,17 +102,17 @@ void main()
 
     if (hasKdTexture) {
         baseColor = texture(kdTexture, TexCoord).rgb;
-        if (twoScaleSampling)
+        if (twoScaleBlending)
             baseColor = mix(baseColor, texture(kdTexture, broadUV).rgb, 0.3);
     }
 
-    // Normalize
+
     vec3 N = normalize(Normal);
 
-    if (hasNormalTexture) {
+    if (useNormalMaps && hasNormalTexture) {
         vec3 tangentNormal =
             texture(normalTexture, TexCoord).rgb * 2.0 - 1.0;
-        if (twoScaleSampling) {
+        if (twoScaleBlending) {
             vec3 broadNormal = texture(normalTexture, broadUV).rgb * 2.0 - 1.0;
             tangentNormal = normalize(mix(tangentNormal, broadNormal, 0.3));
         }

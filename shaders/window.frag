@@ -17,8 +17,9 @@ uniform vec3 moonDir;
 uniform vec3 moonColor;
 uniform vec3 ambientColor;
 uniform samplerCube envMap;
-uniform float envMaxLod = 8.0;
+uniform float envMaxLod = 7.0;
 uniform bool useEnvMap = false;
+uniform bool windowPCFSampling = true;
 uniform float windowOpacity;
 uniform vec3 cabinLightPos;
 uniform vec3 cabinLightColor;
@@ -30,6 +31,9 @@ out vec4 FragColor;
 
 vec3 sampleEnvironment(vec3 R, float lod)
 {
+    if (!windowPCFSampling)
+        return textureLod(envMap, R, lod).rgb;
+
     vec3 up = abs(R.y) < 0.999 ? vec3(0, 1, 0) : vec3(1, 0, 0);
     vec3 T = normalize(cross(up, R));
     vec3 B = cross(R, T);

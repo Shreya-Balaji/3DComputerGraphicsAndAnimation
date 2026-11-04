@@ -44,12 +44,14 @@ void Menu::draw()
        // PBR shading effects
         ImGui::Separator();
         ImGui::Checkbox("Use PBR shading", &m_config.usePBR);
+        ImGui::Checkbox("Use normal maps", &m_config.useNormalMaps);
         if(m_config.usePBR == true){
             ImGui::SliderFloat("Metallic", &m_config.pbrMetallic, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp);
             ImGui::SliderFloat("Roughness", &m_config.pbrRoughness, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp);
         }
         // Environment mapping
         ImGui::Checkbox("Use Environment Reflections", &m_config.useEnvMap);
+        ImGui::Checkbox("Window PCF sampling", &m_config.windowPCFSampling);
         ImGui::SliderFloat("Window opacity", &m_config.windowOpacity, 0.0f, 1.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
         ImGui::Separator();
         // Minimap
@@ -64,6 +66,7 @@ void Menu::draw()
         ImGui::Separator();
         ImGui::Text("Snow Settings");
         ImGui::Checkbox("Snow enabled", &m_config.snowEnabled);
+        ImGui::SliderInt("Snowflake count", &m_config.snowflakeCount, 0, Config::MAX_SNOWFLAKES, "%d", ImGuiSliderFlags_AlwaysClamp);
         ImGui::SliderFloat("Snow fall speed", &m_config.snowFallSpeed, 0.0f, 5.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
         ImGui::SliderFloat("Snow wind", &m_config.snowWind, -5.0f, 5.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
         ImGui::SliderFloat("Snow size", &m_config.snowSize, 1.0f, 10.0f, "%.1f", ImGuiSliderFlags_AlwaysClamp);
@@ -76,7 +79,7 @@ void Menu::draw()
         // Terrain
         ImGui::Text("Terrain Settings");
         ImGui::Checkbox("Terrain enabled", &m_config.terrainEnabled);
-        ImGui::Checkbox("Two-scale sampling", &m_config.terrainTwoScaleSampling);
+        ImGui::Checkbox("Two-scale blending", &m_config.twoScaleBlending);
         ImGui::SliderFloat("Terrain speed", &m_config.terrainSpeed, -15.0f, 15.0f, "%.2f units/s", ImGuiSliderFlags_AlwaysClamp);
         // Day-night settings
         ImGui::Separator();
