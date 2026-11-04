@@ -27,8 +27,14 @@ bool Minimap::initialize(int width, int height)
     m_height = height;
 
     ShaderBuilder builder;
-    builder.addStage(GL_VERTEX_SHADER, "shaders/minimap.vert");
-    builder.addStage(GL_FRAGMENT_SHADER, "shaders/minimap.frag");
+    builder.addStage(
+        GL_VERTEX_SHADER,
+        std::string(PROJECT_ROOT) + "/shaders/minimap.vert"
+    );
+    builder.addStage(
+        GL_FRAGMENT_SHADER,
+        std::string(PROJECT_ROOT) + "/shaders/minimap.frag"
+    );
     m_overlayShader = builder.build();
 
     const float vertices[] = {
