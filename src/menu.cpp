@@ -23,14 +23,14 @@ void Menu::draw()
         ImGui::Combo("Camera Mode", &m_config.cameraMode, modes, static_cast<int>(std::size(modes)));
 
         ImGui::Separator();
-        if (m_config.cameraMode == 0 && !m_config.freeCameraEnabled) {
+        if (m_config.cameraMode == 0) {
             ImGui::Text("Orbit Camera Settings");
             ImGui::SliderFloat("Yaw", &m_config.yaw, Config::MIN_YAW, Config::MAX_YAW, "%.3f", ImGuiSliderFlags_AlwaysClamp);
             ImGui::SliderFloat("Pitch", &m_config.pitch, Config::MIN_PITCH, Config::MAX_PITCH, "%.3f", ImGuiSliderFlags_AlwaysClamp);
             ImGui::SliderFloat("Distance", &m_config.distance, Config::MIN_DISTANCE, Config::MAX_DISTANCE, "%.3f", ImGuiSliderFlags_AlwaysClamp);
         }
         // Bezier camera
-        if (m_config.cameraMode == 3 && !m_config.freeCameraEnabled) {
+        if (m_config.cameraMode == 3) {
             ImGui::Text("Bezier Camera Settings");
             ImGui::SliderFloat("Loop distance", &m_config.cameraLoopDistance, 0.0f, m_cameraLoopLength, "%.2f", ImGuiSliderFlags_AlwaysClamp);
             ImGui::SliderFloat("Loop speed", &m_config.cameraLoopSpeed, -10.0f, 10.0f, "%.2f units/s", ImGuiSliderFlags_AlwaysClamp);
