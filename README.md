@@ -1,4 +1,4 @@
-# Cable Car Simulation
+# Cable Car Through the Alps
 
 ## Installation and Setup
 
