@@ -24,8 +24,10 @@ struct Config {
     bool doorWindowsOpen = false;
     float wheelSpeed = -20.0f; // Degrees per second.
     bool useEnvMap = true;
+    bool windowPCFSampling = true;
     float windowOpacity = 0.85f;
     bool usePBR = true;
+    bool useNormalMaps = true;
     float pbrMetallic = 0.25f;
     float pbrRoughness = 0.25f;
     float timeOfDay = 0.25f; // 0.0 = sunrise, 0.25 = midday, 0.5 = sunset, 0.75 = midnight etc.

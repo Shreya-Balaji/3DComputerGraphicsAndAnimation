@@ -30,6 +30,7 @@ uniform float cabinLightRadius;
 uniform float cabinLightIntensity;
 uniform sampler2D normalTexture;
 uniform bool hasNormalTexture;
+uniform bool useNormalMaps = true;
 uniform bool twoScaleSampling = false;
 uniform sampler2D shadowMap;
 uniform mat4 lightSpaceMatrix;
@@ -95,7 +96,7 @@ void main()
     
     vec3 N = normalize(Normal);
 
-    if (hasNormalTexture) {
+    if (useNormalMaps && hasNormalTexture) {
         vec3 tangentNormal =
             texture(normalTexture, TexCoord).rgb * 2.0 - 1.0;
         if (twoScaleSampling) {

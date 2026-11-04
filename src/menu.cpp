@@ -39,11 +39,13 @@ void Menu::draw()
        
         ImGui::Separator();
         ImGui::Checkbox("Use PBR shading", &m_config.usePBR);
+        ImGui::Checkbox("Use normal maps", &m_config.useNormalMaps);
         if(m_config.usePBR == true){
             ImGui::SliderFloat("Metallic", &m_config.pbrMetallic, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp);
             ImGui::SliderFloat("Roughness", &m_config.pbrRoughness, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp);
         }
         ImGui::Checkbox("Use Environment Reflections", &m_config.useEnvMap);
+        ImGui::Checkbox("Window PCF sampling", &m_config.windowPCFSampling);
         ImGui::SliderFloat("Window opacity", &m_config.windowOpacity, 0.0f, 1.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
         ImGui::Separator();
         ImGui::Checkbox("Show minimap", &m_config.showMinimap);
