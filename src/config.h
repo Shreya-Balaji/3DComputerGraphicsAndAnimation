@@ -44,6 +44,8 @@ struct Config {
     float cabinLightIntensity = 10.0f;
 
     bool snowEnabled = true;
+    static constexpr int MAX_SNOWFLAKES = 20000;
+    int snowflakeCount = 2000;
     float snowFallSpeed = 1.5f;
     float snowWind = 0.2f;
     float snowSize = 4.0f; // Pixel size at a distance of 12 world units.
@@ -52,7 +54,7 @@ struct Config {
     float fogStart = 15.0f;
     float fogEnd = 45.0f; // World-space distance at which objects are fully obscured.
     bool terrainEnabled = true;
-    bool terrainTwoScaleSampling = true;
+    bool twoScaleBlending = true;
     float terrainSpeed = 1.0f; // World units per second, negative reverses travel
     bool shadowsEnabled = true;
 };

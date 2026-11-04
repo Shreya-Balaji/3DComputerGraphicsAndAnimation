@@ -140,7 +140,7 @@ void Terrain::draw(const glm::mat4& viewProjection, const glm::vec3& viewPositio
 
     m_shader.bind();
     glUniform1i(m_shader.getUniformLocation("useNormalMaps"), m_config.useNormalMaps);
-    glUniform1i(m_shader.getUniformLocation("twoScaleSampling"), m_config.terrainTwoScaleSampling);
+    glUniform1i(m_shader.getUniformLocation("twoScaleBlending"), m_config.twoScaleBlending);
     glUniformMatrix4fv(m_shader.getUniformLocation("viewProjection"), 1, GL_FALSE, glm::value_ptr(viewProjection));
     glUniform3fv(m_shader.getUniformLocation("viewPos"), 1, glm::value_ptr(viewPosition));
     glUniform3fv(m_shader.getUniformLocation("lightDir"), 1, glm::value_ptr(light.sunDir));

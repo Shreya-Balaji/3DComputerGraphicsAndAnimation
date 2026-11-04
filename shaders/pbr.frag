@@ -30,7 +30,7 @@ uniform float cabinLightIntensity;
 uniform sampler2D normalTexture;
 uniform bool hasNormalTexture;
 uniform bool useNormalMaps = true;
-uniform bool twoScaleSampling = false;
+uniform bool twoScaleBlending = false;
 
 out vec4 FragColor;
 const float PI = 3.14159265;
@@ -77,14 +77,14 @@ void main()
     vec2 broadUV = TexCoord * 0.25 + vec2(0.37, 0.61);
     if (hasKdTexture) {
         baseColor = texture(kdTexture, TexCoord).rgb;
-        if (twoScaleSampling)
+        if (twoScaleBlending)
             baseColor = mix(baseColor, texture(kdTexture, broadUV).rgb, 0.3);
     }
     vec3 N = normalize(Normal);
     if (useNormalMaps && hasNormalTexture) {
         vec3 tangentNormal =
             texture(normalTexture, TexCoord).rgb * 2.0 - 1.0;
-        if (twoScaleSampling) {
+        if (twoScaleBlending) {
             vec3 broadNormal = texture(normalTexture, broadUV).rgb * 2.0 - 1.0;
             tangentNormal = normalize(mix(tangentNormal, broadNormal, 0.3));
         }

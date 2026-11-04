@@ -2,6 +2,7 @@
 
 #include <glm/gtc/type_ptr.hpp>
 #include <array>
+#include <algorithm>
 #include <random>
 #include <string>
 
@@ -18,7 +19,7 @@ SnowParticleEffect::SnowParticleEffect(const Config& config, const glm::vec3& po
     std::uniform_real_distribution<float> unit(0.0f, 1.0f);
 
     // a particle consists of 3 fields for its position and one for size
-    std::array<glm::vec4, PARTICLE_COUNT> particles;
+    std::array<glm::vec4, Config::MAX_SNOWFLAKES> particles;
     // spawn particles in random positions inside the box defined by EXTENT
     for (auto& particle : particles) {
         particle = glm::vec4(
@@ -84,7 +85,7 @@ void SnowParticleEffect::draw(const glm::mat4& viewProjection) const
     glUniform3fv(m_shader.getUniformLocation("minimum"), 1, glm::value_ptr(minimum));
     glUniform3fv(m_shader.getUniformLocation("extent"), 1, glm::value_ptr(EXTENT));
     glBindVertexArray(m_vao);
-    glDrawArrays(GL_POINTS, 0, PARTICLE_COUNT);
+    glDrawArrays(GL_POINTS, 0, std::clamp(m_config.snowflakeCount, 0, Config::MAX_SNOWFLAKES));
     glBindVertexArray(0);
 
     glDepthMask(depthWrite);

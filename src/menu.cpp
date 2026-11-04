@@ -36,7 +36,7 @@ void Menu::draw()
         ImGui::Text("Conventional Lighting Settings");
         ImGui::Checkbox("Enable Ambient Lighting", &m_config.ambientLightingEnabled);
         ImGui::SliderFloat("Shininess", &m_config.shininess, 1.0f, 128.0f, "%.1f", ImGuiSliderFlags_AlwaysClamp);
-       
+
         ImGui::Separator();
         ImGui::Checkbox("Use PBR shading", &m_config.usePBR);
         ImGui::Checkbox("Use normal maps", &m_config.useNormalMaps);
@@ -58,6 +58,7 @@ void Menu::draw()
         ImGui::Separator();
         ImGui::Text("Snow Settings");
         ImGui::Checkbox("Snow enabled", &m_config.snowEnabled);
+        ImGui::SliderInt("Snowflake count", &m_config.snowflakeCount, 0, Config::MAX_SNOWFLAKES, "%d", ImGuiSliderFlags_AlwaysClamp);
         ImGui::SliderFloat("Snow fall speed", &m_config.snowFallSpeed, 0.0f, 5.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
         ImGui::SliderFloat("Snow wind", &m_config.snowWind, -5.0f, 5.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
         ImGui::SliderFloat("Snow size", &m_config.snowSize, 1.0f, 10.0f, "%.1f", ImGuiSliderFlags_AlwaysClamp);
@@ -69,7 +70,7 @@ void Menu::draw()
         ImGui::SliderFloat("Maximum view distance", &m_config.fogEnd, m_config.fogStart + 0.1f, 150.0f, "%.1f units", ImGuiSliderFlags_AlwaysClamp);
         ImGui::Text("Terrain Settings");
         ImGui::Checkbox("Terrain enabled", &m_config.terrainEnabled);
-        ImGui::Checkbox("Two-scale sampling", &m_config.terrainTwoScaleSampling);
+        ImGui::Checkbox("Two-scale blending", &m_config.twoScaleBlending);
         ImGui::SliderFloat("Terrain speed", &m_config.terrainSpeed, -15.0f, 15.0f, "%.2f units/s", ImGuiSliderFlags_AlwaysClamp);
 
         ImGui::Separator();
