@@ -13,7 +13,7 @@ Menu::Menu(Config& config, float cameraLoopLength)
 
 void Menu::draw()
 {
-    if (ImGui::Begin("Camera View Points Controls")) {
+    if (ImGui::Begin("Cable Car Through the Alps: UI Controls")) {
         ImGui::Checkbox("Free Camera", &m_config.freeCameraEnabled);
 
         static constexpr const char* modes[] = {"Orbit View", "Top View", "Follow View", "Bezier View"};
