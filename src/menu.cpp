@@ -33,6 +33,11 @@ void Menu::draw()
             ImGui::Checkbox("Draw Bezier curve", &m_config.drawBezierCurve);
         }
         ImGui::Separator();
+        ImGui::Text("Conventional Lighting Settings");
+        ImGui::Checkbox("Enable Ambient Lighting", &m_config.ambientLightingEnabled);
+        ImGui::SliderFloat("Shininess", &m_config.shininess, 1.0f, 128.0f, "%.1f", ImGuiSliderFlags_AlwaysClamp);
+       
+        ImGui::Separator();
         ImGui::Checkbox("Use PBR shading", &m_config.usePBR);
         if(m_config.usePBR == true){
             ImGui::SliderFloat("Metallic", &m_config.pbrMetallic, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp);

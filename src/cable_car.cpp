@@ -133,7 +133,7 @@ CableCar::CableCar(const Config& config)
     try {
         ShaderBuilder cableCarBuilder;
         cableCarBuilder.addStage(GL_VERTEX_SHADER, std::string(PROJECT_ROOT) + "/shaders/basic.vert");
-        cableCarBuilder.addStage(GL_FRAGMENT_SHADER, std::string(PROJECT_ROOT) + "/shaders/basic.frag");
+        cableCarBuilder.addStage(GL_FRAGMENT_SHADER, std::string(PROJECT_ROOT) + "/shaders/cable_car.frag");
         m_cableCarShader = cableCarBuilder.build();
         ShaderBuilder pbrBuilder;
         pbrBuilder.addStage(GL_VERTEX_SHADER, std::string(PROJECT_ROOT) + "/shaders/basic.vert");
@@ -268,8 +268,19 @@ void CableCar::drawBody(const glm::mat4& viewProjection, const glm::vec3& camera
     if (m_config.usePBR) {
         glUniform1f(shader.getUniformLocation("metallic"), m_config.pbrMetallic);
         glUniform1f(shader.getUniformLocation("roughness"), m_config.pbrRoughness);
-    } else {
+    }
+    else {
         glUniform1i(shader.getUniformLocation("shadowMap"), 3);
+
+        glUniform1i(
+            shader.getUniformLocation("ambientLightingEnabled"),
+            m_config.ambientLightingEnabled ? 1 : 0
+        );
+
+        glUniform1f(
+            shader.getUniformLocation("shininessOverride"),
+            m_config.shininess
+        );
     }
     m_model.draw(shader, m_bodyMeshes);
 }
