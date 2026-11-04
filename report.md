@@ -23,7 +23,7 @@ The sections below describe the implemented features. The minimal features are d
 ## Features
 ### Minimal features
 
-#### Multiple View Points (Orbit View, Follow View, Top View): (Shreya Balaji)
+#### Multiple View Points (Orbit View, Follow View, Top View)
 The project uses multiple camera modes to follow the path of the cable car and also view the snowy terrain around it. 
 * Orbit View: This view (as depicted in Figure 1) is used to orbit around the cable car. This is controlled by yaw, pitch and distance which can control angle around the vertical axis, angle above the horizontal axis and radius of the orbit. Pitch is limited to -85 degrees to +85 degrees to ensure the view doesn't look down exactly and flip. The minimum distance is also kept at 2 units to ensure that we don't really go into the cable car.
 
@@ -40,6 +40,44 @@ The project uses multiple camera modes to follow the path of the cable car and a
 ![[Follow View]](Figures/follow_view.png)
 *Figure 3: Follow View*
 
+#### PBR Shading
+When the PBR Shading is enabled, the body of cable car uses Cook-Torrance microfacet model instead of the Blinn-Phong shader. This is used to compute how much light is reflected off the surface. Two sliders are provided to control metallic and roughness. A dull highlight is given for high roughness; metallic value basically increases the ability's surface to display properties of a metal.
+
+For all light sources (sun, moon and a cabin light in our case), a function is defined to compute the reflected light from the parts of the cable car. The computed value is added to the ambient term.
+
+The Cook-Torrance microfacet model is implemented for this. Some external sources and lecture content were used to gain better understanding of this can be implemented and these are added in the reference.
+
+* **D (GGX Distribution):** It control how large and how sharp the shiny spot is. With low roughness, the cabin gets a small, bright, highlight and with high roughness, the highlight spreads into a dim and dull, matte surface.
+
+* **G (Smith with Schlick-GGX):** It reduces the highlight where the surface is seen at a smaller angle; basically reduces light when viewed from a grazing angle.
+
+* **F (Fresnel Term, Schlick approximation):** This gives surfaces more mirror-like appearance at grazing angles. On the cabin, this gives a brighter appearance along the edges and on surfaces seen from the side.
+
+* **F0 (Base Reflectance):** This is indicative of how reflective the surface is when looked directly at it. As the metallic value increases, surface begins to look more like a metal because of this base reflectance value.
+
+* **Specular Term:** This combines D, G and F (D · G · F / (4 · N·V · N·L)) into the shiny part of the surface, which is what gives the cabin its highlights and reflections. Because it uses all three terms, the highlight combines roughness, viewing angle and metallic value together, making the cabin look more metallic when metallic value is increased.
+
+* **Diffuse Term:** This is the matte colour of the cabin and it is reduced by the Fresnel and the metallic value kD, so as the surface becomes more metallic it loses its matte colour and depends on its reflections, similar to what an actual metal does. It is also divided by π so the surface never reflects more light than it receives (energy conservation, but also makes the brightness realistic).
+
+<p align="left">
+  <img src="Figures/PBROff.png" width="48%">
+  <img src="Figures/PBROn.png" width="48%">
+</p>
+
+*Figure 4.* The cable car with PBR shading off (left, Blinn-Phong) and on (right, metallic 0.25, roughness 0.25). 
+
+<p align="left">
+  <img src="Figures/PBRLow.png" width="48%">
+  <img src="Figures/PBRHigh.png" width="48%">
+</p>
+
+*Figure 5.* The cable car with metallic 0.00 / roughness 0.00 (left) and metallic 0.94 / roughness 0.57 (right). 
+
+As it can be observed in Figure 4., with Blinn-Phong (left), the cabin roof and the red tower look bright and saturated. With PBR (right), the same surfaces look duller and darker. 
+
+In Figure 5, the metallic and roughness values are slided from low to high. At the higher metallic value, the red tower loses its bright matte paint colour and looks darker. Since the diffuse term is lower, a metal shows only its reflections. With a metallic value of 0 and a roughness of 0, the surface keeps its full paint colour.
+
+The two sliders change the look of the cable car in the way the model predicts: metallic controls how much matte colour remains, and roughness controls how wide and strong the highlight is. In these views the highlight is probably not very easy to see, because the cabin does not directly face the sun. Ensure to have fog disabled as well while running the application.
 
 #### Material Textures and Lighting
 Material Textures and Lighting models are implemented in this demo to showcase how the body of Cable Car interacts with light. The diffuse coefficient **(kd)** and specular coefficient **(ks)** are used to showcase the base color and highlights of the model. **Shininess** is also integrated to determine the level of sharpness of these highlights.
