@@ -40,6 +40,13 @@ The project uses multiple camera modes to follow the path of the cable car and a
 ![[Follow View]](Figures/follow_view.png)
 *Figure 3: Follow View*
 
+* Bezier View: The camera modes also include the Bezier View, which is elaborated under the Bezier Curves section.
+
+* Free Camera: By toggling Free Camera, you can move around the scene freely using WASD keys for movement. The free camera implementation is mostly copied from the shadow mapping homework assignment, with small changes to adapt it into the project. The previously mentioned camera angles are part of `AttachedCamera`. `CameraRig` handles switching between `AttachedCamera` and `FreeCamera`. To be able to observe the position of `AttachedCamera` from the free camera, we render an icon, which shows the orientation and position of the attached camera (see Figure 4).
+
+![Camera Icon](Figures/camera_icon.png)
+*Figure 4: Camera Icon*
+
 #### PBR Shading
 When the PBR Shading is enabled, the body of cable car uses Cook-Torrance microfacet model instead of the Blinn-Phong shader. This is used to compute how much light is reflected off the surface. Two sliders are provided to control metallic and roughness. A dull highlight is given for high roughness; metallic value basically increases the ability's surface to display properties of a metal.
 
