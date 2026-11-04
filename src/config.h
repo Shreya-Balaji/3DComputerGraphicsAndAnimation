@@ -29,6 +29,8 @@ struct Config {
     float pbrMetallic = 0.25f;
     float pbrRoughness = 0.25f;
     float timeOfDay = 0.25f; // 0.0 = sunrise, 0.25 = midday, 0.5 = sunset, 0.75 = midnight etc.
+    bool ambientLightingEnabled = true;
+    float shininess = 32.0f;
 
     glm::vec3 nightColor{0.0f, 0.0f, 0.03f};
     glm::vec3 duskColor{0.9f, 0.5f, 0.3f};
