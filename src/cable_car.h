@@ -25,7 +25,7 @@ void update(float deltaTime);
 void drawDepth(const glm::mat4& lightCamera) const;
 
 private:
-    static constexpr glm::vec3 OPEN_DOOR = glm::vec3(0.0f, 0.0f, 0.3f);
+    static constexpr glm::vec3 OPEN_DOOR = glm::vec3(0.0f, 0.0f, 0.17f);
     void createCable();
     void drawCables(const glm::mat4& viewProjection, const glm::vec3& cameraPosition,
                     const SkyLight& light, const glm::mat4& cableTransform) const;

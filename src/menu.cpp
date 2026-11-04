@@ -43,6 +43,7 @@ void Menu::draw()
         ImGui::Separator();
         ImGui::Checkbox("Show minimap", &m_config.showMinimap);
         ImGui::SliderFloat("Open doors", &m_config.doorSlideFactor, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp);
+        ImGui::Checkbox("Open door windows", &m_config.doorWindowsOpen);
         ImGui::SliderFloat("Wheel speed", &m_config.wheelSpeed, Config::MIN_WHEEL_SPEED, Config::MAX_WHEEL_SPEED, "%.0f deg/s", ImGuiSliderFlags_AlwaysClamp);
         if (m_config.freeCameraEnabled)
             ImGui::Text("WASD: move | Space/Ctrl: up/down | Left-drag: look");

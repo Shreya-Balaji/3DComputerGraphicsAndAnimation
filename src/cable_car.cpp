@@ -170,6 +170,11 @@ void CableCar::update(float deltaTime)
     m_model.setNodeWorldOffset("Door_Front_Left", OPEN_DOOR * m_config.doorSlideFactor);
     m_model.setNodeWorldOffset("Door_Front_Right", OPEN_DOOR * m_config.doorSlideFactor);
 
+    const glm::vec3 windowOffset(0.0f, m_config.doorWindowsOpen ? -0.12f : 0.0f, 0.0f);
+    for (const char* window : {"Door_Back_Left.Window", "Door_Back_Right.Window",
+                               "Door_Front_Left.Window", "Door_Front_Right.Window"})
+        m_model.setNodeWorldOffset(window, windowOffset);
+
     m_wheelAngle = std::fmod(
         m_wheelAngle + glm::radians(m_config.wheelSpeed) * deltaTime,
         glm::two_pi<float>());

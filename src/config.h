@@ -21,6 +21,7 @@ struct Config {
     bool drawBezierCurve = false;
     bool showMinimap = true;
     float doorSlideFactor = 0.0f;
+    bool doorWindowsOpen = false;
     float wheelSpeed = -20.0f; // Degrees per second.
     bool useEnvMap = true;
     float windowOpacity = 0.85f;
