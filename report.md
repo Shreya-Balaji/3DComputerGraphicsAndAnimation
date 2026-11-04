@@ -50,6 +50,7 @@ The camera basically follows the cable car along the rope; it keeps a fixed offs
 <p align="left">
   <img src="Figures/follow_view.png" width="48%">
 </p>
+
 *Figure 3: Follow View*
 
 ----
@@ -61,7 +62,7 @@ For all light sources (sun, moon and a cabin light in our case), a function is d
 
 The Cook-Torrance microfacet model is implemented for this. Some external sources and lecture content were used to gain better understanding of this can be implemented and these are added in the reference.
 
-* **D (GGX Distribution):** It control how large and how sharp the shiny spot is. With low roughness, the cabin gets a small, bright, highlight and with high roughness, the highlight spreads into a dim and dull, matte surface.
+* **D (GGX Distribution):** It controls how large and how sharp the shiny spot is. With low roughness, the cabin gets a small, bright, highlight and with high roughness, the highlight spreads into a dim and dull, matte surface.
 
 * **G (Smith with Schlick-GGX):** It reduces the highlight where the surface is seen at a smaller angle; basically reduces light when viewed from a grazing angle.
 
@@ -154,7 +155,7 @@ However, the original model required some modifications to fit the requirements 
   <img src="Figures/AdjustedPulley.png" width="48%">
 </p>
 
-*Figure 8: Original Cable Car Model (left) and Adjusted Model (right) *
+*Figure 8: Original Cable Car Model (left) and Adjusted Model (right)*
 
 #### Cable:
 The cable is procedurally generated alongside with the Mountains using OpenGL rather than a separate imported model. It uses a cylindrical mesh consisting of 128 segments, with each of them having 8 vertices arranged in a ring. These rings are connected using triangles to form a continuous cable with small radius.
@@ -175,10 +176,17 @@ However, this model didn't provide support for looping, which was important for 
 
 ## References
 [1] https://sketchfab.com/3d-models/cable-car-1621ec805f3b460faf50cd61f7bcb98f
+
 [2] https://sketchfab.com/3d-models/mountain-range-01-6dff907d427f4c9f8d301075f8019c82
+
 [3] https://stackoverflow.com/questions/4770735/shader-sun-position-glsl - idea taken for moving sun
-[4] https://community.khronos.org/t/day-night-cycle-light/57752- inspiration taken for sunlight affecting sky color
-[5] https://github.com/ocornut/imgui/issues/4213- discussions referred for imgui controls
-[6] https://learnopengl.com/PBR/Theory- formula for pbr shaders (also in lecture slides)
-[7] https://learnopengl.com/Advanced-OpenGL/Cubemaps- to understand cubemaps for environment mapping
-[8] https://medium.com/@arda.yildirim158/environment-mapping-ceng469-hw2-eaeb3745f137- for environment mapping, used a discussion from this
+
+[4] https://community.khronos.org/t/day-night-cycle-light/57752 - inspiration taken for sunlight affecting sky color
+
+[5] https://github.com/ocornut/imgui/issues/4213 - discussions referred for imgui controls
+
+[6] https://learnopengl.com/PBR/Theory - formula for pbr shaders (also in lecture slides)
+
+[7] https://learnopengl.com/Advanced-OpenGL/Cubemaps - to understand cubemaps for environment mapping
+
+[8] https://medium.com/@arda.yildirim158/environment-mapping-ceng469-hw2-eaeb3745f137 - for environment mapping, used a discussion from this
