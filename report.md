@@ -129,16 +129,60 @@ For our implementation, the sky and terrain is rendered six time in all directio
 
 ----
 
-#### 
 ### Extra Features
 
-### Day-night system
+#### Day-night system
 
 This feature is implemented to seamlessly change the sky and light sources throughout the day.
-* **Time of Day**: This slider controles the time of the day 0 is sunrise, 0.25 midday, 0.5 sunset, 0.75 midnight and back to one to transition back to sunrise.
-* **Sun and Moon:** The sun moves around the scene on a circle, tilted a little along z so its path is not a straight line over the cable car. The moon is always on the opposite side of the sky.
-* **Light Colours:** The height of the sun decides everything. Low in the sky the sunlight is red (dusk), and it blends to a warm white as the sun rises. It then fades out completely as the sun goes below the horizon. The moon is now in the scene and it comes in as the sun goes down and gives a blue light. The ambient light is dark blue at night and brighter by day.
-* **Sky:** The sky colour comes from the same values, and the sky shader renders the sun and the moon as bright discs.
+
+##### Time of Day
+ This slider controles the time of the day 0 is sunrise, 0.25 midday, 0.5 sunset, 0.75 midnight and back to one to transition back to sunrise. The sun moves around the scene on a circle, tilted a little along z so its path is not a straight line over the cable car. The moon is always on the opposite side of the sky.
+
+<table>
+  <tr>
+    <td align="center"><img src="Figures/sun_at_noon.png" width="100%"></td>
+    <td align="center"><img src="Figures/sun.png" width="100%"></td>
+    <td align="center"><img src="Figures/moon.png" width="100%"></td>
+  </tr>
+  <tr>
+    <td align="center">Sun at Noon</td>
+    <td align="center">Sun at Dusk</td>
+    <td align="center">Moon at Night</td>
+  </tr>
+</table>
+
+*Figure 8: The sun and the moon in the sky at noon (left), sun at dusk (middle) and midnight (right), set with the "Time of the Day" slider. Fog is disabled*
+
+The height of the sun decides everything. Low in the sky the sunlight is red (dusk), and it blends to a warm white as the sun rises. It then fades out completely as the sun goes below the horizon. The moon is now in the scene and it comes in as the sun goes down and gives a blue light. The ambient light is dark blue at night and brighter by day.
+
+##### Sky
+
+The sky colour comes from the same values, and the sky shader renders the sun and the moon as bright discs. Figure 9 shows the sky colours during different times of the day. The colours blend and transform seemlessly as we slide the timer in the UI.
+
+<table>
+  <tr>
+    <td align="center"><img src="Figures/Sunrise.png" width="100%"></td>
+    <td align="center"><img src="Figures/Morning.png" width="100%"></td>
+    <td align="center"><img src="Figures/Noon.png" width="100%"></td>
+  </tr>
+  <tr>
+    <td align="center">Sunrise</td>
+    <td align="center">Morning</td>
+    <td align="center">Midday</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="Figures/Sunset.png" width="100%"></td>
+    <td align="center"><img src="Figures/LateEvening.png" width="100%"></td>
+    <td align="center"><img src="Figures/Midnight.png" width="100%"></td>
+  </tr>
+  <tr>
+    <td align="center">Sunset</td>
+    <td align="center">Evening</td>
+    <td align="center">Midnight</td>
+  </tr>
+</table>
+
+*Figure 9: The same view at six times of day, updated with the "Time of the Day" slider in the UI. From left to right and top to bottom: sunrise, morning, midday, sunset, evening and midnight.*
 
 ----
 
@@ -150,6 +194,29 @@ This feature is implemented to light up the cabin as the day gets darker.
 * The windows also get a small extra glow to ensure that the cabin looks lit from the outside.
 * In this project, the lamp light itself does not cast any shadows.
 
+Figure 10 below shows the effect of cabin light and how the terrain looks when the area light covers and intensity of the light is increased.
+
+<table>
+  <tr>
+    <td align="center"><img src="Figures/CabinLightDisabled.png" width="100%"></td>
+    <td align="center"><img src="Figures/CabinLightEnabled.png" width="100%"></td>
+  </tr>
+  <tr>
+    <td align="center">Cabin Light Disabled</td>
+    <td align="center">Cabin Light Enabled</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="Figures/CabinLightRadius.png" width="100%"></td>
+    <td align="center"><img src="Figures/CabinLightIntensity.png" width="100%"></td>
+  </tr>
+  <tr>
+    <td align="center">High Radius</td>
+    <td align="center">High Intensity</td>
+  </tr>
+</table>
+
+*Figure 10: The cabin light at night. Enabled and disabled (top row), and with a high radius and a high intensity (bottom row). Only the value named in each label differs from the default.*
+
 ----
 
 ### Shadows (Cable Car and Rope)
@@ -158,6 +225,29 @@ To add more realistic effects, a shadow map is implemented for both cable and th
 * **Soft Edges:** A 3 × 3 kernel of nearby samples (PCF) softens the edge, and a small bias avoids shadow acne on lit surfaces.
 * **Low Sun:** At sunrise and sunset the sun is close to the horizon, which would make the cable car's shadow extremely long and go beyond the shadow map we have. To avoid this, the direction used for the shadow is clamped to 40° above the horizon. This has no impact on the lighting which will still use the real sun position.
 * **Rope Shadow:** The rope's thickness was too low to show up clearly in a shadow map. To fix this, its shadow is computed directly in the terrain shader. For each terrain point, a line/ray is followed towards the light. If that line passes close to the rope, the point is cast as shadow, with a soft edge. Finally, the rope shadow and the cabin shadow are combined by taking the darker of the two values for each point. This means that a point is in shadow if either the cabin or the rope blocks the light, and it does not get darker if both do.
+
+Figure 11 shows the shadows disabled, how it looks at noon when the sun is right above the cable car and how the shadows shift when the light source moves across the day.
+
+<table>
+  <tr>
+    <td align="center"><img src="Figures/shadow_disabled.png" width="100%"></td>
+    <td align="center"><img src="Figures/shadow_at_noon.png" width="100%"></td>
+  </tr>
+  <tr>
+    <td align="center">Shadows Disabled</td>
+    <td align="center">Shadows at Noon</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="Figures/shadow_at_dusk.png" width="100%"></td>
+    <td align="center"><img src="Figures/shadow_at_night.png" width="100%"></td>
+  </tr>
+  <tr>
+    <td align="center">Shadows at Dusk</td>
+    <td align="center">Shadows at Night</td>
+  </tr>
+</table>
+
+*Figure 11: The cable car and rope shadow on the terrain with shadows disabled (top left), and enabled at noon (top right), dusk (bottom left) and night (bottom right). The shadow at night is cast by the moon.*
 
 ----
 
@@ -176,7 +266,7 @@ The Cable Car model [[1](https://sketchfab.com/3d-models/cable-car-1621ec805f3b4
   <img src="Figures/AdjustedPulley.png" width="48%">
 </p>
 
-*Figure 8: Original Cable Car Model (left) and Adjusted Model (right)*
+*Figure 12: Original Cable Car Model (left) and Adjusted Model (right)*
 
 #### Mountain
 **Current Mountain model**
@@ -187,7 +277,7 @@ The **Initial Mountain model** [[2](https://sketchfab.com/3d-models/mountain-ran
   <img src="Figures/InitialMountain.png" width="48%">
 </p>
 
-*Figure 9: Initial Mountain Model Used* 
+*Figure 13: Initial Mountain Model Used* 
 
 
 ## References
