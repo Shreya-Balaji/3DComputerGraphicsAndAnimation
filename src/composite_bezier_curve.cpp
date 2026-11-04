@@ -6,7 +6,7 @@
 #include <cmath>
 #include <utility>
 #include <stdexcept>
-
+//  Construct composite Bezier curve from multiple individual Bezier segments.
 CompositeBezierCurve::CompositeBezierCurve(std::vector<BezierCurve> curves)
     : m_curves(std::move(curves))
 {
@@ -14,7 +14,7 @@ CompositeBezierCurve::CompositeBezierCurve(std::vector<BezierCurve> curves)
         throw std::invalid_argument("A composite curve needs at least one segment");
     buildArcLengthTable();
 }
-
+// Evaluate composite curve at a parameter value.
 glm::vec3 CompositeBezierCurve::evaluate(float tValue) const {
     if (tValue == m_curves.size()) {
         return m_curves[m_curves.size()-1].evaluate(1.0f);
@@ -25,7 +25,7 @@ glm::vec3 CompositeBezierCurve::evaluate(float tValue) const {
 
      return m_curves[index].evaluate(fractionalPart);
 }
-
+// Draw every Bezier segment
 void CompositeBezierCurve::draw(const glm::mat4 viewProjection) const {
     for (const BezierCurve& curve : m_curves) {
         curve.draw(viewProjection);
@@ -60,7 +60,7 @@ void CompositeBezierCurve::buildArcLengthTable()
         }
     }
 }
-
+// Evaluate composite curve at a specified travelled distance.
 glm::vec3 CompositeBezierCurve::evaluateAtDistance(float distance) const
 {
     float totalLength = m_arcLengths.back().distance;

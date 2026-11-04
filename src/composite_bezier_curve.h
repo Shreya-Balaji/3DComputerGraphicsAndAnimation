@@ -7,7 +7,7 @@ struct ArcLengthSample {
     float tValue;
     float distance;
 };
-
+// Curve formaed by connecting multiple individual Bezier segments
 class CompositeBezierCurve {
     public:
         explicit CompositeBezierCurve(std::vector<BezierCurve> curves);
