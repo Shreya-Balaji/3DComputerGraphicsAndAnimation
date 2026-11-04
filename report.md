@@ -137,7 +137,7 @@ The two sliders change the look of the cable car in the way the model predicts: 
 
 ----
 
-### Terrain and Normal Mapping
+#### Terrain and Normal Mapping
 The terrain consists of 3 identical tiles in a row, which is being scrolled under the cable car. When the car surpasses 1 tile length from the center, it is moved back to the center (`Terrain::update`). Since the tiles are identical, the reset is seamless.
 
 The terrain tile is generated using the `terrainMesh` function. The terrain tile is a grid with the dimensions `CELLS`x`CELLS`. The `terrainVertex` function translates a point on the grid into a world space position (a mesh vertex). The x and z coordinates are scaled by `TILE_SIZE` and the y coordinate is calculated as follows: 
@@ -163,7 +163,8 @@ The terrain is covered with a snowy texture [[9](https://polyhaven.com/a/snow_02
 
 *Figure 9: Two-scale texture blending disabled (left) and enabled (right)*
 
-### Environment Mapping
+#### Environment Mapping
+
 Environment mapping lets the cabin windows reflect their surroundings, a snowy terrain in our case. 
 The basic idea is that the cabin takes a picture of sorts in all direction and each window shows a part of that picture that a surface like mirror would reflect towards the viewing direction.<br>
 For our implementation, the sky and terrain is rendered six time in all directions into a cube map. A blurrier mip is also built from it for less shiny surfaces. For optimization purposes, the environment map is not updated every frame, but 20 times per second. The view direction is mirrored and then used to look up the cube map, which gives the colour of the reflected sky and terrain. Figure 10 depicts the environment mapping enabled and disabled scenarios in our application.<br> 
@@ -186,10 +187,10 @@ The terrain part of the environment map is generated based on a simplified versi
 
 **Note:** The initial version of the environment mapping was applied to the whole cabin. Henrik later restricted it to the windows, reduced the capture rate, and added a lighter terrain draw for the capture.
 
-### Bezier Curves
+#### Bezier Curves
 
 The project contains a class called `BezierCurve`, which represents a cubic Bezier curve. For simplicity, since the curves used here are not large, the curve always contains 100 segments. The class contains a function `evaluate`, which evaluates the curve at a specified t in (0,1), using the standard formula. The `draw` function draws the curve using `GL_LINE_STRIP`.<br> 
-There is also `CompositeBezierCurve`, which contains an array of cubic Bezier curves, which are assumed to be connecting and in order. The composite curve evaluation is done using a t value in (0, `m_curves.size()`)). The integer part of t refers to the index of the curve and the fractional part is used to evaluate the position for that curve. The exception is the last point of the last curve.<br> 
+There is also `CompositeBezierCurve`, which contains an array of cubic Bezier curves, which are assumed to be connecting and in order. The composite curve evaluation is done using a t value in (0, `m_curves.size()`). The integer part of t refers to the index of the curve and the fractional part is used to evaluate the position for that curve. The exception is the last point of the last curve.<br> 
 In the project, we are moving a camera along a curve at constant speed (see Figure 12). The curve we use is a closed loop, so we calculate the position using `fmod`. The curve of the camera is defined using 3 points and shared 3 handles. The 3 points are the joins between curves and the handles are used to calculate the points on either side of each join. Using this method, the tangent doesn't change when moving across the join. To keep the speed constant, we use reparametrization, which was talked about in the lecture. We construct an arc length table with 200 samples per curve. For a given distance, we find the tightest bounds in the sample table and linearly interpolate the corresponding t value between them. The rotation of the camera is not constant, since it is configured to always look at the cable car.  
 
 <p align="left">
@@ -199,8 +200,8 @@ In the project, we are moving a camera along a curve at constant speed (see Figu
 
 *Figure 12: Camera moving along the Bezier curve*
 
-### Hierarchical transformations
-The cable car has 3 moving parts: the doors, the door windows and the pulley wheels. The model did not initially have a proper component hierarchy. The components were coupled together based on material, not physical hierarchy. So I separated the doors, windows and pulley wheels all into separate components in Blender. <br>
+#### Hierarchical transformations
+The cable car has 3 moving parts: the doors, the door windows and the pulley wheels. The model did not initially have a proper component hierarchy. The components were coupled together based on material, not physical hierarchy. So the doors, windows and pulley wheels are all into separate components in Blender. <br>
 The transformations are implemented using the `m_nodeWorldOffsets` table. The table keeps track of offsets for child components. This is used by the recursive `drawNode` function, which looks for offsets for the current node, applies them, and then draws each child node. Due to the recursive nature of `drawNode`, the transforms are performed in the correct order.<br> 
 The rotation of the pulley wheels is implemented similarly, however, the rotations need to be performed relative to the childs local origin. In addition to the transformation, `m_nodeRotations` contains the center parameter, which is the node's local origin. 
 Setting the node rotation for a node includes finding the node's local origin, and calculating the transformation, which is translating it to the global origin, using the local origin, performing the rotation, and translating it back. `drawNode` uses this analogously.<br>
@@ -220,7 +221,7 @@ The pulley wheels spin at the speed specified in the GUI, the doors can be opene
 
 ### Extra Features
 
-#### Day-night system
+#### Day-night System
 
 This feature is implemented to seamlessly change the sky and light sources throughout the day.
 
@@ -376,7 +377,6 @@ To support the looping terrain, three copies are rendered at different z-axis of
 
 
 #### Mountain
-**Current Mountain model**
 
 The **Initial Mountain model** [[2](https://sketchfab.com/3d-models/mountain-range-01-6dff907d427f4c9f8d301075f8019c82)] was also a downloadable 3d model. This model was selected for its detailed geometry and realistic appearance.
 Another important consideration was its support for normal mapping. Normal mapping enhances the surface detail of mountain and makes it appear more detailed without significant increase in geometric complexity.
@@ -387,6 +387,49 @@ However, this model didn't provide support for looping, which was important for 
 </p>
 
 *Figure 21: Initial Mountain Model Used* 
+
+Note: Current model used is briefed under the normal mapping section.
+
+### Snowfall
+In the project, we also have a snowfall particle effect (see Figures 22, 23). The particle effect is created within a box around the cable car. Particles instantiated in random locations around the box with random sizes. A particle is essentially a `vec4`, which contains its position in the x, y and z parameters, and size in the w parameter. They are drawn to on the screen using `GL_POINTS`.<br>
+The particles horizontal displacement is dependent on wind speed and vertical displacement on the fall speed. When a particle goes outside the box, it is reset to the top. The particles are shaded as circles with the outline fading into transparency. `snow.vert` defines the `edgeFade` parameter based on the position of the particle. If the particle is nearing an edge, it starts fading. This makes it so the snowflakes smoothly appear and disappear at the edges. 
+
+
+<p align="left">
+  <img src="Figures/light_snowfall.png" width="48%">
+</p>
+
+*Figure 22: Light snow*
+
+<p align="left">
+  <img src="Figures/heavy_snow.png" width="48%">
+</p>
+
+*Figure 23: Heavy snow*
+
+### Fog 
+To conceal the terrain resets and limited background geometry, we implemented a fog post processing effect. First the scene is rendered, then distant pixels are faded, creating a foggy effect. <br>
+`Fog::begin` creates a frame buffer that stores the scene's color and depth. Then `fog.frag` reads the pixel's depth, and uses the inverse projection matrix to find its distance from the camera. Then we calculate the fog amount based on the distance from the camera, and blend the scene color together with the fog color. For the fog color, we use the sky's color. Different levels of fog are shown in Figures 24-26.
+
+
+<p align="left">
+  <img src="Figures/no_fog.png" width="48%">
+</p>
+
+*Figure 24: No fog*
+
+<p align="left">
+  <img src="Figures/light_fog.png" width="48%">
+</p>
+
+*Figure 25: Light fog*
+
+<p align="left">
+  <img src="Figures/dense_fog.png" width="48%">
+</p>
+
+*Figure 26: Dense fog*
+
 
 ----
 
@@ -434,45 +477,6 @@ However, this model didn't provide support for looping, which was important for 
 | Light Intensity (Cabin Light) | To set how and how strong it is. |
 | Cable Car Shadow Enabled | Turns the cabin and rope shadows on and off. |
 
-### Snowfall
-In the project, we also have a snowfall particle effect (see Figures 22, 23). The particle effect is created within a box around the cable car. Particles instantiated in random locations around the box with random sizes. A particle is essentially a `vec4`, which contains its position in the x, y and z parameters, and size in the w parameter. They are drawn to on the screen using `GL_POINTS`.<br>
-The particles horizontal displacement is dependent on wind speed and vertical displacement on the fall speed. When a particle goes outside the box, it is reset to the top. The particles are shaded as circles with the outline fading into transparency. `snow.vert` defines the `edgeFade` parameter based on the position of the particle. If the particle is nearing an edge, it starts fading. This makes it so the snowflakes smoothly appear and disappear at the edges. 
-
-
-<p align="left">
-  <img src="Figures/light_snowfall.png" width="48%">
-</p>
-
-*Figure 22: Light snow*
-
-<p align="left">
-  <img src="Figures/heavy_snow.png" width="48%">
-</p>
-
-*Figure 23: Heavy snow*
-
-### Fog 
-To conceal the terrain resets and limited background geometry, we implemented a fog post processing effect. First the scene is rendered, then distant pixels are faded, creating a foggy effect. <br>
-`Fog::begin` creates a frame buffer that stores the scene's color and depth. Then `fog.frag` reads the pixel's depth, and uses the inverse projection matrix to find its distance from the camera. Then we calculate the fog amount based on the distance from the camera, and blend the scene color together with the fog color. For the fog color, we use the sky's color. Different levels of fog are shown in Figures 14-16.
-
-
-<p align="left">
-  <img src="Figures/no_fog.png" width="48%">
-</p>
-
-*Figure 24: No fog*
-
-<p align="left">
-  <img src="Figures/light_fog.png" width="48%">
-</p>
-
-*Figure 25: Light fog*
-
-<p align="left">
-  <img src="Figures/dense_fog.png" width="48%">
-</p>
-
-*Figure 26: Dense fog*
 
 ## References
 [1] https://sketchfab.com/3d-models/cable-car-1621ec805f3b460faf50cd61f7bcb98f
