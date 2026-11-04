@@ -5,7 +5,7 @@
 ## Team Members
 | Name  | Main Contributions |
 |-------|--------------------|
-| Srinitish Ramesh |Material Textures and Lighting, Cable Car Model Adjustments and Import, Cable path for Cable Car, Mountain Import and Normal Mapping (Initial Version)   |
+| Srinitish Ramesh |Material Textures and Lighting, Minimap (Top-Down View), Cable Car Model Adjustments and Import, Cable path for Cable Car, Mountain Import and Normal Mapping (Initial Version)   |
 | Shreya Balaji | Multiple View Points (Orbit view, Top View, Follow View), PBR Shading, Environment Mapping, Day and Night (Light and Sky Settings), Cabin Lights, Cable Car and Rope Shadow   |
 | [Name]|[contributions]     |
 
@@ -40,7 +40,7 @@ The project uses multiple camera modes to follow the path of the cable car and a
 #### Material Textures and Lighting
 Material Textures and Lighting models are implemented in this demo to showcase how the body of Cable Car interacts with light. The diffuse coefficient **(kd)** and specular coefficient **(ks)** are used to showcase the base color and highlights of the model. **Shininess** is also integrated to determine the level of sharpness of these highlights.
 
-To provide shading based on the angle in which light hits the surface, **Lambertian Diffuse Reflection** is used. To produce more realistic reflective surface **Blinn-Phong Specular reflection** is added. Finally, **Ambient Lighting** provides general illumination, ensuring that the surface is visible in areas that lack direct lighting. To test this, toggle **Enable Ambient Lighting** on and off to observe general illumination. Adjust the **Shininess** slider to see how specular highlights changes.
+To provide shading based on the angle in which light hits the surface, **Lambertian Diffuse Reflection** is used. To produce more realistic reflective surface **Blinn-Phong Specular reflection** is added. Finally, **Ambient Lighting** provides general illumination, ensuring that the surface is visible in areas that lack direct lighting.
 
 *Note:* These material, texture, and conventional lighting features are implemented to fulfill the assignment's minimal requirements. However, the team has decided to use **Physically Based Rendering (PBR)** with metallic and roughness, to visually enhance the cable car model.
 
@@ -53,11 +53,21 @@ To provide shading based on the angle in which light hits the surface, **Lambert
 #### 
 ### Extra Features
 #### Minimap
-![Cable car model with Material Textures and Lighting](./Figures/Minimap.png)
+A minimap is implemented to provide overview of the surrounding environment. It helps the user keep track of the cable car's position as it moves through the snow mountains. This is rendered separately from the main scene using OpenGL Framebuffer. 
+
+It uses a **top-down camera (orthographic) position**, which is placed directly above the cable car. The minimap dynamically adjusts the position based on the cable car's current world position. This allows to keep the car centered in the minimap. 
+
+This approach was selected as it allows the minimap to operate independently of the terrain and car. It provides the user with a continuous overview of the cable car's surroundings without changing the perspective of the main camera.
+
+![Minimap](./Figures/Minimap.png) <br>
+*Figure 6 Minimap* 
 ### ImGui Controls
 | Input / UI element | Action |
 |--------------------|--------|
 | [key or slider] | [what it does] |
+| Enable Ambient Lighting | This key adds general illumination to the scene.|
+| Shininess Slider | Controls the sharpness of specular highlights. |
+| Show Minimap | Enables or Disables the Minimap window in the UI. |
 
 ### Environment and 3D Model Setup
 
@@ -88,14 +98,19 @@ However, this model didn't provide support for looping, which was important for 
 *Figure 8 : Initial Mountain Model Used* 
 
 
-
 ## References
 [1] https://sketchfab.com/3d-models/cable-car-1621ec805f3b460faf50cd61f7bcb98f
 
 [2] https://sketchfab.com/3d-models/mountain-range-01-6dff907d427f4c9f8d301075f8019c82
+
 [3] https://stackoverflow.com/questions/4770735/shader-sun-position-glsl - idea taken for moving sun
-[4] https://community.khronos.org/t/day-night-cycle-light/57752- inspiration taken for sunlight affecting sky color
-[5] https://github.com/ocornut/imgui/issues/4213- discussions referred for imgui controls
-[6] https://learnopengl.com/PBR/Theory- formula for pbr shaders (also in lecture slides)
-[7] https://learnopengl.com/Advanced-OpenGL/Cubemaps- to understand cubemaps for environment mapping
-[8] https://medium.com/@arda.yildirim158/environment-mapping-ceng469-hw2-eaeb3745f137- for environment mapping, used a discussion from this
+
+[4] https://community.khronos.org/t/day-night-cycle-light/57752 - inspiration taken for sunlight affecting sky color
+
+[5] https://github.com/ocornut/imgui/issues/4213 - discussions referred for imgui controls
+
+[6] https://learnopengl.com/PBR/Theory - formula for pbr shaders (also in lecture slides)
+
+[7] https://learnopengl.com/Advanced-OpenGL/Cubemaps - to understand cubemaps for environment mapping
+
+[8] https://medium.com/@arda.yildirim158/environment-mapping-ceng469-hw2-eaeb3745f137 - for environment mapping, used a discussion from this
