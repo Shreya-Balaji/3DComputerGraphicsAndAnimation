@@ -11,7 +11,7 @@ The project applies the concepts taught in the lectures of 3D Computer Graphics 
 | Name  | Main Contributions |
 |-------|--------------------|
 | Srinitish Ramesh |Material Textures and Lighting, Cable Car Model Adjustments and Import, Cable path for Cable Car, Mountain Import and Normal Mapping (Initial Version)   |
-| Shreya Balaji | Multiple View Points (Orbit view, Top View, Follow View), PBR Shading, Environment Mapping, Day and Night (Light and Sky Settings), Cabin Lights, Cable Car and Rope Shadow   |
+| Shreya Balaji | Multiple View Points (Orbit view, Top View, Follow View), PBR Shading, Environment Mapping (applied to whole cabin initially, optimized by Henrik later), Day and Night (Light and Sky Settings), Cabin Lights, Cable Car and Rope Shadow   |
 | [Name]|[contributions]     |
 
 ## Introduction
@@ -25,20 +25,34 @@ The sections below describe the implemented features. The minimal features are d
 
 #### Multiple View Points (Orbit View, Follow View, Top View)
 The project uses multiple camera modes to follow the path of the cable car and also view the snowy terrain around it. 
-* Orbit View: This view (as depicted in Figure 1) is used to orbit around the cable car. This is controlled by yaw, pitch and distance which can control angle around the vertical axis, angle above the horizontal axis and radius of the orbit. Pitch is limited to -85 degrees to +85 degrees to ensure the view doesn't look down exactly and flip. The minimum distance is also kept at 2 units to ensure that we don't really go into the cable car.
 
-![[Orbit View]](Figures/orbit_view.png)
+##### Orbit View
+This view (as depicted in Figure 1) is used to orbit around the cable car. This is controlled by yaw, pitch and distance which can control angle around the vertical axis, angle above the horizontal axis and radius of the orbit. Pitch is limited to -85 degrees to +85 degrees to ensure the view doesn't look down exactly and flip. The minimum distance is also kept at 2 units to ensure that we don't really go into the cable car.
+
+<p align="left">
+  <img src="Figures/orbit_view.png" width="48%">
+</p>
+
 *Figure 1: Orbit View*
 
-* Top View: The camera hangs about 12 units above the targeted cable car and looks straight down, which gives a top view. Figure 2 shows an over view of this. Also, GLM's lookAt computes the camera's right axis as the cross product of the looking direction and the up vector (0,1,0). If the camera looks exactly down, these two are parallel making the cross product zero; hence a small offset of 0.01 is added along z, which makes them slightly non-parallel without changing the view entirely.
+##### Top View
+The camera hangs about 12 units above the targeted cable car and looks straight down, which gives a top view. Figure 2 shows an over view of this. Also, GLM's lookAt computes the camera's right axis as the cross product of the looking direction and the up vector (0,1,0). If the camera looks exactly down, these two are parallel making the cross product zero; hence a small offset of 0.01 is added along z, which makes them slightly non-parallel without changing the view entirely.
 
-![[Top View]](Figures/top_view.png)
+<p align="left">
+  <img src="Figures/top_view.png" width="48%">
+</p>
+
 *Figure 2: Top View*
 
-* Follow View: The camera basically follows the cable car along the rope; it keeps a fixed offset which is 2.5 units up and 8 units away along the z axis. This is depicted in Figure 3 below.
+##### Follow View
+The camera basically follows the cable car along the rope; it keeps a fixed offset which is 2.5 units up and 8 units away along the z axis. This is depicted in Figure 3 below.
 
-![[Follow View]](Figures/follow_view.png)
+<p align="left">
+  <img src="Figures/follow_view.png" width="48%">
+</p>
 *Figure 3: Follow View*
+
+----
 
 #### PBR Shading
 When the PBR Shading is enabled, the body of cable car uses Cook-Torrance microfacet model instead of the Blinn-Phong shader. This is used to compute how much light is reflected off the surface. Two sliders are provided to control metallic and roughness. A dull highlight is given for high roughness; metallic value basically increases the ability's surface to display properties of a metal.
@@ -79,6 +93,8 @@ In Figure 5, the metallic and roughness values are slided from low to high. At t
 
 The two sliders change the look of the cable car in the way the model predicts: metallic controls how much matte colour remains, and roughness controls how wide and strong the highlight is. In these views the highlight is probably not very easy to see, because the cabin does not directly face the sun. Ensure to have fog disabled as well while running the application.
 
+----
+
 #### Material Textures and Lighting
 Material Textures and Lighting models are implemented in this demo to showcase how the body of Cable Car interacts with light. The diffuse coefficient **(kd)** and specular coefficient **(ks)** are used to showcase the base color and highlights of the model. **Shininess** is also integrated to determine the level of sharpness of these highlights.
 
@@ -86,11 +102,26 @@ To provide shading based on the angle in which light hits the surface, **Lambert
 
 *Note:* These material, texture, and conventional lighting features are implemented to fulfill the assignment's minimal requirements. However, the team has decided to use **Physically Based Rendering (PBR)** with metallic and roughness, to visually enhance the cable car model.
 
-![Cable car model without Material Textures and Lighting](./Figures/WithoutMaterialTex.png) <br>
-*Figure 4: Conventional Lighting Settings Not Enabled* 
+<p align="left">
+  <img src="Figures/WithoutMaterialTex.png" width="48%">
+  <img src="Figures/WithMaterialTex.png" width="48%">
+</p>
+*Figure 6: Conventional Lighting Settings Not Enabled (left) and Conventional Lighting Settings Enabled (right)*
 
-![Cable car model with Material Textures and Lighting](./Figures/WithMaterialTex.png) <br>
-*Figure 5: Conventional Lighting Settings Enabled*
+### Environment Mapping
+Environment mapping lets the cabin windows reflect their surroundings, a snowy terrain in our case. 
+The basic idea is that the cabin takes a picture of sorts in all direction and each window shows a part of that picture that a surface like mirror would reflect towards the viewing direction.
+
+For our implementation, the sky and terrain is rendered six time in all directions into a cube map. A blurrier mip is also built from it for less shiny surfaces. To keep it almost real-time, it is captured for about 20 times per second. The view direction is mirrored and then used to look up the cube map, which gives the colour of the reflected sky and terrain. Figure 6 depicts the environment mapping enabled and disabled scenarios in our application.
+
+<p align="left">
+  <img src="Figures/EnvMapOff.png" width="48%">
+  <img src="Figures/EnvMapOn.png" width="48%">
+</p>
+
+*Figure 7: Environment Mapping Disabled (left) and Environment Mapping Enabled (right)*
+
+**Note:** The initial version of the environment mapping was applied to the whole cabin. The initial version of the environment mapping was applied to the whole cabin. Henrik later restricted it to the windows, reduced the capture rate, and added a lighter terrain draw for the capture.
 
 #### 
 ### Extra Features
@@ -105,20 +136,22 @@ To provide shading based on the angle in which light hits the surface, **Lambert
 #### Cable Car:
 The Cable Car model [[1](https://sketchfab.com/3d-models/cable-car-1621ec805f3b460faf50cd61f7bcb98f)] is a downloadable 3D model imported into the OpenGL project. It is integrated into the environment as the main object of the scene. It provides a cabin with supporting columns and pulley system for the cable. The model is slightly modified to fit the context. Blender was used to adjust the support column and pulley system, so that horizontal cable can be fit with the model. 
 
-![Original Cable Car Model](./Figures/InitialPosPulley.png) <br>
-*Figure 6: Original Cable Car Model* 
+<p align="left">
+  <img src="Figures/InitialPosPulley.png" width="48%">
+  <img src="Figures/AdjustedPulley.png" width="48%">
+</p>
 
-![Modified Pulley system for Cable Car](./Figures/AdjustedPulley.png) <br>
-*Figure 7: Adjusted Model*
+*Figure 8: Original Cable Car Model (left) and Adjusted Model (right) *
 
 #### Mountain
 **Current Mountain model**
 
 The **Initial Mountain model** [[2](https://sketchfab.com/3d-models/mountain-range-01-6dff907d427f4c9f8d301075f8019c82)] was also a downloadable 3d model. This model was selected for its detailed geometry and realistic appearance, as well as its support for normal mapping. However, this model didn't provide support for looping, which was important for creating an extended mountain landscape.
 
-![Initial Mountian](./Figures/InitialMountain.png)
-
-*Figure 8 : Initial Mountain Model Used* 
+<p align="left">
+  <img src="Figures/InitialMountain.png" width="48%">
+</p>
+*Figure 9: Initial Mountain Model Used* 
 
 
 ## References
