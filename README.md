@@ -1,73 +1,42 @@
 # Cable Car Through the Alps
 
+This is a A C++/OpenGL 4.1 project and the application features an endlessly scrolling cable car ride through a snowy mountain landscape, with a live control panel (ImGui).
+
 ## Installation and Setup
 
-The following instructions configure and build the project on macOS (first-time setup).
+### 1. Prerequisites
 
-### 1. Install Prerequisites
+- [Assimp](https://github.com/assimp/assimp), which is the only external dependency (GLFW, glad, glm, ImGui and the other libraries are bundled in `framework/third_party`)
 
-Install Homebrew dependencies:
+On macOS, install Assimp with Homebrew:
 
 ```bash
-brew install glfw glm assimp ninja
+brew install assimp
 ```
 
-Install vcpkg if it is not already installed:
+### 2. Configure the Project
+
+From the project root:
 
 ```bash
-git clone https://github.com/microsoft/vcpkg.git "$HOME/vcpkg"
-"$HOME/vcpkg/bootstrap-vcpkg.sh"
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 ```
 
-If vcpkg is already installed, skip the cloning and bootstrap commands.
-
-### 2. Install Project Dependencies
-
-From the project root, run:
+### 3. Build the Project
 
 ```bash
-"$HOME/vcpkg/vcpkg" install
-```
-
-This installs the dependencies specified in the project's vcpkg configuration.
-
-### 3. Set Up Dear ImGui
-
-Clone Dear ImGui into the `external/imgui` directory:
-
-```bash
-mkdir -p external
-git clone https://github.com/ocornut/imgui.git external/imgui
-```
-
-Skip this step if Dear ImGui has already been cloned into that directory.
-
-### 4. Configure the Project
-
-Configure the project using CMake and vcpkg. The build files will be generated in the `build` directory.
-
-```bash
-cmake -S . -B build \
-  -DCMAKE_TOOLCHAIN_FILE="$HOME/vcpkg/scripts/buildsystems/vcpkg.cmake" \
-  -DVCPKG_INSTALLED_DIR="$PWD/vcpkg_installed" \
-  -Dglad_DIR="$PWD/vcpkg_installed/arm64-osx/share/glad" \
-  -DCMAKE_BUILD_TYPE=Debug
-```
-
-### 5. Build the Project
-
-Compile the source code and generate the executable:
-
-```bash
-cmake --build build
+cmake --build build --parallel
 ```
 
 ## Running the Project
-
-After successfully building the project, run:
 
 ```bash
 ./build/CableCarAlps
 ```
 
-This launches the Cable Car Simulation application.
+This starts the Cable Car application. Run it from the project root, so the `shaders/` and `assets/` folders are found.
+
+## Common Issues
+
+- **CMake cannot find Assimp:** add `-DCMAKE_PREFIX_PATH="$(brew --prefix)"` to the configure command.
+- **Shaders or models are not found:** run the program from the project root.
