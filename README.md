@@ -2,7 +2,7 @@
 
 ## Installation and Setup
 
-The following instructions configure and build the project on macOS.
+The following instructions configure and build the project on macOS (first-time setup).
 
 ### 1. Install Prerequisites
 
