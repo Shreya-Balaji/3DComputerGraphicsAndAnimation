@@ -21,21 +21,36 @@ struct Config {
     bool drawBezierCurve = false;
     bool showMinimap = true;
     float doorSlideFactor = 0.0f;
-    float wheelSpeed = 10.0f; // Degrees per second.
-    float cableCarT = 0.35f;
-
+    bool doorWindowsOpen = false;
+    float wheelSpeed = -20.0f; // Degrees per second.
+    bool useEnvMap = true;
+    float windowOpacity = 0.85f;
+    bool usePBR = true;
+    float pbrMetallic = 0.25f;
+    float pbrRoughness = 0.25f;
     float timeOfDay = 0.25f; // 0.0 = sunrise, 0.25 = midday, 0.5 = sunset, 0.75 = midnight etc.
+    bool ambientLightingEnabled = true;
+    float shininess = 32.0f;
 
     glm::vec3 nightColor{0.0f, 0.0f, 0.03f};
     glm::vec3 duskColor{0.9f, 0.5f, 0.3f};
     glm::vec3 dayColor{0.25f, 0.45f, 0.65f};
+
+    bool cabinLightEnabled = true;
+    glm::vec3 cabinLightColor{1.0f, 0.75f, 0.4f};
+    float cabinLightRadius = 10.0f;
+    float cabinLightIntensity = 10.0f;
 
     bool snowEnabled = true;
     float snowFallSpeed = 1.5f;
     float snowWind = 0.2f;
     float snowSize = 4.0f; // Pixel size at a distance of 12 world units.
 
+    bool fogEnabled = true;
+    float fogStart = 15.0f;
+    float fogEnd = 45.0f; // World-space distance at which objects are fully obscured.
     bool terrainEnabled = true;
     bool terrainTwoScaleSampling = true;
-    float terrainSpeed = 3.0f; // World units per second; negative reverses travel.
+    float terrainSpeed = 1.0f; // World units per second, negative reverses travel
+    bool shadowsEnabled = true;
 };

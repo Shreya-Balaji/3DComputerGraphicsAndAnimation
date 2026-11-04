@@ -357,6 +357,8 @@ void Window::mouseMoveCallback(GLFWwindow* window, double xpos, double ypos)
 
 void Window::scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 {
+    ImGui_ImplGlfw_ScrollCallback(window, xoffset, yoffset);
+
     // Ignore callbacks when the user is interacting with imgui.
     if (ImGui::GetIO().WantCaptureMouse)
         return;

@@ -6,6 +6,7 @@ DISABLE_WARNINGS_PUSH()
 #include <GLFW/glfw3.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <glm/glm.hpp>
 DISABLE_WARNINGS_POP()
 
 FreeCamera::FreeCamera(Window* pWindow, const Config& config, const glm::vec3& pos, const glm::vec3& forward)
@@ -44,7 +45,7 @@ void FreeCamera::rotateY(float angle)
 
 void FreeCamera::updateInput(bool guiCapturesInput)
 {
-    constexpr float moveSpeed = 0.05f;
+    constexpr float moveSpeed = 0.5f;
     constexpr float lookSpeed = 0.0035f;
 
     const bool enabled = m_config.freeCameraEnabled && !guiCapturesInput;

@@ -6,7 +6,6 @@
 
 class SnowParticleEffect {
 public:
-    // The position must outlive SnowParticleEffect; changes to it move the snow volume.
     SnowParticleEffect(const Config& config, const glm::vec3& position);
     ~SnowParticleEffect();
     SnowParticleEffect(const SnowParticleEffect&) = delete;
@@ -20,7 +19,7 @@ private:
     const Config& m_config;
     const glm::vec3& m_position;
     Shader m_shader;
-    static constexpr GLsizei PARTICLE_COUNT = 20000;
+    static constexpr GLsizei PARTICLE_COUNT = 2000;
     glm::dvec2 m_displacement{ 0.0 };
     GLuint m_vao = 0;
     GLuint m_vbo = 0;

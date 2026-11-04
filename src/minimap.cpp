@@ -27,8 +27,14 @@ bool Minimap::initialize(int width, int height)
     m_height = height;
 
     ShaderBuilder builder;
-    builder.addStage(GL_VERTEX_SHADER, "shaders/minimap.vert");
-    builder.addStage(GL_FRAGMENT_SHADER, "shaders/minimap.frag");
+    builder.addStage(
+        GL_VERTEX_SHADER,
+        std::string(PROJECT_ROOT) + "/shaders/minimap.vert"
+    );
+    builder.addStage(
+        GL_FRAGMENT_SHADER,
+        std::string(PROJECT_ROOT) + "/shaders/minimap.frag"
+    );
     m_overlayShader = builder.build();
 
     const float vertices[] = {
@@ -178,7 +184,7 @@ glm::mat4 Minimap::viewMatrix() const
     return glm::lookAt(
         glm::vec3(-3.0f, 70.0f, -5.0f),
         glm::vec3(-3.0f, 0.0f, -5.0f),
-        glm::vec3(0.0f, 0.0f, -1.0f)
+        glm::vec3(0.0f, 0.0f, 1.0f)
     );
 }
 
@@ -188,7 +194,7 @@ glm::mat4 Minimap::projectionMatrix() const
     return glm::ortho(
         -6.0f, 6.0f,
         -6.0f, 6.0f,
-        0.1f, 150.0f
+        0.1f, 500.0f
     );
 }
 void Minimap::drawOverlay(int windowWidth, int windowHeight)
