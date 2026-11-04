@@ -4,6 +4,7 @@
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
+#include <span>
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -12,7 +13,9 @@ class Model {
     public:
         Model(const std::string& path, bool autoScale = true);
         void load(const std::string& path);
-        void draw(const Shader& shader) const;
+        // An empty selection draws the complete model.
+        void draw(const Shader& shader, std::span<const unsigned int> meshIndices = {}) const;
+        const aiScene* getScene() const { return m_scene; }
         void setWorldTransform(const glm::vec3& position,float scale, const glm::vec3& rotationDegrees = glm::vec3(0.0f));
         const aiNode* getNode(const std::string name) const;
         bool setNodeWorldOffset(
@@ -33,7 +36,8 @@ class Model {
         void drawNode(
             const aiNode* node,
             const glm::mat4& parentTransform,
-            const Shader& shader
+            const Shader& shader,
+            std::span<const unsigned int> meshIndices
         ) const;
 
 

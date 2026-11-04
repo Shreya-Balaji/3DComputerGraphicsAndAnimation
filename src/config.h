@@ -24,6 +24,7 @@ struct Config {
     bool doorWindowsOpen = false;
     float wheelSpeed = -20.0f; // Degrees per second.
     bool useEnvMap = true;
+    float windowOpacity = 0.85f;
     bool usePBR = true;
     float pbrMetallic = 0.25f;
     float pbrRoughness = 0.25f;
@@ -43,8 +44,11 @@ struct Config {
     float snowWind = 0.2f;
     float snowSize = 4.0f; // Pixel size at a distance of 12 world units.
 
+    bool fogEnabled = true;
+    float fogStart = 15.0f;
+    float fogEnd = 45.0f; // World-space distance at which objects are fully obscured.
     bool terrainEnabled = true;
     bool terrainTwoScaleSampling = true;
-    float terrainSpeed = 3.0f; // World units per second; negative reverses travel.
+    float terrainSpeed = 1.0f; // World units per second, negative reverses travel
     bool shadowsEnabled = true;
 };

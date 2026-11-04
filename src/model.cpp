@@ -7,6 +7,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <filesystem>
+#include <algorithm>
 
 void Model::calculateBounds(
     const aiNode* node,
@@ -202,7 +203,8 @@ bool Model::setNodeRotation(const std::string& name, float angle, const glm::vec
 void Model::drawNode(
     const aiNode* node,
     const glm::mat4& parentTransform,
-    const Shader& shader) const
+    const Shader& shader,
+    std::span<const unsigned int> meshIndices) const
 {
     glm::mat4 transform =
         parentTransform * toGLM(node->mTransformation);
@@ -224,14 +226,17 @@ void Model::drawNode(
     );
 
     for (unsigned int i = 0; i < node->mNumMeshes; ++i) {
-        m_meshes[node->mMeshes[i]].draw(shader);
+        const unsigned int meshIndex = node->mMeshes[i];
+        if (meshIndices.empty() || std::find(meshIndices.begin(), meshIndices.end(), meshIndex) != meshIndices.end())
+            m_meshes[meshIndex].draw(shader);
     }
 
     for (unsigned int i = 0; i < node->mNumChildren; ++i) {
         drawNode(
             node->mChildren[i],
             transform,
-            shader
+            shader,
+            meshIndices
         );
     }
 }
@@ -246,7 +251,7 @@ void Model::setWorldTransform(
     m_worldRotation = rotationDegrees;
 }
 
-void Model::draw(const Shader& shader) const
+void Model::draw(const Shader& shader, std::span<const unsigned int> meshIndices) const
 {
     shader.bind();
 
@@ -274,7 +279,7 @@ void Model::draw(const Shader& shader) const
             glm::vec3(m_modelScale * m_worldScale)) *
         glm::translate(glm::mat4(1.0f), -m_modelCenter);
 
-    drawNode(m_scene->mRootNode, fitTransform, shader);
+    drawNode(m_scene->mRootNode, fitTransform, shader, meshIndices);
 }
 
 const aiNode* Model::getNode(const std::string name) const {

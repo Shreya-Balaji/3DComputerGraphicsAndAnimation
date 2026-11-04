@@ -14,6 +14,7 @@ const glm::vec3 UPS[6] = {
 
 EnvironmentMap::EnvironmentMap()
 {
+    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     glGenTextures(1, &m_cubemap);
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_cubemap);
     for (int face = 0; face < 6; ++face) {

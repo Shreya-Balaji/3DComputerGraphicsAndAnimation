@@ -6,7 +6,7 @@
 #include <string>
 
 namespace {
-constexpr glm::vec3 EXTENT(50.0f, 50.0f, 50.0f);
+constexpr glm::vec3 EXTENT(25.0f, 25.0f, 25.0f);
 }
 
 SnowParticleEffect::SnowParticleEffect(const Config& config, const glm::vec3& position)

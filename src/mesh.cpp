@@ -220,43 +220,45 @@ void GPUMesh::draw(const Shader& drawingShader) const
 {
     drawingShader.bindUniformBlock("Material", 0, m_uboMaterial);
 
+    // Texture uniforms are optional for shaders such as the window shader.
+    GLint program;
+    glGetIntegerv(GL_CURRENT_PROGRAM, &program);
+
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_texture);
+    glBindTexture(GL_TEXTURE_2D, m_texture != INVALID ? m_texture : 0);
 
     const GLint textureLocation =
-        drawingShader.getUniformLocation("kdTexture");
+        glGetUniformLocation(program, "kdTexture");
     if (textureLocation >= 0) {
         glUniform1i(textureLocation, 0);
     }
 
     const GLint hasTextureLocation =
-        drawingShader.getUniformLocation("hasKdTexture");
+        glGetUniformLocation(program, "hasKdTexture");
     if (hasTextureLocation >= 0) {
         glUniform1i(
             hasTextureLocation,
             m_texture != INVALID ? 1 : 0);
     }
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, m_normalTexture);
+    glBindTexture(GL_TEXTURE_2D, m_normalTexture != INVALID ? m_normalTexture : 0);
 
     const GLint normalTextureLocation =
-        drawingShader.getUniformLocation("normalTexture");
+        glGetUniformLocation(program, "normalTexture");
 
     if (normalTextureLocation >= 0) {
         glUniform1i(normalTextureLocation, 1);
     }
 
     const GLint hasNormalTextureLocation =
-        drawingShader.getUniformLocation("hasNormalTexture");
+        glGetUniformLocation(program, "hasNormalTexture");
 
     if (hasNormalTextureLocation >= 0) {
         glUniform1i(
             hasNormalTextureLocation,
             m_normalTexture != INVALID ? 1 : 0);
     }
-    glBindVertexArray(m_vao);
-    glDrawElements(GL_TRIANGLES, m_numIndices,
-        GL_UNSIGNED_INT, nullptr);
+    drawGeometry();
 
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -265,6 +267,12 @@ void GPUMesh::draw(const Shader& drawingShader) const
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+
+void GPUMesh::drawGeometry() const
+{
+    glBindVertexArray(m_vao);
+    glDrawElements(GL_TRIANGLES, m_numIndices, GL_UNSIGNED_INT, nullptr);
+}
 
 void GPUMesh::moveInto(GPUMesh&& other)
 {

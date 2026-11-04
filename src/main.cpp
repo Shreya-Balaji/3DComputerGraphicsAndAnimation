@@ -6,6 +6,8 @@
 #include "menu.h"
 #include "config.h"
 #include "snow_particle_effect.h"
+#include "fog.h"
+
 #include "terrain.h"
 #include "light.h"
 #include "sky.h"
@@ -52,10 +54,14 @@ int main()
 
         CameraIcon cameraIcon;
         SnowParticleEffect snow(config, attachedCameraPosition);
+        Fog fog(config);
 
         Minimap minimap;
         Skybox skybox;
         EnvironmentMap environmentMap;
+        constexpr double environmentCaptureInterval = 1.0 / 20.0;
+        double nextEnvironmentCaptureTime = 0.0;
+
         ShadowMap shadowMap;
         if (!minimap.initialize(512, 512))
         {
@@ -85,8 +91,7 @@ int main()
                 light.cabinLightAmount = 0.0f;
             }
             terrain.update(io.DeltaTime);
-            cableCarPosition = cableCar.position();
-            cableCar.update(io.DeltaTime, terrain.scrollOffset());
+            cableCar.update(io.DeltaTime);
             cableCarPosition = cableCar.position();
             snow.update(io.DeltaTime);
             cameraRig.updateInput(io.WantCaptureMouse || io.WantCaptureKeyboard, io.DeltaTime);
@@ -95,9 +100,14 @@ int main()
             const glm::mat4 view = cameraRig.viewMatrix();
             const glm::vec3 cameraPosition = cameraRig.position();
 
+            if (size.x <= 0 || size.y <= 0) {
+                window.swapBuffers();
+                continue;
+            }
+
             glm::mat4 projection = glm::perspective(
                 glm::radians(45.0f),
-                1280.0f / 720.0f,
+                static_cast<float>(size.x) / size.y,
                 0.1f,
                 1000.0f
             );
@@ -109,17 +119,39 @@ int main()
             cableCar.drawDepth(light.lightCamera);
             shadowMap.end();
             shadowMap.bind(3);
-            const glm::vec3 capturePos = cableCar.position() + glm::vec3(0.0f, 1.0f, 0.0f);
-            environmentMap.capture(capturePos,[&](const glm::mat4& v, const glm::mat4& p, const glm::vec3& pos) {
-                skybox.draw(v, p, pos, light, skyColor);
-                terrain.draw(p * v, pos, light);
-            });
+            const double now = glfwGetTime();
+            if (config.useEnvMap && now >= nextEnvironmentCaptureTime) {
+                const glm::vec3 capturePos = cableCar.position() + glm::vec3(0.0f, 1.0f, 0.0f);
+                environmentMap.capture(capturePos,[&](const glm::mat4& v, const glm::mat4& p, const glm::vec3& pos) {
+                    skybox.draw(v, p, pos, light, skyColor);
+                    terrain.drawReflection(p * v, light);
+                });
+                nextEnvironmentCaptureTime = now + environmentCaptureInterval;
+            } else if (!config.useEnvMap) {
+                nextEnvironmentCaptureTime = 0.0;
+            }
             environmentMap.bind(2);
-            skybox.draw(view, projection, cameraPosition, light, skyColor);
-            
-            cableCar.draw(viewProjection, cameraPosition, light, config.usePBR, false);
 
+            fog.begin(size.x, size.y);
+            glClearColor(skyColor.r, skyColor.g, skyColor.b, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            skybox.draw(view, projection, cameraPosition, light, skyColor);
+
+            cableCar.draw(viewProjection, cameraPosition, light);
+
+            // environment.draw(view, projection);
             terrain.draw(viewProjection, cameraPosition, light);
+
+            if (config.drawBezierCurve)
+                attachedCamera.curve().draw(viewProjection * glm::translate(glm::mat4(1.0f), cableCar.position()));
+
+            if (config.freeCameraEnabled)
+                cameraIcon.draw(viewProjection, attachedCamera.viewMatrix());
+
+            cableCar.drawWindows(viewProjection, cameraPosition, light);
+            fog.draw(projection, skyColor);
+            snow.draw(viewProjection);
 
             if (config.showMinimap)
             {
@@ -151,24 +183,15 @@ int main()
 
                 glDisable(GL_DEPTH_TEST);
 
-                cableCar.draw(minimapViewProjection, minimapCameraPosition, light, config.usePBR, true);
+                cableCar.drawMinimap(minimapViewProjection, minimapCameraPosition, light);
+                cableCar.drawWindows(minimapViewProjection, minimapCameraPosition, light);
 
                 glEnable(GL_DEPTH_TEST);
 
                 minimap.unbind();
                 glViewport(0, 0, size.x, size.y);
-            }
-
-            if (config.drawBezierCurve)
-                attachedCamera.curve().draw(viewProjection * glm::translate(glm::mat4(1.0f), cableCar.position()));
-
-            if (config.freeCameraEnabled)
-                cameraIcon.draw(viewProjection, attachedCamera.viewMatrix());
-
-            snow.draw(viewProjection);
-
-            if (config.showMinimap)
                 minimap.drawOverlay(size.x, size.y);
+            }
 
             window.swapBuffers();
         }

@@ -6,8 +6,8 @@
 
 class EnvironmentMap {
 public:
-    static constexpr int SIZE = 256;
-    static constexpr float MAX_LOD = 8.0f;
+    static constexpr int SIZE = 128;
+    static constexpr float MAX_LOD = 7.0f;
     using DrawScene = std::function<void(const glm::mat4&, const glm::mat4&, const glm::vec3&)>;
 
     EnvironmentMap();

@@ -19,9 +19,6 @@ uniform vec3 sunColor;
 uniform vec3 moonDir;
 uniform vec3 moonColor;
 uniform vec3 ambientColor;
-uniform samplerCube envMap; 
-uniform float envMaxLod = 8.0;
-uniform bool useEnvMap = false;
 uniform sampler2D kdTexture;
 uniform bool hasKdTexture;
 uniform vec3 cabinLightPos;
@@ -140,14 +137,6 @@ void main()
 
     vec3 specular = ks * spec * sunColor * shadow;
     vec3 color = ambient + diffuse + specular + moonDiffuse;
-    if(useEnvMap){
-      vec3 R = reflect(-V, N);
-      float roughness = sqrt(2.0 / (shininess + 2.0));
-      float lod = roughness * envMaxLod;
-      vec3 env = textureLod(envMap, R, lod).rgb; 
-      color += ks * env; 
-    }
-    bool  isGlass = shininess > 300.0;
     vec3 toLamp = cabinLightPos - FragPos;
     float d = length(toLamp);
     vec3 Lc = toLamp / d;
@@ -155,8 +144,5 @@ void main()
     falloff = pow(falloff,2);
     float lamp = max(dot(N, Lc), 0.0) * falloff * cabinLightAmount * cabinLightIntensity;
     color += lamp * baseColor * cabinLightColor;
-    if (isGlass) {
-        color += cabinLightColor * cabinLightAmount * 0.3;
-    }
     FragColor = vec4(color, transparency);
 }

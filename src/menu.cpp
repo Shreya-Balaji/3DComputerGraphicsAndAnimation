@@ -39,6 +39,7 @@ void Menu::draw()
             ImGui::SliderFloat("Roughness", &m_config.pbrRoughness, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp);
         }
         ImGui::Checkbox("Use Environment Reflections", &m_config.useEnvMap);
+        ImGui::SliderFloat("Window opacity", &m_config.windowOpacity, 0.0f, 1.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
         ImGui::Separator();
         ImGui::Checkbox("Show minimap", &m_config.showMinimap);
         ImGui::SliderFloat("Open doors", &m_config.doorSlideFactor, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp);
@@ -46,8 +47,6 @@ void Menu::draw()
         ImGui::SliderFloat("Wheel speed", &m_config.wheelSpeed, Config::MIN_WHEEL_SPEED, Config::MAX_WHEEL_SPEED, "%.0f deg/s", ImGuiSliderFlags_AlwaysClamp);
         if (m_config.freeCameraEnabled)
             ImGui::Text("WASD: move | Space/Ctrl: up/down | Left-drag: look");
-        ImGui::Text("Cable Car Route");
-        ImGui::SliderFloat("Cable car position", &m_config.cableCarT, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp);
 
         ImGui::Separator();
         ImGui::Text("Snow Settings");
@@ -57,6 +56,10 @@ void Menu::draw()
         ImGui::SliderFloat("Snow size", &m_config.snowSize, 1.0f, 10.0f, "%.1f", ImGuiSliderFlags_AlwaysClamp);
 
         ImGui::Separator();
+        ImGui::Text("Fog Settings");
+        ImGui::Checkbox("Fog enabled", &m_config.fogEnabled);
+        ImGui::SliderFloat("Fog start", &m_config.fogStart, 0.0f, m_config.fogEnd - 0.1f, "%.1f units", ImGuiSliderFlags_AlwaysClamp);
+        ImGui::SliderFloat("Maximum view distance", &m_config.fogEnd, m_config.fogStart + 0.1f, 150.0f, "%.1f units", ImGuiSliderFlags_AlwaysClamp);
         ImGui::Text("Terrain Settings");
         ImGui::Checkbox("Terrain enabled", &m_config.terrainEnabled);
         ImGui::Checkbox("Two-scale sampling", &m_config.terrainTwoScaleSampling);
