@@ -1,6 +1,5 @@
 # Cable Car Through the Alps
 
-
 **Cable Car Through the Alps** is a C++/OpenGL project developed by our team: it features an endlessly scrolling cable car ride through a snowy mountain landscape. The viewer can follow the cable car from several camera viewpoints, change the time of day, and adjust the lighting and materials live from a control panel. The scene is enhanced by an animated cable car (opening doors and turning wheels), a rope, falling snow and fog.
 
 This report gives an overview of the implemented features, along with screenshots. Each team member's contribution is summarised, and described alongside the features they implemented.
@@ -22,17 +21,19 @@ The project applies the concepts taught in the lectures of 3D Computer Graphics 
 | Mountain Import and Normal Mapping | Srinitish Ramesh ([ ]%) |
 | | Henrik Innos ([ ]%) |
 
+*Table 1: List of features and percentage contribution from each team member*
+
 ## Introduction
 
 The demo is a real-time application written in C++ with OpenGL 4.1. It is built with CMake, and also uses ImGui for the control panel (to control all features from the UI) and Assimp to load the cable car model. 
 
-The sections below describe the implemented features. The minimal features are described first, followed by the extra features. Each feature has a short explanation of the idea used to implement it, contributions by the team member, and screenshots. A table of all keys and sliders is given in *ImGui Controls*, so every screenshot can be reproduced exactly.
+The sections below describe the implemented features. The minimal features are described first, followed by the extra features. Each feature has a short explanation of the idea used to implement it and relevant screenshots to present the output. A table of all keys and sliders is given in *ImGui Controls*.
 
 ## Features
 ### Minimal features
 
 #### Multiple View Points (Orbit View, Follow View, Top View)
-The project uses multiple camera modes to follow the path of the cable car and also view the snowy terrain around it. 
+The project uses multiple camera modes to follow the path of the cable car and also to view the snowy terrain around it. 
 
 ##### Orbit View
 This view (as depicted in Figure 1) is used to orbit around the cable car. This is controlled by yaw, pitch and distance which can control angle around the vertical axis, angle above the horizontal axis and radius of the orbit. Pitch is limited to -85 degrees to +85 degrees to ensure the view doesn't look down exactly and flip. The minimum distance is also kept at 2 units to ensure that we don't really go into the cable car.
@@ -63,7 +64,24 @@ The camera basically follows the cable car along the rope; it keeps a fixed offs
 
 ----
 
+#### Material Textures and Lighting
+Material Textures and Lighting models are implemented in this demo to showcase how the body of Cable Car interacts with light. The diffuse coefficient **(kd)** and specular coefficient **(ks)** are used to showcase the base color and highlights of the model. **Shininess** is also integrated to determine the level of sharpness of these highlights.
+
+To provide shading based on the angle in which light hits the surface, **Lambertian Diffuse Reflection** is used. To produce more realistic reflective surface **Blinn-Phong Specular reflection** is added. Finally, **Ambient Lighting** provides general illumination, ensuring that the surface is visible in areas that lack direct lighting. To test this, toggle **Enable Ambient Lighting** on and off to observe general illumination. Adjust the **Shininess** slider to see how specular highlights changes.
+
+*Note:* These material, texture, and conventional lighting features are implemented to fulfill the assignment's minimal requirements. However, the team has decided to use **Physically Based Rendering (PBR)** with metallic and roughness, to visually enhance the cable car model.
+
+<p align="left">
+  <img src="Figures/WithoutMaterialTex.png" width="48%">
+  <img src="Figures/withMaterialTex.png" width="48%">
+</p>
+
+*Figure 4: Conventional Lighting Settings Not Enabled (left) and Conventional Lighting Settings Enabled (right)*
+
+----
+
 #### PBR Shading
+
 When the PBR Shading is enabled, the body of cable car uses Cook-Torrance microfacet model instead of the Blinn-Phong shader. This is used to compute how much light is reflected off the surface. Two sliders are provided to control metallic and roughness. A dull highlight is given for high roughness; metallic value basically increases the ability's surface to display properties of a metal.
 
 For all light sources (sun, moon and a cabin light in our case), a function is defined to compute the reflected light from the parts of the cable car. The computed value is added to the ambient term.
@@ -87,36 +105,20 @@ The Cook-Torrance microfacet model is implemented for this. Some external source
   <img src="Figures/PBROn.png" width="48%">
 </p>
 
-*Figure 4.The cable car with PBR shading off (left, Blinn-Phong) and on (right, metallic 0.25, roughness 0.25)*
+*Figure 5.The cable car with PBR shading off (left, Blinn-Phong) and on (right, metallic 0.25, roughness 0.25)*
 
 <p align="left">
   <img src="Figures/PBRLow.png" width="48%">
   <img src="Figures/PBRHigh.png" width="48%">
 </p>
 
-*Figure 5. The cable car with metallic 0.00 / roughness 0.00 (left) and metallic 0.94 / roughness 0.57 (right)*
+*Figure 6. The cable car with metallic 0.00 / roughness 0.00 (left) and metallic 0.94 / roughness 0.57 (right)*
 
 As it can be observed in Figure 4., with Blinn-Phong (left), the cabin roof and the red tower look bright and saturated. With PBR (right), the same surfaces look duller and darker. 
 
 In Figure 5, the metallic and roughness values are slided from low to high. At the higher metallic value, the red tower loses its bright matte paint colour and looks darker. Since the diffuse term is lower, a metal shows only its reflections. With a metallic value of 0 and a roughness of 0, the surface keeps its full paint colour.
 
 The two sliders change the look of the cable car in the way the model predicts: metallic controls how much matte colour remains, and roughness controls how wide and strong the highlight is. In these views the highlight is probably not very easy to see, because the cabin does not directly face the sun. Ensure to have fog disabled as well while running the application.
-
-----
-
-#### Material Textures and Lighting
-Material Textures and Lighting models are implemented in this demo to showcase how the body of Cable Car interacts with light. The diffuse coefficient **(kd)** and specular coefficient **(ks)** are used to showcase the base color and highlights of the model. **Shininess** is also integrated to determine the level of sharpness of these highlights.
-
-To provide shading based on the angle in which light hits the surface, **Lambertian Diffuse Reflection** is used. To produce more realistic reflective surface **Blinn-Phong Specular reflection** is added. Finally, **Ambient Lighting** provides general illumination, ensuring that the surface is visible in areas that lack direct lighting. To test this, toggle **Enable Ambient Lighting** on and off to observe general illumination. Adjust the **Shininess** slider to see how specular highlights changes.
-
-*Note:* These material, texture, and conventional lighting features are implemented to fulfill the assignment's minimal requirements. However, the team has decided to use **Physically Based Rendering (PBR)** with metallic and roughness, to visually enhance the cable car model.
-
-<p align="left">
-  <img src="Figures/WithoutMaterialTex.png" width="48%">
-  <img src="Figures/withMaterialTex.png" width="48%">
-</p>
-
-*Figure 6: Conventional Lighting Settings Not Enabled (left) and Conventional Lighting Settings Enabled (right)*
 
 ----
 
@@ -269,15 +271,11 @@ It uses a **top-down camera (orthographic) position**, which is placed directly 
 
 This approach was selected as it allows the minimap to operate independently of the terrain and car. It provides the user with a continuous overview of the cable car's surroundings without changing the perspective of the main camera.
 
-![Minimap](./Figures/Minimap.png) <br>
+<p align="left">
+  <img src="Figures/Minimap.png" width="48%">
+</p>
 *Figure 12: Minimap* 
 
-### ImGui Controls
-| Input / UI element | Action |
-|--------------------|--------|
-| Enable Ambient Lighting | This key adds general illumination to the scene.|
-| Shininess Slider | Controls the sharpness of specular highlights. |
-| Show Minimap | Enables or Disables the Minimap window in the UI. |
 
 ### Environment and 3D Model Setup
 
@@ -310,6 +308,50 @@ However, this model didn't provide support for looping, which was important for 
 </p>
 
 *Figure 14: Initial Mountain Model Used* 
+
+----
+
+## ImGui Controls
+| Input | Action |
+|--------------------|--------|
+| Free Camera | Switches to a free camera. WASD moves, Space and Ctrl move up and down, and left-drag looks around.|
+| Camera Mode | Toggles between Orbit View, Top View, Follow View and Bezier View. |
+| Yaw (Orbit view) | Rotates the camera around the cable car, around the vertical axis. |
+| Pitch (Orbit view only) | Raises or lowers the camera's angle above the horizontal plane around the cabin. |
+| Distance (Orbit view only) | Changes the radius of the orbit, i.e. how far the camera is from the cabin. |
+| Loop distance | Controls the position along camera's Bezier path. |
+| Loop speed | Controls the speed along camera's Bezier path. Reverses when the value is negative. |
+| Draw Bezier curve (Bezier view only) | This checkbox decides whether the curve is drawn|
+| Enable Ambient Lighting | Adds general illumination to the scene in the conventional (Blinn-Phong) shading. |
+| Shininess | Controls the sharpness of the specular highlights in the conventional shading. |
+| Use PBR shading | Switches the cabin body between PBR (Cook-Torrance) and conventional conventional (Blinn-Phong) shading. |
+| Metallic (PBR only) | Controls how much the surface behave like a metal. |
+| Roughness (PBR only) | Controls how much roughness spreads and dims the highlight. |
+| Use Environment Reflections | Displays the window reflections of the surroundings when enabled. |
+| Window opacity | Sets how transparent the cabin windows are. |
+| Show minimap | Shows or hides the minimap window. |
+| Open doors | Slides the doors open when enabled. |
+|Open door windows | Slides the door windows open when enabled. |
+| Wheel speed | Rotation speed of the pulley wheels in degrees per second; reverses when negative. |
+| Snow enabled | Checkbox to enable snow fall. |
+| Snow fall speed | Slider to determine the speed of snow fall when enabled. |
+| Snow wind | Slider to determine the direction of snow fall when influenced by wind. |
+| Snow size |Slider to determine how large the snowflakes are. |
+| Fog enabled | Turns fog on and off. |
+| Fog start | Determines the distance from where the fog starts. |
+| Maximum view distance | Distance where objects begin to disappear when fog starts. |
+| Terrain enabled | Turns the terrain on and off. |
+| Two-scale sampling | Blends two texture scales for less visible repetition when enabled. |
+| Terrain speed | Sets how fast the terrain scrolls; reverses when negative. |
+| Time of the Day | Sets the time of day. It also displays a clock time: 0 is 06:00 (sunrise), 0.25 is 12:00 (midday), 0.5 is 18:00 (sunset) and 0.75 is 00:00 (midnight). |
+| Day sky | Colours of the sky during the day. |
+| Dusk | Colours of the sky at dusk. |
+| Night sky | Colours of the sky at night. |
+| Cabin Light Enabled | Turns the cabin light on and off. |
+| Light Color (Cabin Light) | The colour of the lamp can be picked here. |
+| Light Coverage Radius (Cabin Light) | To set how far its light reaches
+| Light Intensity (Cabin Light) | To set how and how strong it is. |
+| Cable Car Shadow Enabled | Turns the cabin and rope shadows on and off. |
 
 
 ## References
