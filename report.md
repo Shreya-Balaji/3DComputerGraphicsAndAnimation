@@ -8,11 +8,19 @@ This report gives an overview of the implemented features, along with screenshot
 The project applies the concepts taught in the lectures of 3D Computer Graphics and Animation. Knowledge from additional external sources is listed in the references.
 
 ## Team Members
-| Name  | Main Contributions |
-|-------|--------------------|
-| Srinitish Ramesh |Material Textures and Lighting, Cable Car Model Adjustments and Import, Cable path for Cable Car, Mountain Import and Normal Mapping (Initial Version)   |
-| Shreya Balaji | Multiple View Points (Orbit view, Top View, Follow View), PBR Shading, Environment Mapping, Day and Night (Light and Sky Settings), Cabin Lights, Cable Car and Rope Shadow   |
-| [Name]|[contributions]     |
+| Feature | Contributors (Percentage Share) |
+|---------|----------------------|
+| Multiple View Points (Orbit, Top, Follow) | Shreya Balaji (100%)|
+| PBR Shading | Shreya Balaji (100%) |
+| Environment Mapping | Shreya Balaji ([60]%), Henrik Innos ([ ]%) |
+| Day and Night (Light and Sky Settings) | Shreya Balaji (100%) |
+| Cabin Lights | Shreya Balaji (100%) |
+| Cable Car and Rope Shadow | Shreya Balaji (100%) |
+| Material Textures and Lighting | Srinitish Ramesh (%) |
+| Cable Car Model Adjustments and Import | Srinitish Ramesh (%) |
+| Cable Path for Cable Car | Srinitish Ramesh (%) |
+| Mountain Import and Normal Mapping | Srinitish Ramesh ([ ]%) |
+| | Henrik Innos ([ ]%) |
 
 ## Introduction
 
