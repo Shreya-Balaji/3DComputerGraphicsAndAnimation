@@ -1,8 +1,0 @@
-References
-
-1. https://stackoverflow.com/questions/4770735/shader-sun-position-glsl - idea taken for moving sun
-2. https://community.khronos.org/t/day-night-cycle-light/57752- inspiration taken for sunlight affecting sky color
-3. https://github.com/ocornut/imgui/issues/4213- discussions referred for imgui controls
-4. https://learnopengl.com/PBR/Theory- formula for pbr shaders (also in lecture slides)
-5. https://learnopengl.com/Advanced-OpenGL/Cubemaps- to understand cubemaps for environment mapping
-6. https://medium.com/@arda.yildirim158/environment-mapping-ceng469-hw2-eaeb3745f137- for environment mapping, used a discussion from this
