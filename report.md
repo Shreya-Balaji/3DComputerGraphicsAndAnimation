@@ -401,9 +401,11 @@ However, this model didn't provide support for looping, which was important for 
 | Enable Ambient Lighting | Adds general illumination to the scene in the conventional (Blinn-Phong) shading. |
 | Shininess | Controls the sharpness of the specular highlights in the conventional shading. |
 | Use PBR shading | Switches the cabin body between PBR (Cook-Torrance) and conventional conventional (Blinn-Phong) shading. |
+| Use normal maps | Switches terrain lighting to use the texture normal map instead of the mesh normals |
 | Metallic (PBR only) | Controls how much the surface behave like a metal. |
 | Roughness (PBR only) | Controls how much roughness spreads and dims the highlight. |
 | Use Environment Reflections | Displays the window reflections of the surroundings when enabled. |
+| Window PCF sampling | Toggle whether to use PCF to blend the window reflection | 
 | Window opacity | Sets how transparent the cabin windows are. |
 | Show minimap | Shows or hides the minimap window. |
 | Open doors | Slides the doors open when enabled. |
@@ -417,7 +419,7 @@ However, this model didn't provide support for looping, which was important for 
 | Fog start | Determines the distance from where the fog starts. |
 | Maximum view distance | Distance where objects begin to disappear when fog starts. |
 | Terrain enabled | Turns the terrain on and off. |
-| Two-scale sampling | Blends two texture scales for less visible repetition when enabled. |
+| Two-scale blending | Blends two texture scales for less visible repetition when enabled. |
 | Terrain speed | Sets how fast the terrain scrolls; reverses when negative. |
 | Time of the Day | Sets the time of day. It also displays a clock time: 0 is 06:00 (sunrise), 0.25 is 12:00 (midday), 0.5 is 18:00 (sunset) and 0.75 is 00:00 (midnight). |
 | Day sky | Colours of the sky during the day. |
