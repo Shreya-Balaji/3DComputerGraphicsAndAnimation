@@ -11,7 +11,7 @@ The project applies the concepts taught in the lectures of 3D Computer Graphics 
 | Name  | Main Contributions |
 |-------|--------------------|
 | Srinitish Ramesh |Material Textures and Lighting, Cable Car Model Adjustments and Import, Cable path for Cable Car, Mountain Import and Normal Mapping (Initial Version)   |
-| Shreya Balaji | Multiple View Points (Orbit view, Top View, Follow View), PBR Shading, Environment Mapping (applied to whole cabin initially, optimized by Henrik later), Day and Night (Light and Sky Settings), Cabin Lights, Cable Car and Rope Shadow   |
+| Shreya Balaji | Multiple View Points (Orbit view, Top View, Follow View), PBR Shading, Environment Mapping, Day and Night (Light and Sky Settings), Cabin Lights, Cable Car and Rope Shadow   |
 | [Name]|[contributions]     |
 
 ## Introduction
@@ -62,7 +62,7 @@ For all light sources (sun, moon and a cabin light in our case), a function is d
 
 The Cook-Torrance microfacet model is implemented for this. Some external sources and lecture content were used to gain better understanding of this can be implemented and these are added in the reference.
 
-* **D (GGX Distribution):** It control how large and how sharp the shiny spot is. With low roughness, the cabin gets a small, bright, highlight and with high roughness, the highlight spreads into a dim and dull, matte surface.
+* **D (GGX Distribution):** It controls how large and how sharp the shiny spot is. With low roughness, the cabin gets a small, bright, highlight and with high roughness, the highlight spreads into a dim and dull, matte surface.
 
 * **G (Smith with Schlick-GGX):** It reduces the highlight where the surface is seen at a shallow angle; basically reduces light when viewed from a grazing angle.
 
@@ -136,6 +136,7 @@ For our implementation, the sky and terrain is rendered six time in all directio
 This feature is implemented to seamlessly change the sky and light sources throughout the day.
 
 ##### Time of Day
+
  This slider controles the time of the day 0 is sunrise, 0.25 midday, 0.5 sunset, 0.75 midnight and back to one to transition back to sunrise. The sun moves around the scene on a circle, tilted a little along z so its path is not a straight line over the cable car. The moon is always on the opposite side of the sky.
 
 <table>
@@ -220,6 +221,7 @@ Figure 10 below shows the effect of cabin light and how the terrain looks when t
 ----
 
 ### Shadows (Cable Car and Rope)
+
 To add more realistic effects, a shadow map is implemented for both cable and the rope. This is, however, only with respect to the sun or moon. The cabin light has no impact on the shadow.
 * **Cable Car shadow:** The cabin is drawn once from the light's point of view into a depth texture (a shadow map, 4096 × 4096). When the terrain is drawn, each point is compared with that depth: if something is closer to the light, the point is in shadow. The sun casts the shadow by day and the moon at night. For the scope of this project, only the cabin casts shadows and only the terrain receives them.
 * **Soft Edges:** A 3 × 3 kernel of nearby samples (PCF) softens the edge, and a small bias avoids shadow acne on lit surfaces.
@@ -251,41 +253,70 @@ Figure 11 shows the shadows disabled, how it looks at noon when the sun is right
 
 ----
 
+#### Minimap
+
+A minimap is implemented to provide overview of the surrounding environment. It helps the user keep track of the cable car's position as it moves through the snow mountains. This is rendered separately from the main scene using OpenGL Framebuffer. 
+
+It uses a **top-down camera (orthographic) position**, which is placed directly above the cable car. The minimap dynamically adjusts the position based on the cable car's current world position. This allows to keep the car centered in the minimap. 
+
+This approach was selected as it allows the minimap to operate independently of the terrain and car. It provides the user with a continuous overview of the cable car's surroundings without changing the perspective of the main camera.
+
+![Minimap](./Figures/Minimap.png) <br>
+*Figure 12: Minimap* 
+
 ### ImGui Controls
 | Input / UI element | Action |
 |--------------------|--------|
-| [key or slider] | [what it does] |
+| Enable Ambient Lighting | This key adds general illumination to the scene.|
+| Shininess Slider | Controls the sharpness of specular highlights. |
+| Show Minimap | Enables or Disables the Minimap window in the UI. |
 
 ### Environment and 3D Model Setup
 
 #### Cable Car:
-The Cable Car model [[1](https://sketchfab.com/3d-models/cable-car-1621ec805f3b460faf50cd61f7bcb98f)] is a downloadable 3D model imported into the OpenGL project. It is integrated into the environment as the main object of the scene. It provides a cabin with supporting columns and pulley system for the cable. The model is slightly modified to fit the context. Blender was used to adjust the support column and pulley system, so that horizontal cable can be fit with the model. 
+The Cable Car model [[1](https://sketchfab.com/3d-models/cable-car-1621ec805f3b460faf50cd61f7bcb98f)] is a downloadable 3D model imported into the OpenGL project. It is integrated into the environment as the main object of the scene. It provides a cabin with supporting columns and pulley system for the cable. The model is slightly modified to fit the environment. 
+
+However, the original model required some modifications to fit the requirements of the project. The support column and the pulley system needed to be adjusted so that the model could support the horizontal cable used in the scene. Blender was used to do these changes, where parts were repositioned and adjusted to achieve more suitable configuration.
 
 <p align="left">
   <img src="Figures/InitialPosPulley.png" width="48%">
   <img src="Figures/AdjustedPulley.png" width="48%">
 </p>
 
-*Figure 12: Original Cable Car Model (left) and Adjusted Model (right)*
+*Figure 13: Original Cable Car Model (left) and Adjusted Model (right)*
+
+#### Cable:
+The cable is procedurally generated alongside with the Mountains using OpenGL rather than a separate imported model. It uses a cylindrical mesh consisting of 128 segments, with each of them having 8 vertices arranged in a ring. These rings are connected using triangles to form a continuous cable with small radius.
+To support the looping terrain, three copies are rendered at different z-axis offsets. Their positions follow a terrain offset, which keeps the cable aligned with the looping terrain.
+
 
 #### Mountain
 **Current Mountain model**
 
-The **Initial Mountain model** [[2](https://sketchfab.com/3d-models/mountain-range-01-6dff907d427f4c9f8d301075f8019c82)] was also a downloadable 3d model. This model was selected for its detailed geometry and realistic appearance, as well as its support for normal mapping. However, this model didn't provide support for looping, which was important for creating an extended mountain landscape.
+The **Initial Mountain model** [[2](https://sketchfab.com/3d-models/mountain-range-01-6dff907d427f4c9f8d301075f8019c82)] was also a downloadable 3d model. This model was selected for its detailed geometry and realistic appearance.
+Another important consideration was its support for normal mapping. Normal mapping enhances the surface detail of mountain and makes it appear more detailed without significant increase in geometric complexity.
+However, this model didn't provide support for looping, which was important for creating an extended mountain landscape. Using it would have made it difficult to achieve this continuity, leaving gaps in the terrain.
 
 <p align="left">
   <img src="Figures/InitialMountain.png" width="48%">
 </p>
 
-*Figure 13: Initial Mountain Model Used* 
+*Figure 14: Initial Mountain Model Used* 
 
 
 ## References
 [1] https://sketchfab.com/3d-models/cable-car-1621ec805f3b460faf50cd61f7bcb98f
+
 [2] https://sketchfab.com/3d-models/mountain-range-01-6dff907d427f4c9f8d301075f8019c82
+
 [3] https://stackoverflow.com/questions/4770735/shader-sun-position-glsl - idea taken for moving sun
-[4] https://community.khronos.org/t/day-night-cycle-light/57752- inspiration taken for sunlight affecting sky color
-[5] https://github.com/ocornut/imgui/issues/4213- discussions referred for imgui controls
-[6] https://learnopengl.com/PBR/Theory- formula for pbr shaders (also in lecture slides)
-[7] https://learnopengl.com/Advanced-OpenGL/Cubemaps- to understand cubemaps for environment mapping
-[8] https://medium.com/@arda.yildirim158/environment-mapping-ceng469-hw2-eaeb3745f137- for environment mapping, used a discussion from this
+
+[4] https://community.khronos.org/t/day-night-cycle-light/57752 - inspiration taken for sunlight affecting sky color
+
+[5] https://github.com/ocornut/imgui/issues/4213 - discussions referred for imgui controls
+
+[6] https://learnopengl.com/PBR/Theory - formula for pbr shaders (also in lecture slides)
+
+[7] https://learnopengl.com/Advanced-OpenGL/Cubemaps - to understand cubemaps for environment mapping
+
+[8] https://medium.com/@arda.yildirim158/environment-mapping-ceng469-hw2-eaeb3745f137 - for environment mapping, used a discussion from this
