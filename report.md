@@ -10,18 +10,21 @@ The project applies the concepts taught in the lectures of 3D Computer Graphics 
 ## Team Members
 | Feature | Contributors (Percentage Share) |
 |---------|----------------------|
-| Multiple View Points (Orbit, Top, Follow) | Shreya Balaji (100%)|
+| Multiple View Points (Orbit, Top, Follow, Free Camera) | Shreya Balaji (90%) - everything else , Henrik Innos (10%) - free camera |
 | PBR Shading | Shreya Balaji (100%) |
-| Environment Mapping | Shreya Balaji ([60]%), Henrik Innos ([ ]%) |
+| Environment Mapping | Shreya Balaji (60%) - overall setup, Henrik Innos (40%) - reflection optimisation + PCF |
 | Day and Night (Light and Sky Settings) | Shreya Balaji (100%) |
 | Cabin Lights | Shreya Balaji (100%) |
 | Cable Car and Rope Shadow | Shreya Balaji (100%) |
 | Material Textures and Lighting | Srinitish Ramesh (100%) |
-| Cable Car Model Adjustments and Import | Srinitish Ramesh (100%) |
+| Cable Car Model Adjustments and Import | Srinitish Ramesh (70%) - everything else, Henrik Innos (30%) - setting up component hierarchy in Blender |
 | Cable Path for Cable Car | Srinitish Ramesh (100%) |
 | Minimap | Srinitish Ramesh (100%) |
-| Mountain Import and Normal Mapping | Henrik Innos ([ ]%), Srinitish Ramesh ([ ]%) |
-| | Henrik Innos ([ ]%) |
+| Mountain Import and Normal Mapping | Henrik Innos (50%) - scrolling terrain implementation, Srinitish Ramesh (50%) - previous mountain implementation |
+| Bezier Curves | Henrik Innos (100%) |
+| Hierarchical transformations | Henrik Innos (100%) | 
+| Snowfall | Henrik Innos (100%) |
+| Fog | Henrik Innos (100%) |
 
 *Table 1: List of features and percentage contribution from each team member*
 
