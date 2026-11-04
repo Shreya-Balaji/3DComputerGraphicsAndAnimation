@@ -36,7 +36,7 @@ This view (as depicted in Figure 1) is used to orbit around the cable car. This 
 *Figure 1: Orbit View*
 
 ##### Top View
-The camera hangs about 12 units above the targeted cable car and looks straight down, which gives a top view. Figure 2 shows an over view of this. Also, GLM's lookAt computes the camera's right axis as the cross product of the looking direction and the up vector (0,1,0). If the camera looks exactly down, these two are parallel making the cross product zero; hence a small offset of 0.01 is added along z, which makes them slightly non-parallel without changing the view entirely.
+The camera hangs about 12 units above the targeted cable car and looks straight down, which gives a top view. Figure 2 shows an overview of this. Also, GLM's lookAt computes the camera's right axis as the cross product of the looking direction and the up vector (0,1,0). If the camera looks exactly down, these two are parallel making the cross product zero; hence a small offset of 0.01 is added along z, which makes them slightly non-parallel without changing the view entirely.
 
 <p align="left">
   <img src="Figures/top_view.png" width="48%">
@@ -72,7 +72,7 @@ The Cook-Torrance microfacet model is implemented for this. Some external source
 
 * **Specular Term:** This combines D, G and F (D · G · F / (4 · N·V · N·L)) into the shiny part of the surface, which is what gives the cabin its highlights and reflections. Because it uses all three terms, the highlight combines roughness, viewing angle and metallic value together, making the cabin look more metallic when metallic value is increased.
 
-* **Diffuse Term:** This is the matte colour of the cabin and it is reduced by the Fresnel and the metallic value kD, so as the surface becomes more metallic it loses its matte colour and depends on its reflections, similar to what an actual metal does. It is also divided by π so the surface never reflects more light than it receives (energy conservation, but also makes the brightness realistic).
+* **Diffuse Term:** This is the matte colour of the cabin, and it is reduced by the Fresnel and the metallic value kD, so as the surface becomes more metallic it loses its matte colour and depends on its reflections, similar to what an actual metal does. It is also divided by π so the surface never reflects more light than it receives (energy conservation, but also makes the brightness realistic).
 
 <p align="left">
   <img src="Figures/PBROff.png" width="48%">
@@ -107,7 +107,10 @@ To provide shading based on the angle in which light hits the surface, **Lambert
   <img src="Figures/WithoutMaterialTex.png" width="48%">
   <img src="Figures/WithMaterialTex.png" width="48%">
 </p>
+
 *Figure 6: Conventional Lighting Settings Not Enabled (left) and Conventional Lighting Settings Enabled (right)*
+
+---
 
 ### Environment Mapping
 Environment mapping lets the cabin windows reflect their surroundings, a snowy terrain in our case. 

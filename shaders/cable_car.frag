@@ -7,36 +7,47 @@ layout(std140) uniform Material {
     float transparency;
 };
 
+// Data from Vertex Shader
 in vec3 FragPos;
 in vec3 Normal;
 in vec2 TexCoord;
 in vec3 Tangent;
 in vec3 Bitangent;
 
+// Directional Lighting and Camera Parameters
 uniform vec3 lightDir;
 uniform vec3 viewPos;
 uniform vec3 sunColor;
 uniform vec3 moonDir;
 uniform vec3 moonColor;
 uniform vec3 ambientColor;
+
+// Diffuse texture settings
 uniform sampler2D kdTexture;
 uniform bool hasKdTexture;
 uniform bool ambientLightingEnabled;
 uniform float shininessOverride;
+
+// Cabin light parameters
 uniform vec3 cabinLightPos;
 uniform vec3 cabinLightColor;
 uniform float cabinLightAmount;
 uniform float cabinLightRadius;
 uniform float cabinLightIntensity;
+
+// Normal mapping settings
 uniform sampler2D normalTexture;
 uniform bool hasNormalTexture;
 uniform bool twoScaleSampling = false;
+
+// Shadow map parameters
 uniform sampler2D shadowMap;
 uniform mat4 lightSpaceMatrix;
 uniform bool useShadows = false;
 uniform vec3 shadowToLight = vec3(0.0, 1.0, 0.0);
 out vec4 FragColor;
 
+// Calculate the amount of directional light
 float shadowFactor(vec3 fragPos, vec3 N, vec3 L)
 {
     vec4 clip = lightSpaceMatrix * vec4(fragPos, 1.0);
@@ -59,6 +70,8 @@ float shadowFactor(vec3 fragPos, vec3 N, vec3 L)
     float fade = smoothstep(0.0, 0.1, edge);
     return mix(1.0, 1.0 - inShadow / 9.0, fade);
 }
+
+// Parameters for cable position
 const vec2  ropeXY = vec2(-5.4, 0.92);
 const float ropeThickness= 0.025; 
 const float ropeHalf = 96.0;
@@ -82,6 +95,8 @@ float ropeShadow(vec3 fragPos, vec3 toLight)
     return smoothstep(0.5 * ropeThickness, ropeThickness, d);
 }
 void main()
+
+// Material diffuse color
 {
     vec3 baseColor = kd;
     vec2 broadUV = TexCoord * 0.25 + vec2(0.37, 0.61);
@@ -92,7 +107,7 @@ void main()
             baseColor = mix(baseColor, texture(kdTexture, broadUV).rgb, 0.3);
     }
 
-    
+    // Normalize
     vec3 N = normalize(Normal);
 
     if (hasNormalTexture) {
@@ -147,5 +162,7 @@ void main()
     falloff = pow(falloff,2);
     float lamp = max(dot(N, Lc), 0.0) * falloff * cabinLightAmount * cabinLightIntensity;
     color += lamp * baseColor * cabinLightColor;
+
+    // Output the final color
     FragColor = vec4(color, transparency);
 }

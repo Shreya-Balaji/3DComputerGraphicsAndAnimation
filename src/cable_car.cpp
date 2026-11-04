@@ -31,8 +31,10 @@ void CableCar::bindLighting(const Shader& shader, const glm::mat4& viewProjectio
 }
 void CableCar::createCable()
 {
+    // Create a mesh that will contain the procedurally generated cable geometry
     Mesh cable;
-
+    
+    // Define Cable geometry and dimensions
     cable.material.kd = glm::vec3(0.12f, 0.12f, 0.14f);
     cable.material.ks = glm::vec3(0.5f);
     cable.material.shininess = 64.0f;
@@ -111,11 +113,13 @@ void CableCar::createCable()
         }
     }
 
+    // Upload the mesh to GPU so that it can be rendered.
     m_cableMesh = std::make_unique<GPUMesh>(cable);
 }
 
 CableCar::CableCar(const Config& config)
 : m_config(config)
+// Loading the cable car model
 , m_model(Model(std::string(PROJECT_ROOT) + "/assets/cable_car/scene.gltf"))
 {
     const aiScene* scene = m_model.getScene();
@@ -188,12 +192,14 @@ void CableCar::update(float deltaTime)
 
 void CableCar::draw(const glm::mat4& viewProjection, const glm::vec3& cameraPosition, const SkyLight& light) const
 {
+    // Render the cable using the normal world-space transformation.
     drawCables(viewProjection, cameraPosition, light, glm::mat4(1.0f));
     drawBody(viewProjection, cameraPosition, light);
 }
 
 void CableCar::drawMinimap(const glm::mat4& viewProjection, const glm::vec3& cameraPosition, const SkyLight& light) const
 {
+    // Construct a transformation for displaying the cable in minimap.
     glm::mat4 cableTransform = glm::translate(glm::mat4(1.0f), glm::vec3(-5.4f, 0.92f, 0.0f));
     cableTransform = glm::scale(cableTransform, glm::vec3(5.0f, 5.0f, 1.0f));
     cableTransform = glm::translate(cableTransform, glm::vec3(5.4f, -0.92f, 0.0f));
@@ -201,6 +207,7 @@ void CableCar::drawMinimap(const glm::mat4& viewProjection, const glm::vec3& cam
     drawBody(viewProjection, cameraPosition, light);
 }
 
+// Code for Cable mesh
 void CableCar::drawCables(const glm::mat4& viewProjection, const glm::vec3& cameraPosition,
                           const SkyLight& light, const glm::mat4& cableTransform) const
 {
@@ -257,6 +264,7 @@ void CableCar::drawCables(const glm::mat4& viewProjection, const glm::vec3& came
     }
 }
 
+// Code for cable car body
 void CableCar::drawBody(const glm::mat4& viewProjection, const glm::vec3& cameraPosition,
                         const SkyLight& light) const
 {
@@ -284,14 +292,14 @@ void CableCar::drawBody(const glm::mat4& viewProjection, const glm::vec3& camera
     }
     m_model.draw(shader, m_bodyMeshes);
 }
-
+// Code for cable car windows.
 void CableCar::drawWindows(const glm::mat4& viewProjection, const glm::vec3& cameraPosition,
                            const SkyLight& light) const
 {
     if (m_windowMeshes.empty() || m_config.windowOpacity <= 0.0f)
         return;
 
-    // for blending the environment map with the transparent window
+    // For blending the environment map with the transparent window
     const GLboolean blendEnabled = glIsEnabled(GL_BLEND);
     GLint sourceRGB, destinationRGB, sourceAlpha, destinationAlpha;
     glGetIntegerv(GL_BLEND_SRC_RGB, &sourceRGB);

@@ -23,6 +23,7 @@
 #include <cmath>
 int main()
 {
+    // Application window
     Window window(
         "Cable Car Through the Alps",
         glm::ivec2(1280, 720),
@@ -31,10 +32,12 @@ int main()
 
     Config config;
 
+    // Enable depth testing so that the fragments are rendered according to depth
     glEnable(GL_DEPTH_TEST);
 
     try
     {
+        // Initializing the main scene object and camera
         CableCar cableCar(config);
         glm::vec3 cableCarPosition = cableCar.position();
         Terrain terrain(config, cableCarPosition);
@@ -70,6 +73,7 @@ int main()
             );
         }
 
+        // Main application loop
         while (!window.shouldClose())
         {
             window.updateInput();
@@ -104,7 +108,7 @@ int main()
                 window.swapBuffers();
                 continue;
             }
-
+            // Construction perspective projection matrix
             glm::mat4 projection = glm::perspective(
                 glm::radians(45.0f),
                 static_cast<float>(size.x) / size.y,
@@ -152,7 +156,7 @@ int main()
             cableCar.drawWindows(viewProjection, cameraPosition, light);
             fog.draw(projection, skyColor);
             snow.draw(viewProjection);
-
+            // Render minimap only when it is enabled
             if (config.showMinimap)
             {
                 minimap.bind();
@@ -196,6 +200,7 @@ int main()
             window.swapBuffers();
         }
     }
+    // Print error message to the console
     catch (const std::exception& e)
     {
         std::cerr << "Error: " << e.what() << '\n';
