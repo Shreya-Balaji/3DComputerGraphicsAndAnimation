@@ -50,6 +50,7 @@ The camera basically follows the cable car along the rope; it keeps a fixed offs
 <p align="left">
   <img src="Figures/follow_view.png" width="48%">
 </p>
+
 *Figure 3: Follow View*
 
 ----
@@ -63,7 +64,7 @@ The Cook-Torrance microfacet model is implemented for this. Some external source
 
 * **D (GGX Distribution):** It control how large and how sharp the shiny spot is. With low roughness, the cabin gets a small, bright, highlight and with high roughness, the highlight spreads into a dim and dull, matte surface.
 
-* **G (Smith with Schlick-GGX):** It reduces the highlight where the surface is seen at a smaller angle; basically reduces light when viewed from a grazing angle.
+* **G (Smith with Schlick-GGX):** It reduces the highlight where the surface is seen at a shallow angle; basically reduces light when viewed from a grazing angle.
 
 * **F (Fresnel Term, Schlick approximation):** This gives surfaces more mirror-like appearance at grazing angles. On the cabin, this gives a brighter appearance along the edges and on surfaces seen from the side.
 
@@ -71,21 +72,21 @@ The Cook-Torrance microfacet model is implemented for this. Some external source
 
 * **Specular Term:** This combines D, G and F (D · G · F / (4 · N·V · N·L)) into the shiny part of the surface, which is what gives the cabin its highlights and reflections. Because it uses all three terms, the highlight combines roughness, viewing angle and metallic value together, making the cabin look more metallic when metallic value is increased.
 
-* **Diffuse Term:** This is the matte colour of the cabin and it is reduced by the Fresnel and the metallic value kD, so as the surface becomes more metallic it loses its matte colour and depends on its reflections, similar to what an actual metal does. It is also divided by π so the surface never reflects more light than it receives (energy conservation, but also makes the brightness realistic).
+* **Diffuse Term:** This is the matte colour of the cabin and it is reduced by the Fresnel and the metallic value scaled by kD = (1 − F)(1 − metallic), so as the surface becomes more metallic it loses its matte colour and depends on its reflections, similar to what an actual metal does. It is also divided by π so the surface never reflects more light than it receives (energy conservation, but also makes the brightness realistic).
 
 <p align="left">
   <img src="Figures/PBROff.png" width="48%">
   <img src="Figures/PBROn.png" width="48%">
 </p>
 
-*Figure 4.* The cable car with PBR shading off (left, Blinn-Phong) and on (right, metallic 0.25, roughness 0.25). 
+*Figure 4.The cable car with PBR shading off (left, Blinn-Phong) and on (right, metallic 0.25, roughness 0.25)*
 
 <p align="left">
   <img src="Figures/PBRLow.png" width="48%">
   <img src="Figures/PBRHigh.png" width="48%">
 </p>
 
-*Figure 5.* The cable car with metallic 0.00 / roughness 0.00 (left) and metallic 0.94 / roughness 0.57 (right). 
+*Figure 5. The cable car with metallic 0.00 / roughness 0.00 (left) and metallic 0.94 / roughness 0.57 (right)*
 
 As it can be observed in Figure 4., with Blinn-Phong (left), the cabin roof and the red tower look bright and saturated. With PBR (right), the same surfaces look duller and darker. 
 
@@ -104,15 +105,18 @@ To provide shading based on the angle in which light hits the surface, **Lambert
 
 <p align="left">
   <img src="Figures/WithoutMaterialTex.png" width="48%">
-  <img src="Figures/WithMaterialTex.png" width="48%">
+  <img src="Figures/withMaterialTex.png" width="48%">
 </p>
+
 *Figure 6: Conventional Lighting Settings Not Enabled (left) and Conventional Lighting Settings Enabled (right)*
 
-### Environment Mapping
+----
+
+#### Environment Mapping
 Environment mapping lets the cabin windows reflect their surroundings, a snowy terrain in our case. 
 The basic idea is that the cabin takes a picture of sorts in all direction and each window shows a part of that picture that a surface like mirror would reflect towards the viewing direction.
 
-For our implementation, the sky and terrain is rendered six time in all directions into a cube map. A blurrier mip is also built from it for less shiny surfaces. To keep it almost real-time, it is captured for about 20 times per second. The view direction is mirrored and then used to look up the cube map, which gives the colour of the reflected sky and terrain. Figure 6 depicts the environment mapping enabled and disabled scenarios in our application.
+For our implementation, the sky and terrain is rendered six time in all directions into a cube map. A blurrier mip is also built from it for less shiny surfaces. To keep it almost real-time, it is captured for about 20 times per second. The view direction is mirrored and then used to look up the cube map, which gives the colour of the reflected sky and terrain. Figure 7 depicts the environment mapping enabled and disabled scenarios in our application.
 
 <p align="left">
   <img src="Figures/EnvMapOff.png" width="48%">
@@ -121,10 +125,41 @@ For our implementation, the sky and terrain is rendered six time in all directio
 
 *Figure 7: Environment Mapping Disabled (left) and Environment Mapping Enabled (right)*
 
-**Note:** The initial version of the environment mapping was applied to the whole cabin. The initial version of the environment mapping was applied to the whole cabin. Henrik later restricted it to the windows, reduced the capture rate, and added a lighter terrain draw for the capture.
+**Note:** The initial version of the environment mapping was applied to the whole cabin. Henrik later restricted it to the windows, reduced the capture rate, and added a lighter terrain draw for the capture.
+
+----
 
 #### 
 ### Extra Features
+
+### Day-night system
+
+This feature is implemented to seamlessly change the sky and light sources throughout the day.
+* **Time of Day**: This slider controles the time of the day 0 is sunrise, 0.25 midday, 0.5 sunset, 0.75 midnight and back to one to transition back to sunrise.
+* **Sun and Moon:** The sun moves around the scene on a circle, tilted a little along z so its path is not a straight line over the cable car. The moon is always on the opposite side of the sky.
+* **Light Colours:** The height of the sun decides everything. Low in the sky the sunlight is red (dusk), and it blends to a warm white as the sun rises. It then fades out completely as the sun goes below the horizon. The moon is now in the scene and it comes in as the sun goes down and gives a blue light. The ambient light is dark blue at night and brighter by day.
+* **Sky:** The sky colour comes from the same values, and the sky shader renders the sun and the moon as bright discs.
+
+----
+
+### Cabin light
+This feature is implemented to light up the cabin as the day gets darker.
+* A warm lamp is placed inside the cabin, which is a point light that lights the cabin interior and the surfaces near it.
+* It's value is controlled by the sun's height. So, it turns on as it gets dark. It is off in full daylight, lights up around sunset and is at full strength at night. 
+* The light gets weaker with distance: (1 − distance / radius)². The radius, intensity and colour can be changed in the UI menu, and a checkbox switches it off.
+* The windows also get a small extra glow to ensure that the cabin looks lit from the outside.
+* In this project, the lamp light itself does not cast any shadows.
+
+----
+
+### Shadows (Cable Car and Rope)
+To add more realistic effects, a shadow map is implemented for both cable and the rope. This is, however, only with respect to the sun or moon. The cabin light has no impact on the shadow.
+* **Cable Car shadow:** The cabin is drawn once from the light's point of view into a depth texture (a shadow map, 4096 × 4096). When the terrain is drawn, each point is compared with that depth: if something is closer to the light, the point is in shadow. The sun casts the shadow by day and the moon at night. For the scope of this project, only the cabin casts shadows and only the terrain receives them.
+* **Soft Edges:** A 3 × 3 kernel of nearby samples (PCF) softens the edge, and a small bias avoids shadow acne on lit surfaces.
+* **Low Sun:** At sunrise and sunset the sun is close to the horizon, which would make the cable car's shadow extremely long and go beyond the shadow map we have. To avoid this, the direction used for the shadow is clamped to 40° above the horizon. This has no impact on the lighting which will still use the real sun position.
+* **Rope Shadow:** The rope's thickness was too low to show up clearly in a shadow map. To fix this, its shadow is computed directly in the terrain shader. For each terrain point, a line/ray is followed towards the light. If that line passes close to the rope, the point is cast as shadow, with a soft edge. Finally, the rope shadow and the cabin shadow are combined by taking the darker of the two values for each point. This means that a point is in shadow if either the cabin or the rope blocks the light, and it does not get darker if both do.
+
+----
 
 ### ImGui Controls
 | Input / UI element | Action |
@@ -141,7 +176,7 @@ The Cable Car model [[1](https://sketchfab.com/3d-models/cable-car-1621ec805f3b4
   <img src="Figures/AdjustedPulley.png" width="48%">
 </p>
 
-*Figure 8: Original Cable Car Model (left) and Adjusted Model (right) *
+*Figure 8: Original Cable Car Model (left) and Adjusted Model (right)*
 
 #### Mountain
 **Current Mountain model**
@@ -151,6 +186,7 @@ The **Initial Mountain model** [[2](https://sketchfab.com/3d-models/mountain-ran
 <p align="left">
   <img src="Figures/InitialMountain.png" width="48%">
 </p>
+
 *Figure 9: Initial Mountain Model Used* 
 
 
